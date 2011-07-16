@@ -28,6 +28,9 @@ is apa(year => 2004, author => ['maia', 'McClelland']),
 is apa(year => 1983, author => ['Tversky', 'Kahneman']),
     'Tversky, A., & Kahneman, D. (1983). Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment. |Psychological Review, 90|, 293–315. `doi:10.1037/0033-295X.90.4.293`',
     'Psychological Review';
+is apa(year => 2010, author => ['trope', 'liberman']),
+    'Trope, Y., & Liberman, N. (2010). Construal-level theory of psychological distance. |Psychological Review, 117|, 440–463. `doi:10.1037/a0018963`',
+    'Psychological Review (article for which a correction exists)';
 is apa(year => 2000, author => ['McMackin', 'Slovic']),
     'McMackin, J., & Slovic, P. (2000). When does explicit justification impair decision making? |Applied Cognitive Psychology, 14|, 527–541. `doi:10.1002/1099-0720(200011/12)14:6<527::AID-ACP671>3.0.CO;2-J`',
     'Applied Cognitive Psychology';

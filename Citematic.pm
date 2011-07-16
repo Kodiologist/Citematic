@@ -3,7 +3,7 @@ package Citematic;
 
 use feature qw(say state);
 use utf8;
-use Kodi qw(:symbolic apply matches);
+use Kodi qw(:symbolic apply matches runsub);
 use warnings;
 use strict;
 
@@ -234,7 +234,7 @@ sub ebsco
 
     my $record = $global_cache
             ->{ebsco}{to_json \%search_fields, {utf8 => 1, canonical => 1}}
-            ||= do
+            ||= runsub
        {my $agent = new WWW::Mechanize
            (agent => 'Cite-O-Matic',
             cookie_jar => new HTTP::Cookies
@@ -286,17 +286,25 @@ sub ebsco
                (button => ctl('findField', 'SearchButton'),
                 fields => \%search_fields);}
 
-        if ($agent->content =~ /class="smart-text-ran-warning"><span>Note: Your initial search query did not yield any results/
-            or $agent->content =~ /<span class="std-warning-text">No results were found/)
-          # No results.
-           {[]}
-        else
-          # Use the first result.
-           {progress 'Fetching record';
-            $agent->follow_link(name => "Result_1");
+        my $page = $agent->content;
+        $page =~ /class="smart-text-ran-warning"><span>Note: Your initial search query did not yield any results/
+            || $page =~ /<span class="std-warning-text">No results were found/
+            # No results.
+            and return [];
+        # Use the first result that isn't just a correction. I
+        # would just use "NOT PZ Erratum/Correction" in the
+        # search string, but then records with no "Document Type"
+        # field at all, including some journal articles, would
+        # also be excluded.
+        for (my $i = 1 ; $page =~ /Result_$i/ ; ++$i)
+           {$page =~ m!Result_$i.+\[Erratum/Correction\]! and next;
+            progress 'Fetching record';
+            $agent->follow_link(name => "Result_$i");
             $agent->content =~ m!<a name="citation"><span>(.+?)</span></a></dd>.*?<dt>(.+?)</div>!s
                 or die;
-            [$1, $2];}};
+            return [$1, $2];}
+        # No results.
+        [];};
 
     @$record or return err 'No results.';
 
