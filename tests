@@ -1,0 +1,117 @@
+#!/usr/bin/perl
+
+use utf8;
+use warnings;
+use strict;
+use Citematic;
+use Test::More;
+
+# UTF-8 nonsense
+   {my $builder = Test::More->builder;
+    binmode $builder->output, ":utf8";
+    binmode $builder->failure_output, ":utf8";
+    binmode $builder->todo_output, ":utf8";}
+
+
+
+note '~~~ Journal articles (EBSCO) ~~~';
+
+is apa(year => 1991, author => ['smith', 'dechter']),
+    'Smith, H. L., & Dechter, A. (1991). No shift in locus of control among women during the 1970s. |Journal of Personality and Social Psychology, 60|, 638–640. `doi:10.1037/0022-3514.60.4.638`',
+    'JPSP';
+is apa(year => 2005, author => [qw(Bechara Damasio Tranel)]),
+    'Bechara, A., Damasio, H., Tranel, D., & Damasio, A. R. (2005). The Iowa Gambling Task and the somatic marker hypothesis: Some questions and answers. |Trends in Cognitive Sciences, 9|, 159–162. `doi:10.1016/j.tics.2005.02.002`',
+    'Trends in Cognitive Sciences';
+is apa(year => 2004, author => ['maia', 'McClelland']),
+    'Maia, T. V., & McClelland, J. L. (2004). A reexamination of the evidence for the somatic marker hypothesis: What participants really know in the Iowa gambling task. |Proceedings of the National Academy of Sciences, 101|, 16075–16080. `doi:10.1073/pnas.0406666101`',
+    'PNAS';
+is apa(year => 1983, author => ['Tversky', 'Kahneman']),
+    'Tversky, A., & Kahneman, D. (1983). Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment. |Psychological Review, 90|, 293–315. `doi:10.1037/0033-295X.90.4.293`',
+    'Psychological Review';
+is apa(year => 2000, author => ['McMackin', 'Slovic']),
+    'McMackin, J., & Slovic, P. (2000). When does explicit justification impair decision making? |Applied Cognitive Psychology, 14|, 527–541. `doi:10.1002/1099-0720(200011/12)14:6<527::AID-ACP671>3.0.CO;2-J`',
+    'Applied Cognitive Psychology';
+is apa(year => 1988, author => [qw(MacGregor Lichtenstein Slovic)]),
+    'MacGregor, D., Lichtenstein, S., & Slovic, P. (1988). Structuring knowledge retrieval: An analysis of decomposed quantitative judgments. |Organizational Behavior and Human Decision Processes, 42|, 303–323. `doi:10.1016/0749-5978(88)90003-9`',
+    'Organizational Behavior and Human Decision Processes';
+is apa(year => 2011, author => [qw(Dunn Greenhill Levinson Gray)]),
+    'Dunn, M., Greenhill, S. J., Levinson, S. C., & Gray, R. D. (2011). Evolved structure of language shows lineage-specific trends in word-order universals. |Nature, 473|, 79–82. `doi:10.1038/nature09923`',
+    'Nature';
+is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
+    'Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. |Science, 323|, 1222–1226. `doi:10.1126/science.1165565`',
+    'Science';
+is apa(author => ['lee', 'schwarz'], title => ['washing']),
+    'Lee, S. W., & Schwarz, N. (2010). Washing away postdecisional dissonance. |Science, 328|, 709. `doi:10.1126/science.1186799`',
+    'Science (one-page article, author-title search)';
+is apa(year => 2002, author => ['Fantino', 'Esfandiari']),
+    'Fantino, E., & Esfandiari, A. (2002). Probability matching: Encouraging optimal responding in humans. |Canadian Journal of Experimental Psychology, 56|, 58–63. `doi:10.1037/h0087385`',
+    'Canadian Journal of Experimental Psychology (journal with foreign-language name)';
+is apa(year => 1995, author => ['Buzsáki', 'Chrobak'], title => ['temporal']),
+    'Buzsáki, G., & Chrobak, J. J. (1995). Temporal structure in spatially organized neuronal ensembles: A role for interneuronal networks. |Current Opinion in Neurobiology, 5|, 504–510. `doi:10.1016/0959-4388(95)80012-3`',
+    q[Current Opinion in Neurobiology (diacritic in first author's name)];
+is apa(year => 1998, author => ['Hsee'], title => ['less is better']),
+    'Hsee, C. K. (1998). Less is better: When low-value options are valued more highly than high-value options. |Journal of Behavioral Decision Making, 11|, 107–121. `doi:10.1002/(SICI)1099-0771(199806)11:2<107::AID-BDM292>3.0.CO;2-Y`',
+    'Journal of Behavioral Decision Making (year-author-title search)';
+is apa(year => 2006, author => ['ditto', 'pizarro']),
+    'Ditto, P. H., Pizarro, D. A., Epstein, E. B., Jacobson, J. A., & MacDonald, T. K. (2006). Visceral influences on risk-taking behavior. |Journal of Behavioral Decision Making, 19|, 99–113. `doi:10.1002/bdm.520`',
+    'Journal of Behavioral Decision Making (miscapitalized title)';
+is apa(title => ['short-term memory', 'we stand']),
+    'Crowder, R. G. (1993). Short-term memory: Where do we stand? |Memory & Cognition, 21|, 142–145. `doi:10.3758/BF03202725`',
+    'Memory & Cognition (title search, ampersand in journal title)';
+#is apa(year => 2000, author => ['Stanovich', 'West']),
+#    'Stanovich, K. E., & West, R. F. (2000). Individual differences in reasoning: Implications for the rationality debate? |Behavioral and Brain Sciences, 23|, 645–665. `doi:10.1017/S0140525X00003435`',
+#    'Behavioral and Brain Sciences (no ampersand)';
+is apa(year => 2009, author => ['brown', 'locker']),
+    'Brown, S., & Locker, E. (2009). Defensive responses to an emotive anti-alcohol message. |Psychology & Health, 24|, 517–528. `doi:10.1080/08870440801911130`',
+    'Psychology & Health (extra junk between title and first <dt> on EBSCO page)';
+is apa(title => ['money', 'kisses', 'shocks']),
+    'Rottenstreich, Y., & Hsee, C. K. (2001). Money, kisses, and electric shocks: On the affective psychology of risk. |Psychological Science, 12|, 185–190. `doi:10.1111/1467-9280.00334`',
+    'Psychological Science';
+is apa(year => 1955, author => ['Walter'], title => ['autokinetic']),
+    'Walter, N. (1955). A study of the effects of conflicting suggestions upon judgments in the autokinetic situation. |Sociometry, 18|, 138–146. `doi:10.2307/2786000`',
+    'Sociometry (article from 1955)';
+is apa(year => 1955, author => ['asch'], title => ['pressure']),
+    'Asch, S. E. (1955). Opinions and social pressure. |Scientific American, 193|, 31–35. `doi:10.1038/scientificamerican1155-31`',
+    'Scientific American';
+is apa(title => ['on land and underwater', 'memory']),
+    'Godden, D. R., & Baddeley, A. D. (1975). Context-dependent memory in two natural environments: On land and underwater. |British Journal of Psychology, 66|, 325–331. `doi:10.1111/j.2044-8295.1975.tb01468.x`',
+    'British Journal of Psychology (phrase-in-title search)';
+is apa(year => 1987, author => ['Grassia', 'Pearson']),
+    'Hammond, K. R., Hamm, R. M., Grassia, J., & Pearson, T. (1987). Direct comparison of the efficacy of intuitive and analytical cognition in expert judgment. |IEEE Transactions on Systems, Man, and Cybernetics, 17|, 753–770.',
+    'IEEE Transactions on Systems, Man, and Cybernetics';
+is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['mirror']),
+    'Keysers, C., & Gazzola, V. (2009). Expanding the mirror: Vicarious activity for actions, emotions, and sensations. |Current Opinion in Neurobiology, 19|, 666–671. `doi:10.1016/j.conb.2009.10.006`',
+    'Current Opinion in Neurobiology (disambiguating with a title search)';
+is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
+    'Gazzola, V., & Keysers, C. (2009). The observation and execution of actions share motor and somatosensory voxels in all tested subjects: Single-subject analyses of unsmoothed fMRI data. |Cerebral Cortex, 19|, 1239–1255. `doi:10.1093/cercor/bhn181`',
+    'Cerebral Cortex (disambiguating with a title search)';
+
+
+note '~~~ Journal articles (IDEAS) ~~~';
+
+is apa(year => 2007, author => ['kogler', 'Kühberger']),
+    'Kogler, C., & Kühberger, A. (2007). Dual process theories: A key for understanding the diversification bias? |Journal of Risk and Uncertainty, 34|, 145–154. `doi:10.1007/s11166-007-9008-7`',
+    'Journal of Risk and Uncertainty';
+is apa(year => 1979, author => ['kahneman, tversky'], title => ['prospect']),
+    'Kahneman, D., & Tversky, A. (1979). Prospect theory: An analysis of decision under risk. |Econometrica, 47|, 263–291. `doi:10.2307/1914185`',
+    'Econometrica';
+is apa(year => 1979, author => ['simon'], title => ['business organizations']),
+    'Simon, H. A (1979). Rational decision making in business organizations. |American Economic Review, 69|, 493–513.',
+    'American Economic Review';
+
+
+note '~~~ Book chapters ~~~';
+
+is apa(title => ['gender role journeys']),
+    q[O'Neil, J. M., & Egan, J. (1992). Men's and women's gender role journeys: A metaphor for healing, transition, and transformation. In B. R. Wainrib (Ed.), |Gender issues across the life cycle| (pp. 107–123). New York, NY: Springer.],
+    'Gender issues across the life cycle (one editor)';
+is apa(author => ['yates', 'veinott', 'patalano']),
+    'Yates, J. F., Veinott, E. S., & Patalano, A. L. (2003). Hard decisions, bad decisions: On decision quality and decision aiding. In S. L. Schneider & J. Shanteau (Eds.), |Emerging perspectives on judgment and decision research| (pp. 1–63). New York, NY: Cambridge University Press.',
+    'Emerging perspectives on JDM (two editors)';
+is apa(title => ['self-reflection', 'self-persuasion']),
+    'Wilson, T. D. (1990). Self-persuasion via self-reflection. In J. M. Olson & M. P. Zanna (Eds.), |Self-inference processes: The Ontario symposium| (Vol. 6, pp. 43–67). Hillsdale, NJ: Lawrence Erlbaum.',
+    'Self-inference processes (multiple-volume work)';
+
+
+
+done_testing;
