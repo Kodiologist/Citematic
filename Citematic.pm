@@ -85,10 +85,9 @@ sub digest_author
        {$str =~ s/ \A (.+?) \s+ ([[:upper:]]) /$2/x;
         [$1, join ' ', map {"$_."} split //, $str];}
     else
-      # We have something of the form "Allen Smith".
-       {$str =~ /\A (\S) \S+ \s+ (\S+) \z/x
-            or die 'More than one space';
-        [$2, "$1."];}}
+      # We have something of the form "Allen R. Smith".
+       {$str =~ /\A (\S) \S+ ((?: \s \S\.)*) \s+ (\S+) \z/x;
+        [$3, "$1.$2"];}}
 
 sub digest_journal_title
    {my $j = shift;

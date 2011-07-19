@@ -95,12 +95,15 @@ note '~~~ Journal articles (IDEAS) ~~~';
 is apa(year => 2007, author => ['kogler', 'Kühberger']),
     'Kogler, C., & Kühberger, A. (2007). Dual process theories: A key for understanding the diversification bias? |Journal of Risk and Uncertainty, 34|, 145–154. `doi:10.1007/s11166-007-9008-7`',
     'Journal of Risk and Uncertainty';
-is apa(year => 1979, author => ['kahneman, tversky'], title => ['prospect']),
+is apa(year => 1979, author => ['kahneman', 'tversky'], title => ['prospect']),
     'Kahneman, D., & Tversky, A. (1979). Prospect theory: An analysis of decision under risk. |Econometrica, 47|, 263–291. `doi:10.2307/1914185`',
     'Econometrica';
 is apa(year => 1979, author => ['simon'], title => ['business organizations']),
     'Simon, H. A (1979). Rational decision making in business organizations. |American Economic Review, 69|, 493–513.',
     'American Economic Review';
+is apa(year => 1997, author => ['weber', 'milliman']),
+    'Weber, E. U., & Milliman, R. A. (1997). Perceived risk attitudes: Relating risk perception to risky choice. |Management Science, 43|, 123–144. `doi:10.1287/mnsc.43.2.123`',
+    'Management Science';
 
 
 note '~~~ Book chapters ~~~';
