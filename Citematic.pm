@@ -22,7 +22,12 @@ use parent 'Exporter';
 our @EXPORT = 'apa';
 
 my $crossref_email = join '@', reverse 'example.com', 'somebody';
-my $ebsco_login_url = 'https://libproxy.cc.stonybrook.edu/login?url=http://search.ebscohost.com/login.aspx?authtype=ip,uid&profile=ehost';
+my $ebsco_login_url = 'http://search.ebscohost.com.libproxy.cc.stonybrook.edu/login.aspx?authtype=ip,uid&profile=ehost&defaultdb=' .
+    join ',',
+    # EBSCO databases to search
+    'psyh',  # PsycINFO
+    'pdh',   # PsycARTICLES
+    'mnh';   # MEDLINE
 my $sbu_login_url = 'https://libproxy.cc.stonybrook.edu/login';
 my $sbu_netid = 'karfer';
 my $sbu_password = 'hunter2';
@@ -256,20 +261,6 @@ sub ebsco
                 user => $sbu_netid,
                 pass => $sbu_password,
                 url => $ebsco_login_url);
-
-            # We're now at the database-selection screen.
-            my %databases = reverse($agent->content =~ /type="checkbox".+?ctl(\d+)_itemCheck.+?value="([^"]+)"/g);
-            local *database = sub
-               {my $d = shift;
-                my $k = ctl('SelectDbControl', 'dbList',
-                    sprintf('ctl%02d', $databases{$d}),
-                    'itemCheck');
-                ($k, $d);};
-            progress 'Selecting databases';
-            $agent->submit_form(button => ctl('continue1'), fields => χ
-                database 'psyh',   # PsycINFO
-                database 'pdh',    # PsycARTICLES
-                database 'mnh');   # MEDLINE
 
             # Now we're at the search screen. Save the form details
             # for quicker querying in the future.
