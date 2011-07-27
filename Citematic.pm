@@ -87,19 +87,20 @@ sub digest_author
       # We have something of the form "Smith, A. R." or "Smith,
       # Allen R." or "Smith, Allen Reginald" or even "Smith, A.
       # Reginald".
-       {$str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
+       {my $suffix = $str =~ s/,?\s+(Jr\.|Sr\.)//i ? $1 : '';
+        $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
         $rest =~ s/\w\K.+?( |\z)/.$1/g;
         $surn =~ /[[:lower:]]/ or $surn = ucfirst fix_allcaps $surn;
-        [$surn, $rest];}
+        [$surn, $rest, $suffix];}
     elsif ($str =~ /[[:upper:]]\z/)
       # We have something of the form "Smith AR".
        {$str =~ s/ \A (.+?) \s+ ([[:upper:]]) /$2/x;
-        [$1, join ' ', map {"$_."} split //, $str];}
+        [$1, join(' ', map {"$_."} split //, $str), ''];}
     else
       # We have something of the form "Allen R. Smith".
        {$str =~ /\A (\S) \S+ ((?: \s \S\.)*) \s+ (\S+) \z/x;
-        [$3, "$1.$2"];}}
+        [$3, "$1.$2", ''];}}
 
 sub digest_journal_title
    {my $j = shift;
@@ -112,7 +113,8 @@ sub digest_journal_title
        {$j =~ s/and/&/;}
     else
        {$j =~ s/&/and/;}
-    $j =~ s!(?:/|:).+!!;
+    $j =~ /\AJournal of Experimental Psychology/i
+        or $j =~ s!(?:/|:).+!!;
     $j;}
 
 sub expand_last_page_number
@@ -140,7 +142,7 @@ sub format_nonjournal_title
                     lc($sug) eq lc($lower) ? $sug : $lower;}}eg;}
         else
           # THE TITLE IS IN ALL CAPS.
-           {$s =~ s {([^- ]+)} {fix_allcaps $1}eg;
+           {$s =~ s {([^- .?!]+)} {fix_allcaps $1}eg;
             $s = ucfirst $s;}}
     $s =~ s/(:\W+)(\w)/': ' . uc $2/ge;
     $s;}
@@ -154,7 +156,9 @@ sub format_publisher
     $s;}
 
 sub format_authors
-   {my @authors = map {$_->[0] . ', ' . $_->[1]} α shift;
+   {my @authors = map
+        {"$_->[0], $_->[1]" . ($_->[2] ? ", $_->[2]" : '')}
+        α shift;
     @authors == 1
       ? $authors[0]
       : join ', ',
@@ -179,7 +183,9 @@ sub apa_journal_article
 sub apa_book_chapter
    {my ($authors, $year, $chapter_title, $editors, $book, $volume,
         $first_page, $last_page, $place, $publisher) = @_;
-    my @editors = map {"$_->[1] $_->[0]"} @$editors;
+    my @editors = map
+        {"$_->[1] $_->[0]" . ($_->[2] ? " $_->[2]" : '')}
+        @$editors;
     sprintf '%s (%s). %s In %s (Ed%s.), |%s| (%spp. %d–%d). %s: %s.',
         format_authors($authors),
         $year,
