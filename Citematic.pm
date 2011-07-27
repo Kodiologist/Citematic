@@ -14,6 +14,7 @@ use HTTP::Cookies;
 use URI::Escape;
 use HTML::Entities 'decode_entities';
 use Lingua::EN::Titlecase;
+use Text::Aspell;
 use JSON qw(from_json to_json);
 use File::Slurp qw(slurp write_file);
 use XML::Simple 'XMLin';
@@ -52,6 +53,8 @@ my $global_cache;
         $t and $new_t eq $t or
            write_file $cache_path, $new_t;}}
 
+my $speller = new Text::Aspell;
+
 our $verbose;
 
 sub progress
@@ -70,6 +73,14 @@ sub query_url
     push @a, uri_escape_utf8(shift) . '=' . uri_escape_utf8(shift) while @_;
     $prefix . '?' . join '&', @a;}
 
+sub fix_allcaps
+   {my $all_low = lc shift;
+    if ($speller->check($all_low))
+       {$all_low;}
+    else
+       {my $sug = ($speller->suggest($all_low))[0];
+        lc($sug) eq $all_low ? $sug : $all_low;}}
+
 sub digest_author
    {my $str = shift;
     if ($str =~ /,/)
@@ -78,7 +89,8 @@ sub digest_author
       # Reginald".
        {$str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
-        $rest =~ s/[[:lower:]].+?( |\z)/.$1/g;
+        $rest =~ s/\w\K.+?( |\z)/.$1/g;
+        $surn =~ /[[:lower:]]/ or $surn = ucfirst fix_allcaps $surn;
         [$surn, $rest];}
     elsif ($str =~ /[[:upper:]]\z/)
       # We have something of the form "Smith AR".
@@ -115,18 +127,21 @@ sub format_nonjournal_title
    {my $s = shift;
     if (matches(qr/\b[[:upper:]]/, $s) /
         matches(qr/\b\S/, $s) > 1/2)
-      # Most words in the title are capitalized, so it's probably
-      # capitalized incorrectly.
        {warning 'The article title may be miscapitalized.';
-        require Text::Aspell;
-        state $speller = new Text::Aspell;
-        $s =~ s {[- ]\K([[:upper:]])([^- ]+)}
-           {my $lower = lc($1) . $2;
-            if ($speller->check($lower))
-               {$lower;}
-            else
-               {my $sug = ($speller->suggest($lower))[0];
-                lc($sug) eq lc($lower) ? $sug : $lower;}}eg;}
+        # But we'll try to fix it.
+        if ($s =~ /[[:lower:]]/)
+          # The Title Is Probably Capitalized Like This.
+           {$s =~ s {[- ]\K([[:upper:]])([^- ]+)}
+               {my $lower = lc($1) . $2;
+                if ($speller->check($lower))
+                   {$lower;}
+                else
+                   {my $sug = ($speller->suggest($lower))[0];
+                    lc($sug) eq lc($lower) ? $sug : $lower;}}eg;}
+        else
+          # THE TITLE IS IN ALL CAPS.
+           {$s =~ s {([^- ]+)} {fix_allcaps $1}eg;
+            $s = ucfirst $s;}}
     $s =~ s/(:\W+)(\w)/': ' . uc $2/ge;
     $s;}
 
