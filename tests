@@ -75,7 +75,10 @@ is apa(title => ['money', 'kisses', 'shocks']),
     'Psychological Science';
 is apa(year => 2009, author => ['Bruggeman', 'pick']),
     'Bruggeman, H., Piuneu, V. S., Rieser, J. J., & Pick, H. L., Jr. (2009). Biomechanical versus inertial information: Stable individual differences in perception of self-rotation. |Journal of Experimental Psychology: Human Perception and Performance, 35|, 1472–1480. `doi:10.1037/a0015782`',
-    'Journal of Experimental Psychology: Human Perception and Performance (author with "Jr.")';
+    'J Exp Psych: Human Perception and Performance (author with "Jr.")';
+is apa(year => 1997, author => ['bettman', 'payne']),
+    'Luce, M. F., Bettman, J. R., & Payne, J. W. (1997). Choice processing in emotionally difficult decisions. |Journal of Experimental Psychology: Learning, Memory, and Cognition, 23|, 384–405. `doi:10.1037/0278-7393.23.2.384`',
+    'J Exp Psych: Learning, Memory, and Cognition (comma in journal title)';
 is apa(year => 1955, author => ['Walter'], title => ['autokinetic']),
     'Walter, N. (1955). A study of the effects of conflicting suggestions upon judgments in the autokinetic situation. |Sociometry, 18|, 138–146. `doi:10.2307/2786000`',
     'Sociometry (article from 1955)';

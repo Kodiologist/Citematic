@@ -336,15 +336,15 @@ sub ebsco
         $record{'Document Type'} eq 'Journal Article' or
         $record{'Document Type'} eq 'Comment/Reply')
 
-       {$record{Source} =~ s! \A (.+?) \s* [\[(,;/] !!x or die;
-        my $journal = digest_journal_title $1;
-        $record{Source} =~ s!Vol\.? (\d+)(?: ?(?:Issue \d+|\(\d+\)))?!!
+       {$record{Source} =~ s!\s+Vol\.? (\d+)(?: ?(?:Issue \d+|\(\d+(?:, Pt\.\d+)?\))),\s+?!✠!
           # We don't actually want the issue number, but we remove it
           # from $record{Source} to avoid mistaking it for a year
           # later.
-            or $record{Source} =~ s!\A\s*(\d+)(?:\(\d+\))?,\s*!!
+            or $record{Source} =~ s!\s+(\d+)(?:\(\d+\))?,\s+!✠!
             or die "Source: $record{Source}";
         my $volume = $1;
+        $record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die;
+        my $journal = digest_journal_title $1;
         my ($fpage, $lpage) =
             $record{Source} =~ s!p(?:p\. )?(\d+)-(\d+)!!
           ? ($1, $2)
