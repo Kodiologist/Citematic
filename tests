@@ -131,5 +131,28 @@ is apa(year => 1992, author => ['massaro'], title => ['fuzzy']),
     'Cognition: Conceptual and methodological issues (editor with "Jr.")';
 
 
+=for wholebooks
+
+note '~~~ Entire books ~~~';
+
+is apa(title => ['when prophecy fails'], author => ['festinger']),
+    'Festinger, L., Henry, W., & Schachter, S. (1956). |When prophecy fails|. Minneapolis, MN: University of Minnesota Press.',
+    'When prophecy fails (authors)';
+is apa(title => ['gender issues', 'life cycle']),
+    'Wainrib, B. R. (Ed.). (1992). |Gender issues across the life cycle|. New York, NY: Springer',
+    'Gender issues across the life cycle (one editor)';
+is apa(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['consequences']),
+    'Duncan, G. J., & Brooks-Gunn, J. (Eds.). (1997). Consequences of growing up poor. New York, NY: Russell Sage Foundation.',
+    'Consequences of growing up poor (two editors)';
+is apa(year => 2010, author => ['thorndike', 'thorndike-christ']),
+    'Thorndike, R. M., & Thorndike-Chirst, T. (2010). |Measurement and evaluation in psychology and education| (8th ed.). Boston: Prentice Hall.',
+    'Measurement and evaluation in psychology and education';
+is apa(year => 2010, author => ['aronson', 'wilson', 'akert']),
+    'Aronson, E., Wilson, T. D., & Akert, R. M. (2010). |Social psychology| (7th ed.). Upper Saddle River, NJ: Pearson Education.',
+    'Social psychology';
+
+=cut
+
+
 
 done_testing;
