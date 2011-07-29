@@ -336,7 +336,14 @@ sub ebsco
         $record{'Document Type'} eq 'Journal Article' or
         $record{'Document Type'} eq 'Comment/Reply')
 
-       {$record{Source} =~ s!\s+Vol\.? (\d+)(?: ?(?:Issue \d+|\(\d+(?:, Pt\.\d+)?\))),\s+?!✠!
+       {$record{Source} =~ s{
+                \s+
+                Vol \.? \s
+                (\d+) \s?
+                (?: Issue \s \d+ |
+                    \( (?: \s | \w | - | , | \.)+ \) )
+                , \s+
+                } {✠}x
           # We don't actually want the issue number, but we remove it
           # from $record{Source} to avoid mistaking it for a year
           # later.

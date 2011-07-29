@@ -97,6 +97,9 @@ is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['mirror']),
 is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
     'Gazzola, V., & Keysers, C. (2009). The observation and execution of actions share motor and somatosensory voxels in all tested subjects: Single-subject analyses of unsmoothed fMRI data. |Cerebral Cortex, 19|, 1239–1255. `doi:10.1093/cercor/bhn181`',
     'Cerebral Cortex (disambiguating with a title search)';
+is apa(author => ['redelmeier', 'kahneman'], title => ['colonoscopy']),
+    'Redelmeier, D. A., Katz, J., & Kahneman, D. (2003). Memories of colonoscopy: A randomized trial. |Pain, 104|, 187–194. `doi:10.1016/S0304-3959(03)00003-4`',
+    'Pain (article attributed to multiple issues)';
 
 
 note '~~~ Journal articles (IDEAS) ~~~';
