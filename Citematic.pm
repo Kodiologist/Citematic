@@ -52,20 +52,22 @@ my $global_cache;
             {utf8 => 1, pretty => 1, canonical => 1};
         $t and $new_t eq $t or
            write_file $cache_path, $new_t;}}
-
+our $ebsco_ignore_cached;
 my $speller = new Text::Aspell;
-
 our $verbose;
 
-sub progress
-   {$verbose and say STDERR @_, '…';}
+sub note
+   {$verbose and say STDERR @_;}
 
-sub err
-   {$verbose and say STDERR @_;
-    return undef;}
+sub progress
+   {note @_, '…';}
 
 sub warning
-   {$verbose and say STDERR 'WARNING: ', @_;}
+   {note 'WARNING: ', @_;}
+
+sub err
+   {note @_;
+    return undef;}
 
 sub query_url
    {my $prefix = shift;
@@ -257,9 +259,11 @@ sub ebsco
           ? ('common_DT1_FromYear' => $terms{year}, 'common_DT1_ToYear' => $terms{year})
           : ());
 
-    my $record = $global_cache
-            ->{ebsco}{to_json \%search_fields, {utf8 => 1, canonical => 1}}
-            ||= runsub
+    my $cache_key = to_json
+        \%search_fields, {utf8 => 1, canonical => 1};
+    $ebsco_ignore_cached
+        and delete $global_cache->{ebsco}{$cache_key};
+    my $record = $global_cache->{ebsco}{$cache_key} ||= runsub
        {my $agent = new WWW::Mechanize
            (agent => 'Cite-O-Matic',
             cookie_jar => new HTTP::Cookies
@@ -311,9 +315,21 @@ sub ebsco
            {$page =~ m!Result_$i.+\[Erratum/Correction\]! and next;
             progress 'Fetching record';
             $agent->follow_link(name => "Result_$i");
-            $agent->content =~ m!<a name="citation"><span>(.+?)</span></a></dd>.*?<dt>(.+?)</div>!s
+            $page = $agent->content;
+            $page =~ m!<a name="citation"><span>(.+?)</span></a></dd>.*?<dt>(.+?)</div>!s
                 or die;
-            return [$1, $2];}
+            my ($title, $rows) = ($1, $2);
+            # Before returning the results, print a full-text URL
+            # to STDERR.
+            if ($page =~ /HTML Full Text/)
+               {note 'Full text (HTML): ', $agent->uri;}
+            elsif ($page =~ /PDF Full Text/)
+               {$agent->submit_form(fields =>
+                   {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
+                note 'Full text (PDF): ', $agent->uri;}
+            elsif ($page =~ /OpenIlsLink\(.+?su=(http.+?)'/)
+               {note 'Serial Solutions: ', $1;}
+            return [$title, $rows];}
         # No results.
         [];};
 
@@ -474,7 +490,9 @@ if (not caller)
     @ARGV = map { decode 'UTF-8', $_ } @ARGV;
     my @title_words;
     die unless Getopt::Long::GetOptions
-       ('t|title=s' => \@title_words);
+       ('t|title=s' => \@title_words,
+        'i|ebsco-ignore-cached' => \$ebsco_ignore_cached);
+            # Useful for getting fresh full-text URLs.
     # Interpret any remaining argument that looks like a year
     # as a year.
     my $year;
