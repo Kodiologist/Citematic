@@ -327,8 +327,10 @@ sub ebsco
                {$agent->submit_form(fields =>
                    {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
                 note 'Full text (PDF): ', $agent->uri;}
-            elsif ($page =~ /OpenIlsLink\(.+?su=(http.+?)'/)
-               {note 'Serial Solutions: ', $1;}
+            elsif ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
+               {note 'Serial Solutions: http:', uri_escape
+                    uri_unescape($1),
+                    ':<>';}
             return [$title, $rows];}
         # No results.
         [];};
@@ -377,12 +379,8 @@ sub ebsco
           ? ($1, undef)
           : die;
         $lpage = expand_last_page_number $fpage, $lpage;
-        my $year;
-        $year = $terms{year} or
-           ($year) = $record{Source} =~ /((?:1[6789]|20)\d\d)/ or
-            $record{Source} =~ /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d\d)/
-          ? ($year = $1 < 25 ? "20$1" : "19$1")
-          : die;
+        $record{Source} =~ /((?:1[6789]|20)\d\d)/ or die;
+        my $year = $1;
         my $doi = $record{'Digital Object Identifier'} || get_doi
             $year, $journal, $authors->[0][0], $volume, $fpage;
 
@@ -406,7 +404,7 @@ sub ebsco
         $src{volume} and $book =~ s/, Vol\z//;
         my $editors = β
            map {digest_author $_}
-           split / \(Ed\.\); /, $src{editors}; #/;
+           split / \(Ed\.\); /, $src{editors};
 
         return apa_book_chapter $authors, $src{year}, $title,
             $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
