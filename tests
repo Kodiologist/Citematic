@@ -40,6 +40,9 @@ is apa(year => 2000, author => ['McMackin', 'Slovic']),
 is apa(year => 1988, author => [qw(MacGregor Lichtenstein Slovic)]),
     'MacGregor, D., Lichtenstein, S., & Slovic, P. (1988). Structuring knowledge retrieval: An analysis of decomposed quantitative judgments. |Organizational Behavior and Human Decision Processes, 42|, 303–323. `doi:10.1016/0749-5978(88)90003-9`',
     'Organizational Behavior and Human Decision Processes';
+is apa(title => ['heart and mind in conflict']),
+    'Shiv, B., & Fedorikhin, A. (1999). Heart and mind in conflict: The interplay of affect and cognition in consumer decision making. |Journal of Consumer Research, 26|, 278–292. `doi:10.1086/209563`',
+    'Journal of Consumer Research';
 is apa(year => 2011, author => [qw(Dunn Greenhill Levinson Gray)]),
     'Dunn, M., Greenhill, S. J., Levinson, S. C., & Gray, R. D. (2011). Evolved structure of language shows lineage-specific trends in word-order universals. |Nature, 473|, 79–82. `doi:10.1038/nature09923`',
     'Nature';
