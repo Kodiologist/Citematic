@@ -91,6 +91,9 @@ is apa(year => 1955, author => ['asch'], title => ['pressure']),
 is apa(title => ['on land and underwater', 'memory']),
     'Godden, D. R., & Baddeley, A. D. (1975). Context-dependent memory in two natural environments: On land and underwater. |British Journal of Psychology, 66|, 325–331. `doi:10.1111/j.2044-8295.1975.tb01468.x`',
     'British Journal of Psychology (phrase-in-title search)';
+is apa(title => ['pretty women inspire']),
+    'Wilson, M., & Daly, M. (2004). Do pretty women inspire men to discount the future? |Proceedings of the Royal Society B, 271|, S177–S179. `doi:10.1098/rsbl.2003.0134`',
+    'Proceedings of the Royal Society B (article with "S" page numbers)';
 is apa(year => 1987, author => ['Grassia', 'Pearson']),
     'Hammond, K. R., Hamm, R. M., Grassia, J., & Pearson, T. (1987). Direct comparison of the efficacy of intuitive and analytical cognition in expert judgment. |IEEE Transactions on Systems, Man, and Cybernetics, 17|, 753–770.',
     'IEEE Transactions on Systems, Man, and Cybernetics';

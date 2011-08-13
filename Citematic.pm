@@ -108,6 +108,8 @@ sub digest_journal_title
    {my $j = shift;
     $j =~ /Proceedings of the National Academy of Sciences of the United States of America/i
         and return 'Proceedings of the National Academy of Sciences';
+    $j eq 'Proceedings. Biological Sciences'
+        and return 'Proceedings of the Royal Society B';
     $j =~ /IEEE Transactions on Systems/i
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
     if ($j =~ /Memory (?:and|&) Cognition/i
@@ -170,7 +172,7 @@ sub format_authors
 sub apa_journal_article
    {my ($authors, $year, $article_title, $journal, $volume,
         $first_page, $last_page, $doi) = @_;
-    sprintf '%s (%s). %s |%s, %s|, %d%s.%s',
+    sprintf '%s (%s). %s |%s, %s|, %s%s.%s',
         format_authors($authors),
         $year,
         end_sentence(format_nonjournal_title($article_title)),
@@ -359,6 +361,7 @@ sub ebsco
                 Vol \.? \s
                 (\d+) \s?
                 (?: Issue \s \d+ |
+                    Suppl \s \d+ |
                     \( (?: \s | \w | - | , | \.)+ \) )
                 , \s+
                 } {✠}x
@@ -368,18 +371,18 @@ sub ebsco
             or $record{Source} =~ s!\s+(\d+)(?:\(\d+\))?,\s+!✠!
             or die "Source: $record{Source}";
         my $volume = $1;
-        $record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die;
+        $record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die 's2';
         my $journal = digest_journal_title $1;
         my ($fpage, $lpage) =
-            $record{Source} =~ s!p(?:p\. )?(\d+)-(\d+)!!
+            $record{Source} =~ s!p(?:p\. )?(S?\d+)-(S?\d+)!!
           ? ($1, $2)
-          : $record{Source} =~ s!p(?:p\. )?(\d+).+?(\d+)p\b!!
-          ? ($1, $2 + $1 - 1)
-          : $record{Source} =~ s!p(?:p\. )?(\d+)!!
+          : $record{Source} =~ s!p(?:p\. )?(S?)(\d+).+?(\d+)p\b!!
+          ? ("$1$2", $1 . ($2 + $3 - 1))
+          : $record{Source} =~ s!p(?:p\. )?(S?\d+)!!
           ? ($1, undef)
-          : die;
+          : die 'p';
         $lpage = expand_last_page_number $fpage, $lpage;
-        $record{Source} =~ /((?:1[6789]|20)\d\d)/ or die;
+        $record{Source} =~ /((?:1[6789]|20)\d\d)/ or die 'y';
         my $year = $1;
         my $doi = $record{'Digital Object Identifier'} || get_doi
             $year, $journal, $authors->[0][0], $volume, $fpage;
