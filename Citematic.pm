@@ -92,7 +92,7 @@ sub digest_author
        {my $suffix = $str =~ s/,?\s+(Jr\.|Sr\.)//i ? $1 : '';
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
-        $rest =~ s/\w\K.+?( |\z)/.$1/g;
+        $rest =~ s/\w\K.*?( |\z)/.$1/g;
         $surn =~ /[[:lower:]]/ or $surn = ucfirst fix_allcaps $surn;
         [$surn, $rest, $suffix];}
     elsif ($str =~ /[[:upper:]]\z/)
@@ -106,6 +106,7 @@ sub digest_author
 
 sub digest_journal_title
    {my $j = shift;
+    $j =~ s/\AThe //;
     $j =~ /Proceedings of the National Academy of Sciences of the United States of America/i
         and return 'Proceedings of the National Academy of Sciences';
     $j eq 'Proceedings. Biological Sciences'
@@ -148,7 +149,7 @@ sub format_nonjournal_title
           # THE TITLE IS IN ALL CAPS.
            {$s =~ s {([^- .?!]+)} {fix_allcaps $1}eg;
             $s = ucfirst $s;}}
-    $s =~ s/(:\W+)(\w)/': ' . uc $2/ge;
+    $s =~ s/([:?])\W+(\w)/$1 . ' ' . uc $2/ge;
     $s;}
 
 sub end_sentence
@@ -407,7 +408,7 @@ sub ebsco
         $src{volume} and $book =~ s/, Vol\z//;
         my $editors = β
            map {digest_author $_}
-           split / \(Ed\.\); /, $src{editors};
+           split / \(Ed\.\); /, $src{editors}; # /
 
         return apa_book_chapter $authors, $src{year}, $title,
             $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
@@ -452,7 +453,20 @@ sub ideas
           # Use the first result.
            {$results =~ /<DT>1\.\s+<a href="(.+?)"/ or die;
             progress 'Fetching record';
-            χ get($1) =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g;}});
+            my $page = get $1;
+            my %meta = $page =~
+                /<META NAME="citation_([^"]+)" content="([^"]+)">/g;
+            # Sometimes we can get middle initials in the
+            # registered-authors list that aren't in the meta tags.
+            if ($page =~ m{registered</A> author\(s\):<UL>(.+?)</UL>}s)
+               {foreach my $a ($1 =~ m{<A HREF=[^>]+>(.+?) </A>}g)
+                  {$a =~ /\s\s/ and next;
+                   (my $without_initials = $a) =~ s/ .+ (\S+)\z/ $1/;
+                   $meta{authors} =~ s/\Q$without_initials\E/$a/;}}
+                     # $meta{authors} may not be in the form "John Smith",
+                     # but I think that's the only case in which a middle
+                     # initials would be omitted.
+            \%meta;}});
 
     keys %record or return err 'No results.';
 
@@ -461,6 +475,8 @@ sub ideas
     my $authors = β
            map {digest_author $_}
            split /;\s+/, $record{authors};
+
+    my $journal = digest_journal_title $record{journal_title};
 
     my ($fpage, $lpage) = ($record{firstpage}, $record{lastpage});
     $lpage = expand_last_page_number $fpage, $lpage;
@@ -471,7 +487,7 @@ sub ideas
 
     return apa_journal_article
         $authors, $record{year}, $record{title},
-        $record{journal_title}, $record{volume},
+        $journal, $record{volume},
         $fpage, $lpage, $doi;}
 
 # ------------------------------------------------------------
