@@ -94,6 +94,9 @@ is apa(title => ['on land and underwater', 'memory']),
 is apa(title => ['pretty women inspire']),
     'Wilson, M., & Daly, M. (2004). Do pretty women inspire men to discount the future? |Proceedings of the Royal Society B, 271|, S177–S179. `doi:10.1098/rsbl.2003.0134`',
     'Proceedings of the Royal Society B (article with "S" page numbers)';
+is apa(year => 2003, author => ['oppenheimer'], title => ['not so fast']),
+    'Oppenheimer, D. M. (2003). Not so fast! (and not so frugal!): Rethinking the recognition heuristic. |Cognition, 90|, B1–B9. `doi:10.1016/S0010-0277(03)00141-0`',
+    'Cognition (article with "B" page numbers)';
 is apa(year => 1987, author => ['Grassia', 'Pearson']),
     'Hammond, K. R., Hamm, R. M., Grassia, J., & Pearson, T. (1987). Direct comparison of the efficacy of intuitive and analytical cognition in expert judgment. |IEEE Transactions on Systems, Man, and Cybernetics, 17|, 753–770.',
     'IEEE Transactions on Systems, Man, and Cybernetics';
