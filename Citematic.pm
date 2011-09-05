@@ -8,6 +8,7 @@ use warnings;
 use strict;
 
 use Encode;
+use List::Util 'first';
 use LWP::Simple;
 use WWW::Mechanize;
 use HTTP::Cookies;
@@ -240,6 +241,17 @@ sub get_doi
 
     return $record{doi};}
 
+sub from_doi
+   {my $doi = shift;
+
+    my %record = η query_crossref id => $doi;
+
+    return
+        author => [map {$_->{surname}} α $record{contributors}],
+        year => $record{year},
+        title => [$record{article_title}],
+        doi => $record{doi};}
+
 # ------------------------------------------------------------
 # EBSCOhost
 # ------------------------------------------------------------
@@ -249,7 +261,11 @@ sub ctl
 sub database ($);
 
 sub ebsco
-# Allowed %terms: year (scalar), author (array ref), title (array ref)
+# Allowed %terms:
+#   author (array ref)
+#   year (scalar)
+#   title (array ref)
+#   doi (scalar) [not used for searching, but included in citation]
    {my %terms = @_;
 
     progress 'Trying EBSCOhost';
@@ -385,8 +401,10 @@ sub ebsco
         $lpage = expand_last_page_number $fpage, $lpage;
         $record{Source} =~ /((?:1[6789]|20)\d\d)/ or die 'y';
         my $year = $1;
-        my $doi = $record{'Digital Object Identifier'} || get_doi
-            $year, $journal, $authors->[0][0], $volume, $fpage;
+        my $doi = $record{'Digital Object Identifier'} ||
+            $terms{doi} ||
+            get_doi
+                $year, $journal, $authors->[0][0], $volume, $fpage;
 
         return apa_journal_article $authors, $year, $title,
             $journal, $volume, $fpage, $lpage, $doi;}
@@ -427,7 +445,10 @@ my %ideas_categories =
     books => 'b');
 
 sub ideas
-# Allowed %terms: year (scalar), keywords (array ref)
+# Allowed %terms:
+#   keywords (array ref)
+#   year (scalar)
+#   doi (scalar) [not used for searching, but included in citation]
    {my %terms = @_;
 
     progress 'Trying IDEAS';
@@ -481,7 +502,7 @@ sub ideas
     my ($fpage, $lpage) = ($record{firstpage}, $record{lastpage});
     $lpage = expand_last_page_number $fpage, $lpage;
 
-    my $doi = get_doi
+    my $doi = $terms{doi} || get_doi
         $record{year}, $record{journal_title}, $authors->[0][0],
         $record{volume}, $fpage;
 
@@ -495,11 +516,24 @@ sub ideas
 # ------------------------------------------------------------
 
 sub apa
-# Allowed %terms: year (scalar), author (array ref), title (array ref)
+# Allowed %terms:
+#   author (array ref)
+#   year (scalar)
+#   title (array ref)
+#   doi (scalar)
    {my %terms = @_;
+    $terms{author} ||= [];
+    $terms{title} ||= [];
+    $terms{doi} and
+        %terms = (%terms, from_doi($terms{doi}));
+    # When we're starting with a DOI, we use CrossRef only to get
+    # information to plug into other databases (and not to
+    # generate citations directly) because CrossRef tends to be
+    # less complete than, e.g., PsycINFO.
     ebsco %terms or ideas
+        keywords => [@{$terms{author}}, @{$terms{title}}],
         year => $terms{year},
-        keywords => β @{$terms{author}}, @{$terms{title}};}
+        doi => $terms{doi};}
 
 if (not caller)
   # This file was invoked from the command line.
@@ -510,19 +544,21 @@ if (not caller)
        ('t|title=s' => \@title_words,
         'i|ebsco-ignore-cached' => \$ebsco_ignore_cached);
             # Useful for getting fresh full-text URLs.
-    # Interpret any remaining argument that looks like a year
-    # as a year.
-    my $year;
+    # Interpret any remaining arguments that look like years or
+    # DOIs appropriately.
+    my ($year, $doi);
     foreach my $i (0 .. $#ARGV)
-       {$ARGV[$i] =~ /\A\d{4}\z/ or next;
-        $year = splice @ARGV, $i, 1;
-        last;}
+       {if ($ARGV[$i] =~ /\A\d{4}\z/)
+           {$year = splice @ARGV, $i, 1;}
+        elsif ($ARGV[$i] =~ m!\A(?:doi:)?\d+\.\d+/!)
+           {$doi = splice @ARGV, $i, 1;}}
     # Interpret the rest of @ARGV as author keywords.
     $verbose = 1;
     my $a = apa
-       (year => $year,
-        author => \@ARGV,
-        title => \@title_words);
+       (author => \@ARGV,
+        year => $year,
+        title => \@title_words,
+        doi => $doi);
     $a and say $a;}
 
 1;

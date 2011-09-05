@@ -109,6 +109,12 @@ is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
 is apa(author => ['redelmeier', 'kahneman'], title => ['colonoscopy']),
     'Redelmeier, D. A., Katz, J., & Kahneman, D. (2003). Memories of colonoscopy: A randomized trial. |Pain, 104|, 187–194. `doi:10.1016/S0304-3959(03)00003-4`',
     'Pain (article attributed to multiple issues)';
+is apa(doi => 'doi:10.1037/0033-295X.84.3.231'),
+    'Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. |Psychological Review, 84|, 231–259. `doi:10.1037/0033-295X.84.3.231`',
+    'Psychological Review (DOI search, with "doi:", DOI in PsycINFO)'; 
+is apa(doi => '10.1080/00224545.1979.9933632'),
+    'Zak, I. (1979). Modal personality of young Jews and Arabs in Israel. |Journal of Social Psychology, 109|, 3–10. `doi:10.1080/00224545.1979.9933632`',
+    'Journal of Social Psychology (DOI search, without "doi:", DOI not in PsycINFO)';
 
 
 note '~~~ Journal articles (IDEAS) ~~~';
