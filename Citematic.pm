@@ -547,11 +547,13 @@ if (not caller)
     # Interpret any remaining arguments that look like years or
     # DOIs appropriately.
     my ($year, $doi);
-    foreach my $i (0 .. $#ARGV)
+    for (my $i = 0 ; $i < @ARGV ;)
        {if ($ARGV[$i] =~ /\A\d{4}\z/)
            {$year = splice @ARGV, $i, 1;}
         elsif ($ARGV[$i] =~ m!\A(?:doi:)?\d+\.\d+/!)
-           {$doi = splice @ARGV, $i, 1;}}
+           {$doi = splice @ARGV, $i, 1;}
+        else
+           {++$i;}}
     # Interpret the rest of @ARGV as author keywords.
     $verbose = 1;
     my $a = apa
