@@ -337,7 +337,7 @@ sub ebsco
             $page = $agent->content;
             $page =~ m!<a name="citation"><span>(.+?)</span></a></dd>.*?<dt>(.+?)</div>!s
                 or die;
-            my ($title, $rows) = ($1, $2);
+            my ($title, $rows) = (decode_entities($1), $2);
             # Before returning the results, print a full-text URL
             # to STDERR.
             if ($page =~ /HTML Full Text/)
