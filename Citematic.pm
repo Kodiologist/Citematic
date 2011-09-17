@@ -284,7 +284,7 @@ sub ebsco
         and delete $global_cache->{ebsco}{$cache_key};
     my $record = $global_cache->{ebsco}{$cache_key} ||= runsub
        {my $agent = new WWW::Mechanize
-           (agent => 'Cite-O-Matic',
+           (agent => 'Mozilla/5.0 (Windows NT 5.1; U; rv:5.0) Gecko/20100101 Firefox/5.0',
             cookie_jar => new HTTP::Cookies
                (file => $ebsco_cookie_jar_path,
                 autosave => 1,
