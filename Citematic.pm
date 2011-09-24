@@ -308,9 +308,9 @@ sub ebsco
             # Now we're at the search screen. Save the form details
             # for quicker querying in the future.
             write_file $ebsco_post_path, to_json
-                β
+                σ
                    ($agent->current_form->action . '',
-                    β
+                    σ
                         ctl('findField', 'SearchButton') =>
                             $agent->current_form->value(ctl 'findField', 'SearchButton'),
                         $agent->current_form->form),
@@ -364,7 +364,7 @@ sub ebsco
         map {apply {s/:\s*\z//; s/\s+\z//;} $_}
         split /(?:<\/?d[tdl]>)+/, $rows;
 
-    my $authors = β
+    my $authors = σ
         map {digest_author $_}
         split /;\s*|<br \/>/, $record{Authors};
 
@@ -424,7 +424,7 @@ sub ebsco
 
         (my $book = $src{book}) =~ s/:  /: /;
         $src{volume} and $book =~ s/, Vol\z//;
-        my $editors = β
+        my $editors = σ
            map {digest_author $_}
            split / \(Ed\.\); /, $src{editors}; # /
 
@@ -493,7 +493,7 @@ sub ideas
 
     # Parse the record.
 
-    my $authors = β
+    my $authors = σ
            map {digest_author $_}
            split /;\s+/, $record{authors};
 
