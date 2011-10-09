@@ -3,7 +3,7 @@ package Citematic;
 
 use feature qw(say state);
 use utf8;
-use Kodi qw(:symbolic apply matches runsub);
+use Kodi qw(:symbolic apply matches runsub query_url);
 use warnings;
 use strict;
 
@@ -69,12 +69,6 @@ sub warning
 sub err
    {note @_;
     return undef;}
-
-sub query_url
-   {my $prefix = shift;
-    my @a;
-    push @a, uri_escape_utf8(shift) . '=' . uri_escape_utf8(shift) while @_;
-    $prefix . '?' . join '&', @a;}
 
 sub fix_allcaps
    {my $all_low = lc shift;
