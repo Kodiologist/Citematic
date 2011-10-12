@@ -131,6 +131,9 @@ is apa(year => 1979, author => ['kahneman', 'tversky'], title => ['prospect']),
 is apa(year => 1979, author => ['simon'], title => ['business organizations']),
     'Simon, H. A. (1979). Rational decision making in business organizations. |American Economic Review, 69|, 493–513.',
     'American Economic Review';
+is apa(year => 2002, author => ['Bosch-Domènech', 'Montalvo']),
+    'Bosch-Domènech, A., Montalvo, J. G., Nagel, R., & Satorra, A. (2002). One, two, (three), infinity, ...: Newspaper and lab beauty-contest experiments. |American Economic Review, 92|, 1687–1701. `doi:10.1257/000282802762024737`',
+    'American Economic Review (surname with a diacritic and title with parentheses)';
 is apa(year => 1997, author => ['weber', 'milliman']),
     'Weber, E. U., & Milliman, R. A. (1997). Perceived risk attitudes: Relating risk perception to risky choice. |Management Science, 43|, 123–144. `doi:10.1287/mnsc.43.2.123`',
     'Management Science';

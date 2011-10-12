@@ -128,12 +128,12 @@ sub expand_last_page_number
 sub format_nonjournal_title
    {my $s = shift;
     if (matches(qr/\b[[:upper:]]/, $s) /
-        matches(qr/\b\S/, $s) > 1/2)
+        matches(qr/\b[[:alpha:]]/, $s) > 1/2)
        {warning 'The article title may be miscapitalized.';
         # But we'll try to fix it.
         if ($s =~ /[[:lower:]]/)
           # The Title Is Probably Capitalized Like This.
-           {$s =~ s {[- ]\K([[:upper:]])([^- ]+)}
+           {$s =~ s {[- (]\K([[:upper:]])([^- ()]+)}
                {my $lower = lc($1) . $2;
                 if ($speller->check($lower))
                    {$lower;}
@@ -469,8 +469,9 @@ sub ideas
            {$results =~ /<DT>1\.\s+<a href="(.+?)"/ or die;
             progress 'Fetching record';
             my $page = get $1;
-            my %meta = $page =~
-                /<META NAME="citation_([^"]+)" content="([^"]+)">/g;
+            my %meta =
+                map {decode_entities $_}
+                $page =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g;
             # Sometimes we can get middle initials in the
             # registered-authors list that aren't in the meta tags.
             if ($page =~ m{registered</A> author\(s\):<UL>(.+?)</UL>}s)
@@ -488,8 +489,8 @@ sub ideas
     # Parse the record.
 
     my $authors = σ
-           map {digest_author $_}
-           split /;\s+/, $record{authors};
+        map {digest_author $_}
+        split /;\s+/, $record{authors};
 
     my $journal = digest_journal_title $record{journal_title};
 
