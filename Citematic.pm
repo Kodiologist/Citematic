@@ -533,25 +533,30 @@ if (not caller)
   # This file was invoked from the command line.
    {require Getopt::Long;
     @ARGV = map { decode 'UTF-8', $_ } @ARGV;
-    my @title_words;
+    my ($year, $doi, @title_words, @author_words);
     die unless Getopt::Long::GetOptions
        ('t|title=s' => \@title_words,
         'i|ebsco-ignore-cached' => \$ebsco_ignore_cached);
             # Useful for getting fresh full-text URLs.
-    # Interpret any remaining arguments that look like years or
-    # DOIs appropriately.
-    my ($year, $doi);
-    for (my $i = 0 ; $i < @ARGV ;)
-       {if ($ARGV[$i] =~ /\A\d{4}\z/)
-           {$year = splice @ARGV, $i, 1;}
-        elsif ($ARGV[$i] =~ m!\A(?:doi:)?\d+\.\d+/!)
-           {$doi = splice @ARGV, $i, 1;}
+    # Interpret arguments that look like years, DOIs, or
+    # formatted citations appropriately. Interpret the remainder
+    # as author keywords.
+    push @author_words, grep {runsub
+       {if (/\A\d{4}\z/)
+           {$year = $_;}
+        elsif (m!\A(?:doi:)?\d+\.\d+/!)
+           {$doi = $_;}
+        elsif (/,/)
+           {!$year and s/\(?(\d+)\)?//
+                and $year = $1;
+            push @author_words, /(\w{2,})/g;}
         else
-           {++$i;}}
-    # Interpret the rest of @ARGV as author keywords.
+           {return 1;}
+        0;}}
+      @ARGV;
     $verbose = 1;
     my $a = apa
-       (author => \@ARGV,
+       (author => \@author_words,
         year => $year,
         title => \@title_words,
         doi => $doi);
