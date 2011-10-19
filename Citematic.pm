@@ -276,7 +276,7 @@ sub ebsco
         \%search_fields, {utf8 => 1, canonical => 1};
     $ebsco_ignore_cached
         and delete $global_cache->{ebsco}{$cache_key};
-    my $record = $global_cache->{ebsco}{$cache_key} ||= runsub
+    my %record = η($global_cache->{ebsco}{$cache_key} ||= runsub
        {my $agent = new WWW::Mechanize
            (agent => 'Mozilla/5.0 (Windows NT 5.1; U; rv:5.0) Gecko/20100101 Firefox/5.0',
             cookie_jar => new HTTP::Cookies
@@ -344,19 +344,16 @@ sub ebsco
                {note 'Serial Solutions: http:', uri_escape
                     uri_unescape($1),
                     ':<>';}
-            return [$title, $rows];}
+            return χ '-title' => $title,
+                map {decode_entities $_}
+                map {apply {s/:\s*\z//; s/\s+\z//;} $_}
+                split /(?:<\/?d[tdl]>)+/, $rows;}
         # No results.
-        [];};
+        {};});
 
-    @$record or return err 'No results.';
+    %record or return err 'No results.';
 
     # Parse the record.
-
-    my ($title, $rows) = @$record;
-    my %record =
-        map {decode_entities $_}
-        map {apply {s/:\s*\z//; s/\s+\z//;} $_}
-        split /(?:<\/?d[tdl]>)+/, $rows;
 
     my $authors = σ
         map {digest_author $_}
@@ -400,7 +397,7 @@ sub ebsco
             get_doi
                 $year, $journal, $authors->[0][0], $volume, $fpage;
 
-        return apa_journal_article $authors, $year, $title,
+        return apa_journal_article $authors, $year, $record{'-title'},
             $journal, $volume, $fpage, $lpage, $doi;}
 
     elsif ($record{'Document Type'} eq 'Chapter')
@@ -422,7 +419,7 @@ sub ebsco
            map {digest_author $_}
            split / \(Ed\.\); /, $src{editors}; # /
 
-        return apa_book_chapter $authors, $src{year}, $title,
+        return apa_book_chapter $authors, $src{year}, $record{'-title'},
             $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
             $src{place}, $src{publisher};}
 
