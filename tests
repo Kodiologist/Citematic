@@ -37,6 +37,9 @@ is apa(year => 2010, author => ['trope', 'liberman']),
 is apa(year => 1994, title => ['earth is round']),
     'Cohen, J. (1994). The earth is round (p < .05). |American Psychologist, 49|, 997–1003. `doi:10.1037/0003-066X.49.12.997`',
     'American Psychologist ("<" in article title)';
+is apa(title => ['alleged sex research']),
+    'Benjamin, L. T., Jr., Whitaker, J. L., Ramsey, R. M., & Zeve, D. R. (2007). John B. Watson\'s alleged sex research: An appraisal of the evidence. |American Psychologist, 62|, 131–139. `doi:10.1037/0003-066X.62.2.131`',
+    'American Psychologist (miscapitalized title with middle initial)';
 is apa(year => 2000, author => ['McMackin', 'Slovic']),
     'McMackin, J., & Slovic, P. (2000). When does explicit justification impair decision making? |Applied Cognitive Psychology, 14|, 527–541. `doi:10.1002/1099-0720(200011/12)14:6<527::AID-ACP671>3.0.CO;2-J`',
     'Applied Cognitive Psychology';
