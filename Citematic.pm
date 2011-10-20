@@ -318,7 +318,7 @@ sub ebsco
         $page =~ /class="smart-text-ran-warning"><span>Note: Your initial search query did not yield any results/
             || $page =~ /<span class="std-warning-text">No results were found/
             # No results.
-            and return [];
+            and return {};
         # Use the first result that isn't just a correction. I
         # would just use "NOT PZ Erratum/Correction" in the
         # search string, but then records with no "Document Type"
