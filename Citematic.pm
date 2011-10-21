@@ -220,6 +220,9 @@ sub query_crossref
         or return err 'No results.';
     $x;}
 
+sub from_doi
+   {η query_crossref id => $_[0];}
+
 sub get_doi
    {my ($year, $journal, $first_author_surname, $volume, $first_page) = @_;
 
@@ -234,17 +237,6 @@ sub get_doi
         || return undef);
 
     return $record{doi};}
-
-sub from_doi
-   {my $doi = shift;
-
-    my %record = η query_crossref id => $doi;
-
-    return
-        author => [map {$_->{surname}} α $record{contributors}],
-        year => $record{year},
-        title => [$record{article_title}],
-        doi => $record{doi};}
 
 # ------------------------------------------------------------
 # EBSCOhost
@@ -364,7 +356,15 @@ sub ebsco
         $record{'Document Type'} eq 'Journal Article' or
         $record{'Document Type'} eq 'Comment/Reply')
 
-       {$record{Source} =~ s{
+       {if ($record{Source} =~ /\A[^0-9,;]+, \w\w\w \d+, \d\d\d\d\.\z/
+               and $record{'Digital Object Identifier'})
+           # This record is impoverished. Let's try CrossRef.
+           {my %d = from_doi $record{'Digital Object Identifier'};
+            return apa_journal_article $authors, $d{year},
+                $record{'-title'}, $d{journal_title},
+                $d{volume}, $d{first_page}, $d{last_page},
+                $record{'Digital Object Identifier'};}
+        $record{Source} =~ s{
                 \s+
                 Vol \.? \s
                 (\d+) \s?
@@ -516,12 +516,16 @@ sub apa
    {my %terms = @_;
     $terms{author} ||= [];
     $terms{title} ||= [];
-    $terms{doi} and
-        %terms = (%terms, from_doi($terms{doi}));
-    # When we're starting with a DOI, we use CrossRef only to get
-    # information to plug into other databases (and not to
-    # generate citations directly) because CrossRef tends to be
-    # less complete than, e.g., PsycINFO.
+    if ($terms{doi})
+      # When we're starting with a DOI, we use CrossRef only to
+      # get information to plug into other databases (and not to
+      # generate citations directly) because CrossRef tends to be
+      # less complete than, e.g., PsycINFO.
+       {my %d = from_doi $terms{doi};
+        $terms{author} = σ map {$_->{surname}} α $d{contributors};
+        $terms{year} = $d{year};
+        $terms{title} = σ $d{article_title};
+        $terms{doi} = $d{doi};}
     ebsco %terms or ideas
         keywords => [@{$terms{author}}, @{$terms{title}}],
         year => $terms{year},

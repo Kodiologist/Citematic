@@ -121,6 +121,9 @@ is apa(doi => 'doi:10.1037/0033-295X.84.3.231'),
 is apa(doi => '10.1080/00224545.1979.9933632'),
     'Zak, I. (1979). Modal personality of young Jews and Arabs in Israel. |Journal of Social Psychology, 109|, 3–10. `doi:10.1080/00224545.1979.9933632`',
     'Journal of Social Psychology (DOI search, without "doi:", DOI not in PsycINFO)';
+is apa(title => ['happiness makes us selfish']),
+    'Tan, H. B., & Forgas, J. P. (2010). When happiness makes us selfish, but sadness makes us fair: Affective influences on interpersonal strategies in the dictator game. |Journal of Experimental Social Psychology, 46|, 571–576. `doi:10.1016/j.jesp.2010.01.007`',
+    'Journal of Experimental Social Psychology (impoverished PsycINFO record)';
 
 
 note '~~~ Journal articles (IDEAS) ~~~';
