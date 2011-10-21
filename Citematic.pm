@@ -102,19 +102,21 @@ sub digest_author
 sub digest_journal_title
    {my $j = shift;
     $j =~ s/\AThe //;
+
     $j =~ /Proceedings of the National Academy of Sciences of the United States of America/i
         and return 'Proceedings of the National Academy of Sciences';
     $j eq 'Proceedings. Biological Sciences'
         and return 'Proceedings of the Royal Society B';
     $j =~ /IEEE Transactions on Systems/i
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
+
     if ($j =~ /Memory (?:and|&) Cognition/i
             or $j =~ /Psychology (?:and|&) Health/i)
        {$j =~ s/and/&/;}
     else
        {$j =~ s/&/and/;}
-    $j =~ /\AJournal of Experimental Psychology/i
-        or $j =~ s!(?:/|:).+!!;
+    $j =~ s!(?:/|:).+!!
+        unless $j =~ /\AJournal of Experimental Psychology/i;
     $j;}
 
 sub expand_last_page_number
