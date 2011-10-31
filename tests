@@ -58,6 +58,9 @@ is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
 is apa(author => ['lee', 'schwarz'], title => ['washing']),
     'Lee, S. W., & Schwarz, N. (2010). Washing away postdecisional dissonance. |Science, 328|, 709. `doi:10.1126/science.1186799`',
     'Science (one-page article, author-title search)';
+is apa(year => 1965, author => ['zajonc'], title => ['facilitation']),
+    'Zajonc, R. B. (1965). Social facilitation. |Science, 149|, 269–274. `doi:10.1126/science.149.3681.269`',
+    'Science (funny "Source" format)';
 is apa(year => 2002, author => ['Fantino', 'Esfandiari']),
     'Fantino, E., & Esfandiari, A. (2002). Probability matching: Encouraging optimal responding in humans. |Canadian Journal of Experimental Psychology, 56|, 58–63. `doi:10.1037/h0087385`',
     'Canadian Journal of Experimental Psychology (journal with foreign-language name)';

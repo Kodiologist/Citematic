@@ -368,17 +368,15 @@ sub ebsco
                 $record{'Digital Object Identifier'};}
         $record{Source} =~ s{
                 \s+
-                Vol \.? \s
+                (?:Vol \.? \s)?
                 (\d+) \s?
-                (?: Issue \s \d+ |
-                    Suppl \s \d+ |
-                    \( (?: \s | \w | - | , | \.)+ \) )
+                (?: (?: Issue | Suppl | Whole \s No\.) \s \d+ |
+                    \( [-,. 0-9A-Za-z]+ \) )?
                 , \s+
                 } {✠}x
           # We don't actually want the issue number, but we remove it
           # from $record{Source} to avoid mistaking it for a year
           # later.
-            or $record{Source} =~ s!\s+(\d+)(?:\(\d+\))?,\s+!✠!
             or die "Source: $record{Source}";
         my $volume = $1;
         $record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die 's2';
