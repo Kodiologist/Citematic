@@ -313,6 +313,7 @@ sub ebsco
             || $page =~ /<span class="std-warning-text">No results were found/
             # No results.
             and return {};
+        $page =~ /Result_1/ or die;
         # Use the first result that isn't just a correction. I
         # would just use "NOT PZ Erratum/Correction" in the
         # search string, but then records with no "Document Type"
