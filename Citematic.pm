@@ -357,7 +357,8 @@ sub ebsco
     if (!$record{'Document Type'} or
         $record{'Document Type'} eq 'Article' or
         $record{'Document Type'} eq 'Journal Article' or
-        $record{'Document Type'} eq 'Comment/Reply')
+        $record{'Document Type'} eq 'Comment/Reply' or
+        $record{'Document Type'} eq 'Editorial')
 
        {if ($record{Source} =~ /\A[^0-9,;]+, \w\w\w \d+, \d\d\d\d\.\z/
                and $record{'Digital Object Identifier'})
