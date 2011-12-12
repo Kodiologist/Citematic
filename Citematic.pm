@@ -29,7 +29,8 @@ my $ebsco_login_url = 'http://search.ebscohost.com.libproxy.cc.stonybrook.edu/lo
     # EBSCO databases to search
     'psyh',  # PsycINFO
     'pdh',   # PsycARTICLES
-    'mnh';   # MEDLINE
+    'mnh',   # MEDLINE
+    'f5h';   # MasterFILE Premier
 my $sbu_login_url = 'https://libproxy.cc.stonybrook.edu/login';
 my $sbu_netid = 'karfer';
 my $sbu_password = 'hunter2';
@@ -84,7 +85,9 @@ sub digest_author
       # We have something of the form "Smith, A. R." or "Smith,
       # Allen R." or "Smith, Allen Reginald" or even "Smith, A.
       # Reginald".
-       {my $suffix = $str =~ s/,?\s+(Jr\.|Sr\.)//i ? $1 : '';
+       {$str =~ s/\.([[:upper:]])/. $1/g;
+          # Fix initials crammed together without spaces.
+        my $suffix = $str =~ s/,?\s+(Jr\.|Sr\.)//i ? $1 : '';
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
         $rest =~ s/\w\K.*?( |\z)/.$1/g;
@@ -339,10 +342,14 @@ sub ebsco
                {note 'Serial Solutions: http:', uri_escape
                     uri_unescape($1),
                     ':<>';}
-            return χ '-title' => $title,
+            return χ
+                '-title' => $title,
+                ($page =~ m!<p>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
+                  ? ('-by' => decode_entities($1))
+                  : ()),
                 map {decode_entities $_}
-                map {apply {s/:\s*\z//; s/\s+\z//;} $_}
-                split /(?:<\/?d[tdl]>)+/, $rows;}
+                    map {apply {s/:\s*\z//; s/\s+\z//;} $_}
+                    split /(?:<\/?d[tdl]>)+/, $rows;}
         # No results.
         {};});
 
@@ -352,7 +359,9 @@ sub ebsco
 
     my $authors = σ
         map {digest_author $_}
-        split /;\s*|<br \/>/, $record{Authors};
+        $record{'-by'}
+          ? split qr[(?:,| and) ], $record{'-by'}
+          : split qr[;\s*|<br />], $record{Authors};
 
     if (!$record{'Document Type'} or
         $record{'Document Type'} eq 'Article' or
@@ -368,6 +377,11 @@ sub ebsco
                 $record{'-title'}, $d{journal_title},
                 $d{volume}, $d{first_page}, $d{last_page},
                 $record{'Digital Object Identifier'};}
+        my $year;
+        if ($record{Source} =~ s{,?\s+\d{1,2}/\d{1,2}/(\d{4})}{})
+           {$year = $1;}
+        elsif ($record{Source} =~ s/,?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d\d)//)
+           {$year = "19$1";}
         $record{Source} =~ s{
                 \s+
                 (?:Vol \.? \s)?
@@ -392,8 +406,10 @@ sub ebsco
           ? ($1, undef)
           : die 'p';
         $lpage = expand_last_page_number $fpage, $lpage;
-        $record{Source} =~ /((?:1[6789]|20)\d\d)/ or die 'y';
-        my $year = $1;
+        $year ||=
+            $record{Source} =~ /((?:1[6789]|20)\d\d)/
+          ? $1
+          : die 'y';
         my $doi = $record{'Digital Object Identifier'} ||
             $terms{doi} ||
             get_doi
