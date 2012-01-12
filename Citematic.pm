@@ -83,8 +83,8 @@ sub digest_author
    {my $str = shift;
     if ($str =~ /,/)
       # We have something of the form "Smith, A. R." or "Smith,
-      # Allen R." or "Smith, Allen Reginald" or even "Smith, A.
-      # Reginald".
+      # A.R." or "Smith, Allen R." or "Smith, Allen Reginald" or
+      # "Smith, A. Reginald".
        {$str =~ s/\.([[:upper:]])/. $1/g;
           # Fix initials crammed together without spaces.
         my $suffix = $str =~ s/,?\s+(Jr\.|Sr\.)//i ? $1 : '';
@@ -112,6 +112,8 @@ sub digest_journal_title
         and return 'Proceedings of the Royal Society B';
     $j =~ /IEEE Transactions on Systems/i
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
+    $j eq 'American Statistician'
+        and return 'The American Statistician';
 
     if ($j =~ /Memory (?:and|&) Cognition/i
             or $j =~ /Psychology (?:and|&) Health/i)
@@ -149,7 +151,10 @@ sub format_nonjournal_title
           # THE TITLE IS IN ALL CAPS.
            {$s =~ s {([^- .?!]+)} {fix_allcaps $1}eg;
             $s = ucfirst $s;}}
+    # Insert a space and capitalize after colons.
     $s =~ s/([:?])\W+(\w)/$1 . ' ' . uc $2/ge;
+    # Correct GNU-style single quotes that should be double quotes.
+    $s =~ s/`([^`']+)'/"$1"/g;
     $s;}
 
 sub end_sentence
