@@ -364,7 +364,7 @@ sub ebsco
 
     my $authors = σ
         map {digest_author $_}
-        $record{'-by'}
+        $record{'-by'} && $record{Database} ne 'PsycINFO'
           ? split qr[(?:,| and) ], $record{'-by'}
           : split qr[;\s*|<br />], $record{Authors};
 

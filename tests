@@ -130,6 +130,9 @@ is apa(title => ['happiness makes us selfish']),
 is apa(year => 1997, author => ['holdershaw', 'gendall']),
     'Holdershaw, J., Gendall, P., & Garland, R. (1997). The widespread use of odd pricing in the retail sector. |Marketing Bulletin, 8|, 53–58.',
     'Marketing Bulletin (last author missing from EBSCO record)';
+is apa(year => 1999, author => ['bone', 'ellen']),
+    'Bone, P. F., & Ellen, P. S. (1999). Scents in the marketplace: Explaining a fraction of olfaction. |Journal of Retailing, 75|, 243–262. `doi:10.1016/S0022-4359(99)00007-X`',
+    'Journal of Retailing (difficult-to-interpret "By" line in text)';
 is apa(year => 1998, author => ['agresti', 'coull']),
     'Agresti, A., & Coull, B. A. (1998). Approximate is better than "exact" for interval estimation of binomial proportions. |The American Statistician, 52|, 119–126. `doi:10.2307/2685469`',
     'The American Statistician (backtick in given form of title)';
