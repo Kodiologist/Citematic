@@ -103,6 +103,9 @@ is apa(title => ['on land and underwater', 'memory']),
 is apa(title => ['pretty women inspire']),
     'Wilson, M., & Daly, M. (2004). Do pretty women inspire men to discount the future? |Proceedings of the Royal Society B, 271|, S177–S179. `doi:10.1098/rsbl.2003.0134`',
     'Proceedings of the Royal Society B (article with "S" page numbers)';
+is apa(year => 2008, author => ['knutson', 'greer']),
+    'Knutson, B., & Greer, S. M. (2008). Anticipatory affect: Neural correlates and consequences for choice. |Philosophical Transactions of the Royal Society B, 363|, 3771–3786. `doi:10.1098/rstb.2008.0155`',
+    'Philosophical Transactions of the Royal Society B';
 is apa(year => 2003, author => ['oppenheimer'], title => ['not so fast']),
     'Oppenheimer, D. M. (2003). Not so fast! (and not so frugal!): Rethinking the recognition heuristic. |Cognition, 90|, B1–B9. `doi:10.1016/S0010-0277(03)00141-0`',
     'Cognition (article with "B" page numbers)';

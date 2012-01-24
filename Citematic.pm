@@ -110,6 +110,8 @@ sub digest_journal_title
         and return 'Proceedings of the National Academy of Sciences';
     $j eq 'Proceedings. Biological Sciences'
         and return 'Proceedings of the Royal Society B';
+    $j =~ /Philosophical Transactions of the Royal Society of London\. Series ([AB])/i
+        and return "Philosophical Transactions of the Royal Society $1";
     $j =~ /IEEE Transactions on Systems/i
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
     $j eq 'American Statistician'
