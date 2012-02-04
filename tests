@@ -85,6 +85,12 @@ is apa(year => 2009, author => ['brown', 'locker']),
 is apa(title => ['money', 'kisses', 'shocks']),
     'Rottenstreich, Y., & Hsee, C. K. (2001). Money, kisses, and electric shocks: On the affective psychology of risk. |Psychological Science, 12|, 185–190. `doi:10.1111/1467-9280.00334`',
     'Psychological Science';
+is apa(doi => '10.1177/1745691610393980'),
+    q(Buhrmester, M., Kwang, T., & Gosling, S. D. (2011). Amazon's Mechanical Turk: A new source of inexpensive, yet high-quality, data? |Perspectives on Psychological Science, 6|, 3–5. `doi:10.1177/1745691610393980`),
+    'Perspectives on Psychological Science (DOI search, two years in CrossRef record)';
+is apa(title => ['yet high-quality, data?']),
+    q(Buhrmester, M., Kwang, T., & Gosling, S. D. (2011). Amazon's Mechanical Turk: A new source of inexpensive, yet high-quality, data? |Perspectives on Psychological Science, 6|, 3–5. `doi:10.1177/1745691610393980`),
+    'Perspectives on Psychological Science (title search containing question mark)';
 is apa(year => 2009, author => ['Bruggeman', 'pick']),
     'Bruggeman, H., Piuneu, V. S., Rieser, J. J., & Pick, H. L., Jr. (2009). Biomechanical versus inertial information: Stable individual differences in perception of self-rotation. |Journal of Experimental Psychology: Human Perception and Performance, 35|, 1472–1480. `doi:10.1037/a0015782`',
     'J Exp Psych: Human Perception and Performance (author with "Jr.")';

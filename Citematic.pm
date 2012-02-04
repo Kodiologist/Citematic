@@ -224,12 +224,19 @@ sub query_crossref
         @_;
     progress 'Trying CrossRef';
     my $x = $global_cache->{crossref}{$url} ||= XMLin get($url),
-        ForceArray => ['contributor'],
+        ForceArray => ['contributor', 'year'],
         GroupTags => {contributors => 'contributor'},
         NoAttr => 1;
     $x = $x->{query_result}{body}{query};
     exists $x->{contributors}
         or return err 'No results.';
+    $x = {%$x}; # Don't modify the thing we're caching.
+    $x->{year} = $x->{year}[0];
+      # Sometimes, multiple years are returned by CrossRef for
+      # different versions of an item (say, print and online).
+      # I'll go with the first if only because at least in
+      # the case of 10.1177/1745691610393980, the print date
+      # comes first.
     $x;}
 
 sub from_doi
@@ -271,7 +278,10 @@ sub ebsco
     my %search_fields =
        (ctl('findField', 'SearchTerm1') => join(' AND ',
             $terms{author} ? map {"AU \"$_\""} α $terms{author} : (),
-            $terms{title} ? map {"TI \"$_\""} α $terms{title} : ()),
+            $terms{title} ? map {my $t = $_; $t =~ s/\?//g; "TI \"$t\""} α $terms{title} : ()),
+              # We remove question marks because they seem to
+              # have special meaning but I can't figure out how
+              # to escape them properly.
         $terms{year}
           ? ('common_DT1_FromYear' => $terms{year}, 'common_DT1_ToYear' => $terms{year})
           : ());
