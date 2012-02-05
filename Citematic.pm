@@ -312,7 +312,7 @@ sub ebsco
                 α from_json slurp($ebsco_post_path), {utf8 => 1};
             $agent->post($action_url, {@$saved_fields, %search_fields});}
         if (!(-e $ebsco_post_path)
-            || $agent->title !~ /\AEBSCOhost: Result List:/)
+            || $agent->title !~ /\AEBSCOhost: (?:Basic Search|Result List)/)
           # We'll need to log in first.
            {progress 'Logging in';
             $ebsco_login->($agent);
