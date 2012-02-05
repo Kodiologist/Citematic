@@ -3,7 +3,6 @@ package Citematic;
 
 use feature qw(say state);
 use utf8;
-use Kodi qw(:symbolic apply matches runsub query_url tail);
 use warnings;
 use strict;
 
@@ -27,6 +26,8 @@ use constant CONFIG_PATH => "$ENV{HOME}/.citematic";
 
 binmode STDOUT, ':utf8';
 binmode STDERR, ':utf8';
+
+sub tail {@_[1..$#_]}
 
 # ------------------------------------------------------------
 # Get configuration
@@ -78,6 +79,34 @@ sub warning
 sub err
    {note @_;
     return undef;}
+
+sub α   ($) {defined $_[0] or return (); _testref($_[0], 'ARRAY');             @{ $_[0] }}
+sub η   ($) {defined $_[0] or return (); _testref($_[0], 'HASH');              %{ $_[0] }}
+sub _testref
+   {ref($_[0]) eq $_[1] and return 1;
+    die "$_[0] isn't a reference of type $_[1].\n";}
+sub σ { ( [@_] ) } # σ for σquare brackets
+sub χ { ( {@_} ) } # χ for χurlies
+
+sub runsub (&)
+   {return $_[0]->();}
+
+sub matches
+# Returns how many instances of $regex are in $string.
+ {my $regex = shift;
+  my $string = @_ ? shift : $_;
+  my $n = 0;
+  ++$n while $string =~ m/$regex/g;
+  return $n;}
+
+sub query_url
+   {my $prefix = shift;
+    my @a;
+    push @a, sprintf '%s=%s',
+            URI::Escape::uri_escape_utf8(shift),
+            URI::Escape::uri_escape_utf8(shift)
+        while @_;
+    $prefix . '?' . join '&', @a;}
 
 sub fix_allcaps
    {my $all_low = lc shift;
@@ -369,7 +398,7 @@ sub ebsco
                   ? ('-by' => decode_entities($1))
                   : ()),
                 map {decode_entities $_}
-                    map {apply {s/:\s*\z//; s/\s+\z//;} $_}
+                    map {s/:\s*\z//; s/\s+\z//; $_}
                     split /(?:<\/?d[tdl]>)+/, $rows;}
         # No results.
         {};});
