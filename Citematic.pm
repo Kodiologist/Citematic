@@ -61,8 +61,8 @@ $@ and die "Error evaluating ebsco_login: $@";
 # General
 # ------------------------------------------------------------
 
-our $ebsco_ignore_cached;
 our $verbose;
+our $ebsco_ignore_cached;
 
 my $speller = new Text::Aspell;
 
@@ -570,18 +570,34 @@ sub apa
         year => $terms{year},
         doi => $terms{doi};}
 
+# ------------------------------------------------------------
+# Mainline code
+# ------------------------------------------------------------
+
 if (not caller)
-  # This file was invoked from the command line.
-   {require Getopt::Long;
+  # This file was invoked as a program.
+   {require Getopt::Long::Descriptive;
+
     @ARGV = map { decode 'UTF-8', $_ } @ARGV;
-    my ($year, $doi, @title_words, @author_words);
-    die unless Getopt::Long::GetOptions
-       ('t|title=s' => \@title_words,
-        'i|ebsco-ignore-cached' => \$ebsco_ignore_cached);
-            # Useful for getting fresh full-text URLs.
+    my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
+       ('%c %o [<search-term> ...]',
+        ['title|t=s@' => 'a title keyword'],
+        ['ebsco-ignore-cached|i' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
+        ['quiet|q', ''],
+        ['help', '']);
+
+    if ($opt->help)
+       {print $usage->text;
+        exit;}
+
+    my @title_words = α $opt->title;
+    $verbose = not $opt->quiet;
+    $ebsco_ignore_cached = $opt->ebsco_ignore_cached;
+
     # Interpret arguments that look like years, DOIs, or
     # formatted citations appropriately. Interpret the remainder
     # as author keywords.
+    my ($year, $doi, @author_words);
     push @author_words, grep {runsub
        {if (/\A\d{4}\z/)
            {$year = $_;}
@@ -595,7 +611,7 @@ if (not caller)
            {return 1;}
         0;}}
       @ARGV;
-    $verbose = 1;
+
     my $a = apa
        (author => \@author_words,
         year => $year,
