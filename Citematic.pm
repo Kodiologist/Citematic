@@ -299,7 +299,6 @@ sub get_doi
 
 sub ctl
    {'ctl00$ctl00$MainContentArea$MainContentArea$' . join '$', @_;}
-sub database ($);
 
 sub ebsco
 # Allowed %terms:
