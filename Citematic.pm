@@ -3,7 +3,7 @@ package Citematic;
 
 use feature qw(say state);
 use utf8;
-use Kodi qw(:symbolic apply matches runsub query_url);
+use Kodi qw(:symbolic apply matches runsub query_url tail);
 use warnings;
 use strict;
 
@@ -23,28 +23,26 @@ use XML::Simple 'XMLin';
 use parent 'Exporter';
 our @EXPORT = 'apa';
 
-my $crossref_email = join '@', reverse 'example.com', 'somebody';
-my $ebsco_login_url = 'http://search.ebscohost.com.libproxy.cc.stonybrook.edu/login.aspx?authtype=ip,uid&profile=ehost&defaultdb=' .
-    join ',',
-    # EBSCO databases to search
-    'psyh',  # PsycINFO
-    'pdh',   # PsycARTICLES
-    'mnh',   # MEDLINE
-    'f5h';   # MasterFILE Premier
-my $sbu_login_url = 'https://libproxy.cc.stonybrook.edu/login';
-my $sbu_netid = 'karfer';
-my $sbu_password = 'hunter2';
-my $ebsco_post_path = '/home/hippo/Data/citematic-ebscopost';
-my $ebsco_cookie_jar_path = '/home/hippo/Data/citematic-ebsco-cookies';
-our $cache_path = '/home/hippo/Data/citematic-cache';
+use constant CONFIG_PATH => "$ENV{HOME}/.citematic";
 
-# ------------------------------------------------------------
-# General
-# ------------------------------------------------------------
-
-# UTF-8 nonsense
 binmode STDOUT, ':utf8';
 binmode STDERR, ':utf8';
+
+# ------------------------------------------------------------
+# Get configuration
+# ------------------------------------------------------------
+
+-e CONFIG_PATH or die 'No configuration file found at ', CONFIG_PATH;
+
+our %config =
+    tail split /(?:\A|\n{2,})\[(.+?)\]\n/, slurp CONFIG_PATH;
+
+-e $config{storage_dir} or mkdir $config{storage_dir} or die "Couldn't create $config{storage_dir}: $!";
+$config{storage_dir} =~ s!/\z!!;
+
+my $ebsco_post_path = "$config{storage_dir}/ebscopost";
+my $ebsco_cookie_jar_path = "$config{storage_dir}/ebsco-cookies";
+my $cache_path = "$config{storage_dir}/cache";
 
 my $global_cache;
    {my $t = -e $cache_path && slurp $cache_path;
@@ -54,9 +52,19 @@ my $global_cache;
             {utf8 => 1, pretty => 1, canonical => 1};
         $t and $new_t eq $t or
            write_file $cache_path, $new_t;}}
+
+my $ebsco_login = eval sprintf
+    'sub { $_ = $_[0]; %s %s }', $config{ebsco_login}, "\n";
+$@ and die "Error evaluating ebsco_login: $@";
+
+# ------------------------------------------------------------
+# General
+# ------------------------------------------------------------
+
 our $ebsco_ignore_cached;
-my $speller = new Text::Aspell;
 our $verbose;
+
+my $speller = new Text::Aspell;
 
 sub note
    {$verbose and say STDERR @_;}
@@ -219,7 +227,7 @@ sub apa_book_chapter
 
 sub query_crossref
    {my $url = query_url 'http://www.crossref.org/openurl/',
-        pid => $crossref_email,
+        pid => $config{crossref_email},
         noredirect => 'true',
         @_;
     progress 'Trying CrossRef';
@@ -304,14 +312,10 @@ sub ebsco
                 α from_json slurp($ebsco_post_path), {utf8 => 1};
             $agent->post($action_url, {@$saved_fields, %search_fields});}
         if (!(-e $ebsco_post_path)
-            || $agent->content =~ /<strong>A System Problem has Occurred\./
-            || $agent->content =~ /Authorization Required/)
-          # We'll need to log in and choose databases first.
+            || $agent->title !~ /\AEBSCOhost: Result List:/)
+          # We'll need to log in first.
            {progress 'Logging in';
-            $agent->post($sbu_login_url, χ
-                user => $sbu_netid,
-                pass => $sbu_password,
-                url => $ebsco_login_url);
+            $ebsco_login->($agent);
 
             # Now we're at the search screen. Save the form details
             # for quicker querying in the future.
