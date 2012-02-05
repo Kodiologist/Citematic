@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 package Citematic;
 
-use feature qw(say state);
 use utf8;
 use warnings;
 use strict;
@@ -68,7 +67,7 @@ our $ebsco_ignore_cached;
 my $speller = new Text::Aspell;
 
 sub note
-   {$verbose and say STDERR @_;}
+   {$verbose and print STDERR @_, "\n";}
 
 sub progress
    {note @_, '…';}
@@ -646,6 +645,6 @@ if (not caller)
         year => $year,
         title => \@title_words,
         doi => $doi);
-    $a and say $a;}
+    $a and print $a, "\n";}
 
 1;
