@@ -537,9 +537,11 @@ sub ideas
                 $page =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g;
             # Sometimes we can get middle initials in the
             # registered-authors list that aren't in the meta tags.
-            if ($page =~ m{registered</A> author\(s\):<UL>(.+?)</UL>}s)
-               {foreach my $a ($1 =~ m{<A HREF=[^>]+>(.+?) </A>}g)
+            if ($page =~ m{Registered</A> author\(s\): <UL[^>]+>(.+?)</UL>}s)
+               {my $alist = $1;
+                foreach my $a ($alist =~ m{<LI><A HREF=[^>]+>(.+?) </A>}g)
                   {$a =~ /\s\s/ and next;
+                     # No middle initials to get for this author.
                    (my $without_initials = $a) =~ s/ .+ (\S+)\z/ $1/;
                    $meta{authors} =~ s/\Q$without_initials\E/$a/;}}
                      # $meta{authors} may not be in the form "John Smith",
