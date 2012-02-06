@@ -52,9 +52,11 @@ is apa(title => ['heart and mind in conflict']),
 is apa(year => 2011, author => [qw(Dunn Greenhill Levinson Gray)]),
     'Dunn, M., Greenhill, S. J., Levinson, S. C., & Gray, R. D. (2011). Evolved structure of language shows lineage-specific trends in word-order universals. |Nature, 473|, 79–82. `doi:10.1038/nature09923`',
     'Nature';
-#is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
-#    'Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. |Science, 323|, 1222–1226. `doi:10.1126/science.1165565`',
-#    'Science';
+TODO:
+   {local $TODO = 'The ending page number in PsycINFO is currently 1225 rather than the correct 1226';
+    is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
+        'Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. |Science, 323|, 1222–1226. `doi:10.1126/science.1165565`',
+        'Science';}
 is apa(author => ['lee', 'schwarz'], title => ['washing']),
     'Lee, S. W., & Schwarz, N. (2010). Washing away postdecisional dissonance. |Science, 328|, 709. `doi:10.1126/science.1186799`',
     'Science (one-page article, author-title search)';
@@ -76,9 +78,11 @@ is apa(year => 2006, author => ['ditto', 'pizarro']),
 is apa(title => ['short-term memory', 'we stand']),
     'Crowder, R. G. (1993). Short-term memory: Where do we stand? |Memory & Cognition, 21|, 142–145. `doi:10.3758/BF03202725`',
     'Memory & Cognition (title search, ampersand in journal title)';
-#is apa(year => 2000, author => ['Stanovich', 'West']),
-#    'Stanovich, K. E., & West, R. F. (2000). Individual differences in reasoning: Implications for the rationality debate? |Behavioral and Brain Sciences, 23|, 645–665. `doi:10.1017/S0140525X00003435`',
-#    'Behavioral and Brain Sciences (no ampersand)';
+TODO:
+   {local $TODO = 'The ending page number in PsycINFO is currently 726 rather than the correct 665';
+    is apa(year => 2000, author => ['Stanovich', 'West']),
+        'Stanovich, K. E., & West, R. F. (2000). Individual differences in reasoning: Implications for the rationality debate? |Behavioral and Brain Sciences, 23|, 645–665. `doi:10.1017/S0140525X00003435`',
+        'Behavioral and Brain Sciences (no ampersand)';}
 is apa(year => 2009, author => ['brown', 'locker']),
     'Brown, S., & Locker, E. (2009). Defensive responses to an emotive anti-alcohol message. |Psychology & Health, 24|, 517–528. `doi:10.1080/08870440801911130`',
     'Psychology & Health (extra junk between title and first <dt> on EBSCO page)';
