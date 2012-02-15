@@ -312,8 +312,8 @@ sub ebsco
 
     my %search_fields =
        (ctl('findField', 'SearchTerm1') => join(' AND ',
-            $terms{author} ? map {"AU \"$_\""} α $terms{author} : (),
-            $terms{title} ? map {my $t = $_; $t =~ s/\?//g; "TI \"$t\""} α $terms{title} : ()),
+            $terms{author} ? map {qq(AU "$_")} α $terms{author} : (),
+            $terms{title} ? map {my $t = $_; $t =~ s/\?//g; qq(TI "$t")} α $terms{title} : ()),
               # We remove question marks because they seem to
               # have special meaning but I can't figure out how
               # to escape them properly.
