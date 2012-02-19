@@ -140,6 +140,9 @@ is apa(doi => '10.1080/00224545.1979.9933632'),
 is apa(title => ['happiness makes us selfish']),
     'Tan, H. B., & Forgas, J. P. (2010). When happiness makes us selfish, but sadness makes us fair: Affective influences on interpersonal strategies in the dictator game. |Journal of Experimental Social Psychology, 46|, 571–576. `doi:10.1016/j.jesp.2010.01.007`',
     'Journal of Experimental Social Psychology (impoverished PsycINFO record)';
+is apa(year => 1997, author => ['landolt', 'dutton']),
+    'Landolt, M. A., & Dutton, D. G. (1997). Power and personality: An analysis of gay male intimate abuse. |Sex Roles, 37|, 335–359. `doi:10.1023/A:1025649306193`',
+    'Sex Roles (article attributed to multiple issues)';
 is apa(year => 1997, author => ['holdershaw', 'gendall']),
     'Holdershaw, J., Gendall, P., & Garland, R. (1997). The widespread use of odd pricing in the retail sector. |Marketing Bulletin, 8|, 53–58.',
     'Marketing Bulletin (last author missing from EBSCO record)';

@@ -434,7 +434,7 @@ sub ebsco
                 \s+
                 (?:Vol \.? \s)?
                 (\d+) \s?
-                (?: (?: Issue | Suppl | Whole \s No\.) \s \d+ |
+                (?: (?: Issue | Suppl | Whole \s No\.) \s \d+ (/ \d+)? |
                     \( [-,. 0-9A-Za-z]+ \) )?
                 , \s+
                 } {✠}x
