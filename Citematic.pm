@@ -408,7 +408,7 @@ sub ebsco
     my $authors = σ
         map {digest_author $_}
         $record{'-by'} && $record{Database} ne 'PsycINFO'
-          ? split qr[(?:,| and) ], $record{'-by'}
+          ? split qr[(?:,|;| and) ], $record{'-by'}
           : split qr[;\s*|<br />], $record{Authors};
 
     if (!$record{'Document Type'} or
@@ -428,8 +428,8 @@ sub ebsco
         my $year;
         if ($record{Source} =~ s{,?\s+\d{1,2}/\d{1,2}/(\d{4})}{})
            {$year = $1;}
-        elsif ($record{Source} =~ s/,?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d\d)//)
-           {$year = "19$1";}
+        elsif ($record{Source} =~ s/,?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d\d(\d\d)?)//)
+           {$year = $2 ? $1 : "19$1";}
         $record{Source} =~ s{
                 \s+
                 (?:Vol \.? \s)?
