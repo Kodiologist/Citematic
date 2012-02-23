@@ -129,7 +129,6 @@ sub digest_author
             and @suffix = (suffix => $1);
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
-        $rest =~ s/\w\K.*?( |\z)/.$1/g;
         $surn =~ /[[:lower:]]/ or $surn = ucfirst fix_allcaps $surn;
         χ surname => $surn, given_name => $rest, @suffix;}
     elsif ($str =~ /[[:upper:]]\z/)
@@ -138,8 +137,15 @@ sub digest_author
         χ surname => $1, given_name => join(' ', map {"$_."} split //, $str);}
     else
       # We have something of the form "Allen R. Smith".
-       {$str =~ /\A (\S) \S+ ((?: \s \S\.)*) \s+ (\S+) \z/x;
-        χ surname => $3, given_name => "$1.$2";}}
+       {my ($rest, $surn) = runsub
+           {my @ws = split /\s+/, $str;
+            foreach my $i (0 .. $#ws - 1)
+               {if ($ws[$i] =~ /\.\z/ and $ws[$i + 1] !~ /\.\z/)
+                   {return [@ws[0 .. $i]], [@ws[$i + 1 .. $#ws]];}}
+            return [$ws[0]], [@ws[1 .. $#ws]];};
+        #$str =~ /\A (\S) \S+ ((?: \s \S\.)*) \s+ (\S+) \z/x;
+        $_ = join ' ', @$_ foreach $surn, $rest;
+        χ surname => $surn, given_name => $rest;}}
 
 sub digest_journal_title
    {my $j = shift;

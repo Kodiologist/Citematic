@@ -3,7 +3,7 @@
 use utf8;
 use warnings;
 use strict;
-use Citematic;
+use Citematic 'get';
 use Test::More;
 
 # UTF-8 nonsense
@@ -12,7 +12,9 @@ use Test::More;
     binmode $builder->failure_output, ":utf8";
     binmode $builder->todo_output, ":utf8";}
 
-sub apa { Citematic::get(@_)->apa }
+sub apa
+   {my $opts = ref($_[-1]) eq 'HASH' ? pop(@_) : {};
+    get(@_)->apa(%$opts);}
 
 note '~~~ Journal articles (EBSCO) ~~~';
 
@@ -31,6 +33,12 @@ is apa(year => 2004, author => ['maia', 'McClelland']),
 is apa(year => 1983, author => ['Tversky', 'Kahneman']),
     'Tversky, A., & Kahneman, D. (1983). Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment. <i>Psychological Review, 90</i>, 293–315. doi:10.1037/0033-295X.90.4.293',
     'Psychological Review';
+is get(year => 1983, author => ['Tversky', 'Kahneman'])->authors->[0]{given_name},
+    'Amos',
+    '…first name is preserved (1)';
+is get(year => 1983, author => ['Tversky', 'Kahneman'])->authors->[1]{given_name},
+    'Daniel',
+    '…first name is preserved (2)';
 is apa(year => 2010, author => ['trope', 'liberman'], title => ['construal-level theory']),
     'Trope, Y., & Liberman, N. (2010). Construal-level theory of psychological distance. <i>Psychological Review, 117</i>, 440–463. doi:10.1037/a0018963',
     'Psychological Review (article for which a correction exists)';
@@ -134,6 +142,12 @@ is apa(author => ['redelmeier', 'kahneman'], title => ['colonoscopy']),
 is apa(year => 2007, author => ['whitaker', 'saltzman']),
     'Whitaker, D. J., Saltzman, L. S., Haileyesus, T., & Swahn, M. (2007). Differences in frequency of violence and reported injury between relationships with reciprocal and nonreciprocal intimate partner violence. <i>American Journal of Public Health, 97</i>, 941–947. doi:10.2105/AJPH.2005.079020',
     'American Journal of Public Health';
+is get(year => 2007, author => ['whitaker', 'saltzman'])->authors->[0]{given_name},
+    'Daniel J.',
+    '…first name and middle initial are preserved';
+is get(year => 2007, author => ['whitaker', 'saltzman'])->authors->[-1]{given_name},
+    'Monica',
+    '…first name is preserved (3)';
 is apa(doi => 'doi:10.1037/0033-295X.84.3.231'),
     'Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. <i>Psychological Review, 84</i>, 231–259. doi:10.1037/0033-295X.84.3.231',
     'Psychological Review (DOI search, with "doi:", DOI in PsycINFO)'; 
