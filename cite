@@ -21,7 +21,7 @@ if ($opt->help)
    {print $usage->text;
     exit;}
 
-my @title_words = @{$opt->title};
+my @title_words = @{$opt->title || []};
 local $Citematic::verbose = not $opt->quiet;
 local $Citematic::ebsco_ignore_cached = $opt->ebsco_ignore_cached;
 
