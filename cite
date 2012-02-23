@@ -1,0 +1,53 @@
+#!/usr/bin/perl
+
+use utf8;
+use warnings;
+use strict;
+use Citematic;
+use Encode 'decode';
+use Getopt::Long::Descriptive;
+
+sub runsub (&) {return $_[0]->();}
+
+@ARGV = map { decode 'UTF-8', $_ } @ARGV;
+my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
+   ('%c %o [<search-term> ...]',
+    ['title|t=s@' => 'a title keyword'],
+    ['ebsco-ignore-cached|i' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
+    ['quiet|q', ''],
+    ['help', '']);
+
+if ($opt->help)
+   {print $usage->text;
+    exit;}
+
+my @title_words = @{$opt->title};
+local $Citematic::verbose = not $opt->quiet;
+local $Citematic::ebsco_ignore_cached = $opt->ebsco_ignore_cached;
+
+# Interpret arguments that look like years, DOIs, or
+# formatted citations appropriately. Interpret the remainder
+# as author keywords.
+
+my ($year, $doi, @author_words);
+
+push @author_words, grep {runsub
+   {if (/\A\d{4}\z/)
+       {$year = $_;}
+    elsif (m!\A(?:doi:)?\d+\.\d+/!)
+       {$doi = $_;}
+    elsif (/,/)
+       {!$year and s/\(?(\d+)\)?//
+            and $year = $1;
+        push @author_words, /(\w{2,})/g;}
+    else
+       {return 1;}
+    0;}}
+  @ARGV;
+
+my $a = Citematic::get
+   (author => \@author_words,
+    year => $year,
+    title => \@title_words,
+    doi => $doi);
+$a and print $a->apa, "\n";

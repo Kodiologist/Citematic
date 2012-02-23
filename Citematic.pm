@@ -7,7 +7,7 @@ use strict;
 
 use Encode;
 use List::Util 'first';
-use LWP::Simple;
+use LWP::Simple ();
 use WWW::Mechanize;
 use HTTP::Cookies;
 use URI::Escape;
@@ -17,9 +17,10 @@ use Text::Aspell;
 use JSON qw(from_json to_json);
 use File::Slurp qw(slurp write_file);
 use XML::Simple 'XMLin';
+use Biblio::Citation::Format;
 
 use parent 'Exporter';
-our @EXPORT = 'apa';
+our @EXPORT_OK = 'get';
 
 use constant CONFIG_PATH => "$ENV{HOME}/.citematic";
 
@@ -123,20 +124,22 @@ sub digest_author
       # "Smith, A. Reginald".
        {$str =~ s/\.([[:upper:]])/. $1/g;
           # Fix initials crammed together without spaces.
-        my $suffix = $str =~ s/,?\s+(Jr\.|Sr\.)//i ? $1 : '';
+        my @suffix;
+        $str =~ s/,?\s+(Jr\.|Sr\.)//i
+            and @suffix = (suffix => $1);
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
         $rest =~ s/\w\K.*?( |\z)/.$1/g;
         $surn =~ /[[:lower:]]/ or $surn = ucfirst fix_allcaps $surn;
-        [$surn, $rest, $suffix];}
+        χ surname => $surn, given_name => $rest, @suffix;}
     elsif ($str =~ /[[:upper:]]\z/)
       # We have something of the form "Smith AR".
        {$str =~ s/ \A (.+?) \s+ ([[:upper:]]) /$2/x;
-        [$1, join(' ', map {"$_."} split //, $str), ''];}
+        χ surname => $1, given_name => join(' ', map {"$_."} split //, $str);}
     else
       # We have something of the form "Allen R. Smith".
        {$str =~ /\A (\S) \S+ ((?: \s \S\.)*) \s+ (\S+) \z/x;
-        [$3, "$1.$2", ''];}}
+        χ surname => $3, given_name => "$1.$2";}}
 
 sub digest_journal_title
    {my $j = shift;
@@ -195,59 +198,40 @@ sub format_nonjournal_title
     $s =~ s/`([^`']+)'/"$1"/g;
     $s;}
 
-sub end_sentence
-   {$_[0] =~ /[?!.]\z/ ? $_[0] : "$_[0]."}
-
 sub format_publisher
    {my $s = shift;
     $s =~ s/ Publishing Co\z| Associates\z//;
     $s;}
 
-sub format_authors
-   {my @authors = map
-        {"$_->[0], $_->[1]" . ($_->[2] ? ", $_->[2]" : '')}
-        α shift;
-    @authors == 1
-      ? $authors[0]
-      : join ', ',
-          @authors[0 .. $#authors - 1],
-          '& ' . $authors[-1];}
-
-sub apa_journal_article
+sub journal_article
    {my ($authors, $year, $article_title, $journal, $volume,
         $first_page, $last_page, $doi) = @_;
-    sprintf '%s (%s). %s |%s, %s|, %s%s.%s',
-        format_authors($authors),
-        $year,
-        end_sentence(format_nonjournal_title($article_title)),
-        Lingua::EN::Titlecase
-            ->new($journal)
-            ->title,
-        $volume,
-        $first_page,
-        ($last_page ? "–$last_page" : ''),
-        $doi ? " `doi:$doi`" : '';}
+    Biblio::Citation::Format->new(
+        type => 'article',
+        authors => $authors,
+        year => $year,
+        title => format_nonjournal_title($article_title),
+        journal => Lingua::EN::Titlecase->new($journal)->title,
+        volume => $volume,
+        spage => $first_page,
+        epage => $last_page || $first_page,
+        doi => $doi);}
 
-sub apa_book_chapter
+sub book_chapter
    {my ($authors, $year, $chapter_title, $editors, $book, $volume,
         $first_page, $last_page, $place, $publisher) = @_;
-    my @editors = map
-        {"$_->[1] $_->[0]" . ($_->[2] ? " $_->[2]" : '')}
-        @$editors;
-    sprintf '%s (%s). %s In %s (Ed%s.), |%s| (%spp. %d–%d). %s: %s.',
-        format_authors($authors),
-        $year,
-        end_sentence(format_nonjournal_title($chapter_title)),
-        (@editors <= 2
-          ? join ' & ', @editors
-          : join ', ',
-              @editors[0 .. $#editors - 1],
-              '& ' . $editors[-1]),
-        @editors == 1 ? '' : 's',
-        format_nonjournal_title($book),
-        $volume ? "Vol. $volume, " : '',
-        $first_page, $last_page, $place,
-        format_publisher($publisher);}
+    Biblio::Citation::Format->new(
+        type => 'chapter',
+        authors => $authors,
+        year => $year,
+        title => format_nonjournal_title($chapter_title),
+        editors => $editors,
+        collection_title => $book,
+        volume => $volume,
+        spage => $first_page,
+        epage => $last_page || $first_page,
+        place => $place,
+        publisher => format_publisher($publisher));}
 
 # ------------------------------------------------------------
 # CrossRef
@@ -259,7 +243,8 @@ sub query_crossref
         noredirect => 'true',
         @_;
     progress 'Trying CrossRef';
-    my $x = $global_cache->{crossref}{$url} ||= XMLin get($url),
+    my $x = $global_cache->{crossref}{$url} ||= XMLin
+        LWP::Simple::get($url),
         ForceArray => ['contributor', 'year'],
         GroupTags => {contributors => 'contributor'},
         NoAttr => 1;
@@ -421,7 +406,7 @@ sub ebsco
                and $record{'Digital Object Identifier'})
            # This record is impoverished. Let's try CrossRef.
            {my %d = from_doi $record{'Digital Object Identifier'};
-            return apa_journal_article $authors, $d{year},
+            return journal_article $authors, $d{year},
                 $record{'-title'}, $d{journal_title},
                 $d{volume}, $d{first_page}, $d{last_page},
                 $record{'Digital Object Identifier'};}
@@ -461,9 +446,9 @@ sub ebsco
         my $doi = $record{'Digital Object Identifier'} ||
             $terms{doi} ||
             get_doi
-                $year, $journal, $authors->[0][0], $volume, $fpage;
+                $year, $journal, $authors->[0]{surname}, $volume, $fpage;
 
-        return apa_journal_article $authors, $year, $record{'-title'},
+        return journal_article $authors, $year, $record{'-title'},
             $journal, $volume, $fpage, $lpage, $doi;}
 
     elsif ($record{'Document Type'} eq 'Chapter')
@@ -485,7 +470,7 @@ sub ebsco
            map {digest_author $_}
            split / \(Ed\.\); /, $src{editors}; # /
 
-        return apa_book_chapter $authors, $src{year}, $record{'-title'},
+        return book_chapter $authors, $src{year}, $record{'-title'},
             $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
             $src{place}, $src{publisher};}
 
@@ -523,7 +508,7 @@ sub ideas
             de => "31/12/$terms{year}");
 
     my %record = η($global_cache->{ideas}{$url} ||= do
-       {my $results = get $url;
+     {my $results = LWP::Simple::get($url);
         if ($results =~ /Sorry, your search for/)
           # No results.
            {χ;}
@@ -531,7 +516,7 @@ sub ideas
           # Use the first result.
            {$results =~ /<DT>1\.\s+<a href="(.+?)"/ or die;
             progress 'Fetching record';
-            my $page = get $1;
+            my $page = LWP::Simple::get($1);
             my %meta =
                 map {decode_entities $_}
                 $page =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g;
@@ -563,10 +548,10 @@ sub ideas
     $lpage = expand_last_page_number $fpage, $lpage;
 
     my $doi = $terms{doi} || get_doi
-        $record{year}, $record{journal_title}, $authors->[0][0],
+        $record{year}, $record{journal_title}, $authors->[0]{surname},
         $record{volume}, $fpage;
 
-    return apa_journal_article
+    return journal_article
         $authors, $record{year}, $record{title},
         $journal, $record{volume},
         $fpage, $lpage, $doi;}
@@ -575,12 +560,13 @@ sub ideas
 # Public interface
 # ------------------------------------------------------------
 
-sub apa
+sub get
 # Allowed %terms:
 #   author (array ref)
 #   year (scalar)
 #   title (array ref)
 #   doi (scalar)
+# Returns a Biblio::Citation::Format object or undef.
    {my %terms = @_;
     $terms{author} ||= [];
     $terms{title} ||= [];
@@ -598,54 +584,5 @@ sub apa
         keywords => [@{$terms{author}}, @{$terms{title}}],
         year => $terms{year},
         doi => $terms{doi};}
-
-# ------------------------------------------------------------
-# Mainline code
-# ------------------------------------------------------------
-
-if (not caller)
-  # This file was invoked as a program.
-   {require Getopt::Long::Descriptive;
-
-    @ARGV = map { decode 'UTF-8', $_ } @ARGV;
-    my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
-       ('%c %o [<search-term> ...]',
-        ['title|t=s@' => 'a title keyword'],
-        ['ebsco-ignore-cached|i' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
-        ['quiet|q', ''],
-        ['help', '']);
-
-    if ($opt->help)
-       {print $usage->text;
-        exit;}
-
-    my @title_words = α $opt->title;
-    $verbose = not $opt->quiet;
-    $ebsco_ignore_cached = $opt->ebsco_ignore_cached;
-
-    # Interpret arguments that look like years, DOIs, or
-    # formatted citations appropriately. Interpret the remainder
-    # as author keywords.
-    my ($year, $doi, @author_words);
-    push @author_words, grep {runsub
-       {if (/\A\d{4}\z/)
-           {$year = $_;}
-        elsif (m!\A(?:doi:)?\d+\.\d+/!)
-           {$doi = $_;}
-        elsif (/,/)
-           {!$year and s/\(?(\d+)\)?//
-                and $year = $1;
-            push @author_words, /(\w{2,})/g;}
-        else
-           {return 1;}
-        0;}}
-      @ARGV;
-
-    my $a = apa
-       (author => \@author_words,
-        year => $year,
-        title => \@title_words,
-        doi => $doi);
-    $a and print $a, "\n";}
 
 1;
