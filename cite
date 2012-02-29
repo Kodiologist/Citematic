@@ -5,6 +5,8 @@ use warnings;
 use strict;
 use Citematic;
 use Encode 'decode';
+use JSON qw(to_json);
+use File::Slurp 'write_file';
 use Getopt::Long::Descriptive;
 
 sub runsub (&) {return $_[0]->();}
@@ -14,6 +16,7 @@ my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
    ('%c %o [<search-term> ...]',
     ['title|t=s@' => 'a title keyword'],
     ['ebsco-ignore-cached|i' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
+    ['json=s' => 'where to save the Biblio::Citation::Format object'],
     ['quiet|q', ''],
     ['help', '']);
 
@@ -50,4 +53,8 @@ my $a = Citematic::get
     year => $year,
     title => \@title_words,
     doi => $doi);
-$a and print $a->apa, "\n";
+
+if ($a)
+   {print $a->apa(full_given_names => 1), "\n";
+    $opt->json and write_file $opt->json, to_json {$a->fields},
+        {utf8 => 1, pretty => 1, canonical => 1};}
