@@ -56,6 +56,10 @@ my $a = Citematic::get
     doi => $doi);
 
 if ($a)
-   {print $a->apa(abbreviate_given_names => !$opt->more), "\n";
+   {my %apa_opts;
+    $opt->more and %apa_opts = 
+       (abbreviate_given_names => 0,
+        include_issue => 1);
+    print $a->apa(%apa_opts), "\n";
     $opt->json and write_file $opt->json, to_json {$a->fields},
         {utf8 => 1, pretty => 1, canonical => 1};}

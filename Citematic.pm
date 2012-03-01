@@ -210,7 +210,7 @@ sub format_publisher
     $s;}
 
 sub journal_article
-   {my ($authors, $year, $article_title, $journal, $volume,
+   {my ($authors, $year, $article_title, $journal, $volume, $issue,
         $first_page, $last_page, $doi) = @_;
     Biblio::Citation::Format->new(
         type => 'article',
@@ -219,6 +219,7 @@ sub journal_article
         title => format_nonjournal_title($article_title),
         journal => Lingua::EN::Titlecase->new($journal)->title,
         volume => $volume,
+        issue => $issue,
         spage => $first_page,
         epage => $last_page || $first_page,
         doi => $doi);}
@@ -408,13 +409,13 @@ sub ebsco
         $record{'Document Type'} eq 'Comment/Reply' or
         $record{'Document Type'} eq 'Editorial')
 
-       {if ($record{Source} =~ /\A[^0-9,;]+, \w\w\w \d+, \d\d\d\d\.\z/
+       {if ($record{Source} =~ /\A[^0-9,;]+,(?: \w\w\w)? \d+, \d\d\d\d\.(?: pp?\. (\d+)-?(\d*)\.)?\z/
                and $record{'Digital Object Identifier'})
            # This record is impoverished. Let's try CrossRef.
            {my %d = from_doi $record{'Digital Object Identifier'};
             return journal_article $authors, $d{year},
                 $record{'-title'}, $d{journal_title},
-                $d{volume}, $d{first_page}, $d{last_page},
+                $d{volume}, $d{issue}, $d{first_page} || $1, $d{last_page} || $2,
                 $record{'Digital Object Identifier'};}
         my $year;
         if ($record{Source} =~ s{,?\s+\d{1,2}/\d{1,2}/(\d{4})}{})
@@ -425,15 +426,20 @@ sub ebsco
                 \s+
                 (?:Vol \.? \s)?
                 (\d+) \s?
-                (?: (?: Issue | Suppl | Whole \s No\.) \s \d+ (/ \d+)? |
-                    \( [-,. 0-9A-Za-z]+ \) )?
+                (?: (Issue | Suppl | Whole \s No\.) \s (\d+ (?: / \d+)?) |
+                    \( ( [-,. 0-9A-Za-z]+ ) \) )?
                 , \s+
                 } {✠}x
-          # We don't actually want the issue number, but we remove it
-          # from $record{Source} to avoid mistaking it for a year
-          # later.
             or die "Source: $record{Source}";
         my $volume = $1;
+        my $issue = $3 || $4;
+        if (defined $issue)
+           {defined $2 and $2 eq 'Suppl' and $issue = "Suppl. $issue";
+            $issue =~ /No\.\s*(.+)/ and $issue = $1;
+            $issue =~ s/\.(\S)/. $1/;
+            $issue =~ s! (\d+) [-/] (\d+) !$1, $2!x}
+              # Dunno if *that's* right, but it seems the most
+              # reasonable alternative.
         $record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die 's2';
         my $journal = digest_journal_title $1;
         my ($fpage, $lpage) =
@@ -455,7 +461,7 @@ sub ebsco
                 $year, $journal, $authors->[0]{surname}, $volume, $fpage;
 
         return journal_article $authors, $year, $record{'-title'},
-            $journal, $volume, $fpage, $lpage, $doi;}
+            $journal, $volume, $issue, $fpage, $lpage, $doi;}
 
     elsif ($record{'Document Type'} eq 'Chapter')
 
@@ -559,7 +565,7 @@ sub ideas
 
     return journal_article
         $authors, $record{year}, $record{title},
-        $journal, $record{volume},
+        $journal, $record{volume}, $record{issue},
         $fpage, $lpage, $doi;}
 
 # ------------------------------------------------------------
