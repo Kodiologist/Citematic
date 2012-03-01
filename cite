@@ -16,6 +16,7 @@ my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
    ('%c %o [<search-term> ...]',
     ['title|t=s@' => 'a title keyword'],
     ['ebsco-ignore-cached|i' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
+    ['more|m' => 'include more information in the citation (breaks APA style)'],
     ['json=s' => 'where to save the Biblio::Citation::Format object'],
     ['quiet|q', ''],
     ['help', '']);
@@ -55,6 +56,6 @@ my $a = Citematic::get
     doi => $doi);
 
 if ($a)
-   {print $a->apa(full_given_names => 1), "\n";
+   {print $a->apa(abbreviate_given_names => !$opt->more), "\n";
     $opt->json and write_file $opt->json, to_json {$a->fields},
         {utf8 => 1, pretty => 1, canonical => 1};}
