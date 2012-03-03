@@ -226,7 +226,7 @@ sub journal_article
 
 sub book_chapter
    {my ($authors, $year, $chapter_title, $editors, $book, $volume,
-        $first_page, $last_page, $place, $publisher) = @_;
+        $first_page, $last_page, $place, $publisher, $isbn) = @_;
     Biblio::Citation::Format->new(
         type => 'chapter',
         authors => $authors,
@@ -238,7 +238,8 @@ sub book_chapter
         spage => $first_page,
         epage => $last_page || $first_page,
         place => $place,
-        publisher => format_publisher($publisher));}
+        publisher => format_publisher($publisher),
+        isbn => $isbn);}
 
 # ------------------------------------------------------------
 # CrossRef
@@ -482,9 +483,13 @@ sub ebsco
            map {digest_author $_}
            split / \(Ed\.\); /, $src{editors}; # /
 
+        my $isbn;
+        exists $record{ISBN} and ($isbn) =
+            $record{ISBN} =~ /([-0-9X]+)/;
+
         return book_chapter $authors, $src{year}, $record{'-title'},
             $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
-            $src{place}, $src{publisher};}
+            $src{place}, $src{publisher}, $isbn;}
 
     else
        {die qq(Can't handle document type "$record{'Document Type'}");}}
