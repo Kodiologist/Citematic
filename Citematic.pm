@@ -99,6 +99,12 @@ sub matches
   ++$n while $string =~ m/$regex/g;
   return $n;}
 
+sub apply (&;$)
+ {my $block = shift;
+  local $_ = @_ ? shift : $_;
+  $block->();
+  return $_;}
+
 sub query_url
    {my $prefix = shift;
     my @a;
@@ -108,7 +114,7 @@ sub query_url
         while @_;
     $prefix . '?' . join '&', @a;}
 
-sub fix_allcaps
+sub fix_allcaps_word
    {my $all_low = lc shift;
     if ($speller->check($all_low))
        {$all_low;}
@@ -116,8 +122,18 @@ sub fix_allcaps
        {my $sug = ($speller->suggest($all_low))[0];
         lc($sug) eq $all_low ? $sug : $all_low;}}
 
+sub fix_allcaps_name
+   {my $name = shift;
+    my $prefix = '';
+    $name =~ s/\AMc// and $prefix = 'Mc';
+    $name =~ s/\AMac// and $prefix = 'Mac';
+    $name = ucfirst lc $name;
+    $name =~ s/-(\w)/-\U$1/g;
+    $prefix . $name;}
+
 sub digest_author
    {my $str = shift;
+    $str =~ s/\(.+?\)//g;
     if ($str =~ /,/)
       # We have something of the form "Smith, A. R." or "Smith,
       # A.R." or "Smith, Allen R." or "Smith, Allen Reginald" or
@@ -129,15 +145,19 @@ sub digest_author
             and @suffix = (suffix => $1);
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
-        $surn =~ /[[:lower:]]/ or $surn = ucfirst fix_allcaps $surn;
+        $surn =~ /[[:lower:]]/ or $surn = fix_allcaps_name $surn;
         χ surname => $surn, given_name => $rest, @suffix;}
-    elsif ($str =~ /[[:upper:]]\z/)
+    elsif ($str =~ /[[:lower:]]\s+[[:upper:]]{1,4}\z/)
       # We have something of the form "Smith AR".
        {$str =~ s/ \A (.+?) \s+ ([[:upper:]]) /$2/x;
         χ surname => $1, given_name => join(' ', map {"$_."} split //, $str);}
     else
       # We have something of the form "Allen R. Smith".
-       {my ($rest, $surn) = runsub
+       {$str =~ /[[:upper:]]{5}/
+            and $str = join ' ',
+                map {fix_allcaps_name $_}
+                split /\s/, $str;
+        my ($rest, $surn) = runsub
            {my @ws = split /\s+/, $str;
             foreach my $i (0 .. $#ws - 1)
                {if ($ws[$i] =~ /\.\z/ and $ws[$i + 1] !~ /\.\z/)
@@ -196,7 +216,7 @@ sub format_nonjournal_title
                     lc($sug) eq lc($lower) ? $sug : $lower;}}eg;}
         else
           # THE TITLE IS IN ALL CAPS.
-           {$s =~ s {([^- .?!]+)} {fix_allcaps $1}eg;
+           {$s =~ s {([^- .?!]+)} {fix_allcaps_word $1}eg;
             $s = ucfirst $s;}}
     # Insert a space and capitalize after colons.
     $s =~ s/([:?])\W+(\w)/$1 . ' ' . uc $2/ge;
@@ -401,7 +421,11 @@ sub ebsco
     my $authors = σ
         map {digest_author $_}
         $record{'-by'} && $record{Database} ne 'PsycINFO'
-          ? split qr[(?:,|;| and) ], $record{'-by'}
+          ? $record{'-by'} =~ /[[:upper:]]{6}/
+            ? split qr[(?:,|;| and| &) ],
+                  apply {s/,\s+\S*[[:lower:]]{3}.+//}
+                  $record{'-by'}
+            : split qr[(?:,|;| and| &) ], $record{'-by'}
           : split qr[;\s*|<br />], $record{Authors};
 
     if (!$record{'Document Type'} or

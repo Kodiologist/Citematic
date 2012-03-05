@@ -165,7 +165,16 @@ is apa(year => 1997, author => ['holdershaw', 'gendall']),
   # I believe this journal has no issue numbers.
 is apa(year => 1999, author => ['bone', 'ellen']),
     'Bone, P. F., & Ellen, P. S. (1999). Scents in the marketplace: Explaining a fraction of olfaction. <i>Journal of Retailing, 75</i>(2), 243–262. doi:10.1016/S0022-4359(99)00007-X',
-    'Journal of Retailing (difficult-to-interpret "By" line in text)';
+    'Journal of Retailing (difficult-to-interpret byline in text)';
+is apa(doi => '10.1111/j.1360-0443.1997.tb02916.x'),
+    'McCall, M. (1997). The effects of physical attractiveness on gaining access to alcohol: When social policy meets social decision making. <i>Addiction, 92</i>(5), 597–600. doi:10.1111/j.1360-0443.1997.tb02916.x',
+    'Addiction (weird byline) (1)';
+is apa(title => ['adulthood functioning: the joint effects']),
+    'Hill, E. M., Thomson Ross, L., Mudd, S. A., & Blow, F. C. (1997). Adulthood functioning: The joint effects of parental alcoholism, gender and childhood socio-economic stress. <i>Addiction, 92</i>(5), 583–596. doi:10.1111/j.1360-0443.1997.tb02915.x',
+    'Addiction (weird byline) (2)';
+is apa(author => ['foxcroft', 'lister-sharp'], title => ['concerns']),
+    'Foxcroft, D. R., Lister-Sharp, D., & Lowe, G. (1997). Alcohol misuse prevention for young people: A systematic review reveals methodological concerns and lack of reliable evidence of effectiveness. <i>Addiction, 92</i>(5), 531–537. doi:10.1111/j.1360-0443.1997.tb02911.x',
+    'Addiction (weird byline) (3)';
 is apa(year => 1998, author => ['agresti', 'coull']),
     'Agresti, A., & Coull, B. A. (1998). Approximate is better than "exact" for interval estimation of binomial proportions. <i>The American Statistician, 52</i>(2), 119–126. doi:10.2307/2685469',
     'The American Statistician (backtick in given form of title)';
