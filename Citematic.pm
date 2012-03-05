@@ -149,8 +149,8 @@ sub digest_author
         χ surname => $surn, given_name => $rest, @suffix;}
     elsif ($str =~ /[[:lower:]]\s+[[:upper:]]{1,4}\z/)
       # We have something of the form "Smith AR".
-       {$str =~ s/ \A (.+?) \s+ ([[:upper:]]) /$2/x;
-        χ surname => $1, given_name => join(' ', map {"$_."} split //, $str);}
+       {$str =~ s/\s+([[:upper:]]+)\z//;
+        χ surname => $str, given_name => join(' ', map {"$_."} split //, $1);}
     else
       # We have something of the form "Allen R. Smith".
        {$str =~ /[[:upper:]]{5}/
@@ -420,7 +420,8 @@ sub ebsco
 
     my $authors = σ
         map {digest_author $_}
-        $record{'-by'} && $record{Database} ne 'PsycINFO'
+        $record{'-by'} && $record{Database} ne 'PsycINFO' &&
+              $record{'-by'} !~ /addressed to/
           ? $record{'-by'} =~ /[[:upper:]]{6}/
             ? split qr[(?:,|;| and| &) ],
                   apply {s/,\s+\S*[[:lower:]]{3}.+//}
@@ -451,8 +452,10 @@ sub ebsco
                 \s+
                 (?:Vol \.? \s)?
                 (\d+) \s?
-                (?: (Issue | Suppl | Whole \s No\.) \s (\d+ (?: / \d+)?) |
+                \(?
+                (?: (Issue | Suppl | Pt | Whole \s No\.) \s (\d+ (?: / \d+)?) |
                     \( ( [-,. 0-9A-Za-z]+ ) \) )?
+                \)?
                 , \s+
                 } {✠}x
             or die "Source: $record{Source}";
@@ -477,7 +480,7 @@ sub ebsco
           : die 'p';
         $lpage = expand_last_page_number $fpage, $lpage;
         $year ||=
-            $record{Source} =~ /((?:1[6789]|20)\d\d)/
+            $record{Source} =~ /(?<!:.)((?:1[6789]|20)\d\d)/
           ? $1
           : die 'y';
         my $doi = $record{'Digital Object Identifier'} ||
