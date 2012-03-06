@@ -15,7 +15,7 @@ sub runsub (&) {return $_[0]->();}
 my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
    ('%c %o [<search-term> ...]',
     ['title|t=s@' => 'a title keyword'],
-    ['ebsco-ignore-cached|i' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
+    ['bypass-ebsco-cache|b' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
     ['more|m' => 'include more information in the citation (breaks APA style)'],
     ['json=s' => 'where to save the Biblio::Citation::Format object'],
     ['quiet|q', ''],
@@ -27,7 +27,7 @@ if ($opt->help)
 
 my @title_words = @{$opt->title || []};
 local $Citematic::verbose = not $opt->quiet;
-local $Citematic::ebsco_ignore_cached = $opt->ebsco_ignore_cached;
+local $Citematic::bypass_ebsco_cache = $opt->bypass_ebsco_cache;
 
 # Interpret arguments that look like years, DOIs, or
 # formatted citations appropriately. Interpret the remainder

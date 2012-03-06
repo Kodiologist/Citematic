@@ -63,7 +63,7 @@ $@ and die "Error evaluating ebsco_login: $@";
 # ------------------------------------------------------------
 
 our $verbose;
-our $ebsco_ignore_cached;
+our $bypass_ebsco_cache;
 
 my $speller = new Text::Aspell;
 
@@ -338,7 +338,7 @@ sub ebsco
 
     my $cache_key = to_json
         \%search_fields, {utf8 => 1, canonical => 1};
-    $ebsco_ignore_cached
+    $bypass_ebsco_cache
         and delete $global_cache->{ebsco}{$cache_key};
     my %record = η($global_cache->{ebsco}{$cache_key} ||= runsub
        {my $agent = new WWW::Mechanize
