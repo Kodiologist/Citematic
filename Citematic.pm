@@ -207,7 +207,7 @@ sub format_nonjournal_title
         # But we'll try to fix it.
         if ($s =~ /[[:lower:]]/)
           # The Title Is Probably Capitalized Like This.
-           {$s =~ s {[- (]\K([[:upper:]])([^-. ()]+)}
+           {$s =~ s {[- ('"]\K([[:upper:]])([^-. ()'"]+)}
                {my $lower = lc($1) . $2;
                 if ($speller->check($lower))
                    {$lower;}
@@ -222,6 +222,8 @@ sub format_nonjournal_title
     $s =~ s/([:?])\W+(\w)/$1 . ' ' . uc $2/ge;
     # Correct GNU-style single quotes that should be double quotes.
     $s =~ s/`([^`']+)'/"$1"/g;
+    # Correct matched single quotes that should be double quotes.
+    $s =~ s/(\s|\A)'([^`' ][^`']*[^`' ])'(\s|\z)/$1"$2"$3/g;
     $s;}
 
 sub format_publisher

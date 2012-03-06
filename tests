@@ -162,6 +162,9 @@ is apa(title => ['happiness makes us selfish']),
 is apa(year => 1997, author => ['landolt', 'dutton']),
     'Landolt, M. A., & Dutton, D. G. (1997). Power and personality: An analysis of gay male intimate abuse. <i>Sex Roles, 37</i>(5, 6), 335–359. doi:10.1023/A:1025649306193',
     'Sex Roles (article attributed to multiple issues)';
+is apa(year => 2006, author => ['wheeler', 'george', 'marlatt']),
+    'Wheeler, J. G., George, W. H., & Marlatt, G. A. (2006). Relapse prevention for sexual offenders: Considerations for the "abstinence violation effect". <i>Sexual Abuse, 18</i>(3), 233–248. doi:10.1177/107906320601800302',
+    'Sexual Abuse (single quotes in given form of title)';
 is apa(year => 1997, author => ['holdershaw', 'gendall']),
     'Holdershaw, J., Gendall, P., & Garland, R. (1997). The widespread use of odd pricing in the retail sector. <i>Marketing Bulletin, 8</i>, 53–58.',
     'Marketing Bulletin (last author missing from EBSCO record)';
