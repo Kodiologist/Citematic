@@ -514,7 +514,7 @@ sub ebsco
 
         my $isbn;
         exists $record{ISBN} and ($isbn) =
-            $record{ISBN} =~ /([-0-9X]+)/;
+            $record{ISBN} =~ /([-0-9Xx]+)/;
 
         return book_chapter $authors, $src{year}, $record{'-title'},
             $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
