@@ -420,6 +420,8 @@ sub ebsco
 
     # Parse the record.
 
+    my $title = apply {s/\.\z//} $record{'-title'};
+
     my $authors = σ
         map {digest_author $_}
         $record{'-by'} && $record{Database} ne 'PsycINFO' &&
@@ -442,7 +444,7 @@ sub ebsco
            # This record is impoverished. Let's try CrossRef.
            {my %d = from_doi $record{'Digital Object Identifier'};
             return journal_article $authors, $d{year},
-                $record{'-title'}, $d{journal_title},
+                $title, $d{journal_title},
                 $d{volume}, $d{issue}, $d{first_page} || $1, $d{last_page} || $2,
                 $record{'Digital Object Identifier'};}
         my $year;
@@ -490,7 +492,7 @@ sub ebsco
             get_doi
                 $year, $journal, $authors->[0]{surname}, $volume, $fpage;
 
-        return journal_article $authors, $year, $record{'-title'},
+        return journal_article $authors, $year, $title,
             $journal, $volume, $issue, $fpage, $lpage, $doi;}
 
     elsif ($record{'Document Type'} eq 'Chapter')
@@ -516,7 +518,7 @@ sub ebsco
         exists $record{ISBN} and ($isbn) =
             $record{ISBN} =~ /([-0-9Xx]+)/;
 
-        return book_chapter $authors, $src{year}, $record{'-title'},
+        return book_chapter $authors, $src{year}, $title,
             $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
             $src{place}, $src{publisher}, $isbn;}
 
