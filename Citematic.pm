@@ -17,7 +17,6 @@ use Text::Aspell;
 use JSON qw(from_json to_json);
 use File::Slurp qw(slurp write_file);
 use XML::Simple 'XMLin';
-use Biblio::Citation::Format;
 
 use parent 'Exporter';
 our @EXPORT_OK = 'get';
@@ -146,11 +145,11 @@ sub digest_author
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
         $surn =~ /[[:lower:]]/ or $surn = fix_allcaps_name $surn;
-        χ surname => $surn, given_name => $rest, @suffix;}
+        χ family => $surn, given => $rest, @suffix;}
     elsif ($str =~ /[[:lower:]]\s+[[:upper:]]{1,4}\z/)
       # We have something of the form "Smith AR".
        {$str =~ s/\s+([[:upper:]]+)\z//;
-        χ surname => $str, given_name => join(' ', map {"$_."} split //, $1);}
+        χ family => $str, given => join(' ', map {"$_."} split //, $1);}
     else
       # We have something of the form "Allen R. Smith".
        {$str =~ /[[:upper:]]{5}/
@@ -165,7 +164,7 @@ sub digest_author
             return [$ws[0]], [@ws[1 .. $#ws]];};
         #$str =~ /\A (\S) \S+ ((?: \s \S\.)*) \s+ (\S+) \z/x;
         $_ = join ' ', @$_ foreach $surn, $rest;
-        χ surname => $surn, given_name => $rest;}}
+        χ family => $surn, given => $rest;}}
 
 sub digest_journal_title
    {my $j = shift;
@@ -198,6 +197,10 @@ sub expand_last_page_number
         # so append the appropriate prefix.
         substr($first, 0, length($first) - length($last)) . $last
       : $last;}
+
+sub digest_pages
+   {my ($first, $last) = @_;
+    $last ? "$first–$last" : $first;}
 
 sub format_nonjournal_title
    {my $s = shift;
@@ -234,34 +237,32 @@ sub format_publisher
 sub journal_article
    {my ($authors, $year, $article_title, $journal, $volume, $issue,
         $first_page, $last_page, $doi) = @_;
-    Biblio::Citation::Format->new(
-        type => 'article',
-        authors => $authors,
-        year => $year,
+    χ
+        type => 'article-journal',
+        author => $authors,
+        issued => {'date-parts' => [[$year]]},
         title => format_nonjournal_title($article_title),
-        journal => Lingua::EN::Titlecase->new($journal)->title,
+        container_title => Lingua::EN::Titlecase->new($journal)->title,
         volume => $volume,
         issue => $issue,
-        spage => $first_page,
-        epage => $last_page || $first_page,
-        doi => $doi);}
+        page => digest_pages($first_page, $last_page),
+        DOI => $doi;}
 
 sub book_chapter
    {my ($authors, $year, $chapter_title, $editors, $book, $volume,
         $first_page, $last_page, $place, $publisher, $isbn) = @_;
-    Biblio::Citation::Format->new(
+    χ
         type => 'chapter',
-        authors => $authors,
-        year => $year,
+        author => $authors,
+        issued => {'date-parts' => [[$year]]},
         title => format_nonjournal_title($chapter_title),
-        editors => $editors,
-        collection_title => $book,
+        editor => $editors,
+        container_title => $book,
         volume => $volume,
-        spage => $first_page,
-        epage => $last_page || $first_page,
-        place => $place,
+        page => digest_pages($first_page, $last_page),
+        publisher_place => $place,
         publisher => format_publisher($publisher),
-        isbn => $isbn);}
+        ISBN => $isbn;}
 
 # ------------------------------------------------------------
 # CrossRef
@@ -490,7 +491,7 @@ sub ebsco
         my $doi = $record{'Digital Object Identifier'} ||
             $terms{doi} ||
             get_doi
-                $year, $journal, $authors->[0]{surname}, $volume, $fpage;
+                $year, $journal, $authors->[0]{family}, $volume, $fpage;
 
         return journal_article $authors, $year, $title,
             $journal, $volume, $issue, $fpage, $lpage, $doi;}
@@ -596,7 +597,7 @@ sub ideas
     $lpage = expand_last_page_number $fpage, $lpage;
 
     my $doi = $terms{doi} || get_doi
-        $record{year}, $record{journal_title}, $authors->[0]{surname},
+        $record{year}, $record{journal_title}, $authors->[0]{family},
         $record{volume}, $fpage;
 
     return journal_article
