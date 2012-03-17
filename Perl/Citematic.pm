@@ -234,10 +234,16 @@ sub format_publisher
     $s =~ s/ Publishing Co\z| Associates\z//;
     $s;}
 
+sub citation
+   {my %h = @_;
+    defined $h{$_} or delete $h{$_}
+        foreach keys %h;
+    \%h;}
+
 sub journal_article
    {my ($authors, $year, $article_title, $journal, $volume, $issue,
         $first_page, $last_page, $doi) = @_;
-    χ
+    citation
         type => 'article-journal',
         author => $authors,
         issued => {'date-parts' => [[$year]]},
@@ -251,7 +257,7 @@ sub journal_article
 sub book_chapter
    {my ($authors, $year, $chapter_title, $editors, $book, $volume,
         $first_page, $last_page, $place, $publisher, $isbn) = @_;
-    χ
+    citation
         type => 'chapter',
         author => $authors,
         issued => {'date-parts' => [[$year]]},
