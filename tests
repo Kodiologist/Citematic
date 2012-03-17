@@ -4,6 +4,7 @@ use utf8;
 use warnings;
 use strict;
 use Citematic 'get';
+use Citematic::APA;
 use Test::More;
 
 # UTF-8 nonsense
@@ -12,8 +13,10 @@ use Test::More;
     binmode $builder->failure_output, ":utf8";
     binmode $builder->todo_output, ":utf8";}
 
+my $bibber = new Citematic::APA;
+
 sub apa
-   {get(@_)->apa(include_issue => 1, include_isbn => 1)}
+   {$bibber->bib1(get(@_), always_include_issue => 1, include_isbn => 1)}
 
 note '~~~ Journal articles (EBSCO) ~~~';
 
@@ -32,13 +35,13 @@ is apa(year => 2004, author => ['maia', 'McClelland']),
 is apa(year => 1983, author => ['Tversky', 'Kahneman']),
     'Tversky, A., & Kahneman, D. (1983). Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment. <i>Psychological Review, 90</i>(4), 293–315. doi:10.1037/0033-295X.90.4.293',
     'Psychological Review';
-is get(year => 1983, author => ['Tversky', 'Kahneman'])->authors->[0]{given_name},
+is get(year => 1983, author => ['Tversky', 'Kahneman'])->{author}[0]{given},
     'Amos',
     '…first name is preserved (1)';
-is get(year => 1983, author => ['Tversky', 'Kahneman'])->authors->[1]{given_name},
+is get(year => 1983, author => ['Tversky', 'Kahneman'])->{author}[1]{given},
     'Daniel',
     '…first name is preserved (2)';
-is get(year => 1983, author => ['Tversky', 'Kahneman'])->title,
+is get(year => 1983, author => ['Tversky', 'Kahneman'])->{title},
     'Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment',
     '…trailing period not left in title (1)';
 is apa(year => 2010, author => ['trope', 'liberman'], title => ['construal-level theory']),
@@ -147,10 +150,10 @@ is apa(author => ['redelmeier', 'kahneman'], title => ['colonoscopy']),
 is apa(year => 2007, author => ['whitaker', 'saltzman']),
     'Whitaker, D. J., Saltzman, L. S., Haileyesus, T., & Swahn, M. (2007). Differences in frequency of violence and reported injury between relationships with reciprocal and nonreciprocal intimate partner violence. <i>American Journal of Public Health, 97</i>(5), 941–947. doi:10.2105/AJPH.2005.079020',
     'American Journal of Public Health';
-is get(year => 2007, author => ['whitaker', 'saltzman'])->authors->[0]{given_name},
+is get(year => 2007, author => ['whitaker', 'saltzman'])->{author}[0]{given},
     'Daniel J.',
     '…first name and middle initial are preserved';
-is get(year => 2007, author => ['whitaker', 'saltzman'])->authors->[-1]{given_name},
+is get(year => 2007, author => ['whitaker', 'saltzman'])->{author}[-1]{given},
     'Monica',
     '…first name is preserved (3)';
 is apa(doi => 'doi:10.1037/0033-295X.84.3.231'),
@@ -200,7 +203,7 @@ is apa(year => 1979, author => ['kahneman', 'tversky'], title => ['prospect']),
 is apa(year => 1979, author => ['simon'], title => ['business organizations']),
     'Simon, H. A. (1979). Rational decision making in business organizations. <i>American Economic Review, 69</i>(4), 493–513.',
     'American Economic Review';
-is get(year => 1979, author => ['simon'], title => ['business organizations'])->title,
+is get(year => 1979, author => ['simon'], title => ['business organizations'])->{title},
     'Rational decision making in business organizations',
     '…trailing period not left in title (2)';
 is apa(year => 2002, author => ['Bosch-Domènech', 'Montalvo']),

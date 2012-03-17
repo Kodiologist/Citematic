@@ -4,6 +4,7 @@ use utf8;
 use warnings;
 use strict;
 use Citematic;
+use Citematic::APA;
 use Encode 'decode';
 use JSON qw(to_json);
 use File::Slurp 'write_file';
@@ -59,8 +60,8 @@ if ($a)
    {my %apa_opts;
     $opt->more and %apa_opts = 
        (abbreviate_given_names => 0,
-        include_issue => 1,
+        always_include_issue => 1,
         include_isbn => 1);
-    print $a->apa(%apa_opts), "\n";
-    $opt->json and write_file $opt->json, to_json {$a->fields},
+    print Citematic::APA->new->bib1($a, %apa_opts), "\n";
+    $opt->json and write_file $opt->json, to_json $a,
         {utf8 => 1, pretty => 1, canonical => 1};}

@@ -242,7 +242,7 @@ sub journal_article
         author => $authors,
         issued => {'date-parts' => [[$year]]},
         title => format_nonjournal_title($article_title),
-        container_title => Lingua::EN::Titlecase->new($journal)->title,
+        'container-title' => Lingua::EN::Titlecase->new($journal)->title,
         volume => $volume,
         issue => $issue,
         page => digest_pages($first_page, $last_page),
@@ -257,10 +257,10 @@ sub book_chapter
         issued => {'date-parts' => [[$year]]},
         title => format_nonjournal_title($chapter_title),
         editor => $editors,
-        container_title => $book,
+        'container-title' => $book,
         volume => $volume,
         page => digest_pages($first_page, $last_page),
-        publisher_place => $place,
+        'publisher-place' => $place,
         publisher => format_publisher($publisher),
         ISBN => $isbn;}
 
