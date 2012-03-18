@@ -23,7 +23,8 @@ class APABibber(object):
     def __init__(self, std_apa_style_path):
         with open(std_apa_style_path, encoding = 'UTF-8') as f:
              self.std_apa_style = f.read()
-        self.style = sub(' encoding="UTF-8"', '', self.std_apa_style)
+        self.style = sub(' encoding="UTF-8"', '',
+            self.std_apa_style, count = 1)
           # lxml doesn't like the encoding declaration.
         self.style = sub(r'(<macro name="secondary-contributors">\s+<choose>\s+<if type=")',
             r'\1book ', self.style, count = 1)
@@ -84,10 +85,6 @@ class APABibber(object):
             
         s = s.replace('  ', ' ')
         s = sub(r'([.!?…])\.', r'\1', s)
-        s = s.replace('..', '...')
-          # These instances of ".." are assumed to be fake
-          # ellipses ("...") that we accidentally truncated with
-          # the previous statement.
         s = s.replace('&amp;', '&')
         s = sub('(\S)&', r'\1, &', s)
         s = sub(r'</i>, <i>(\d)', r', \1', s)

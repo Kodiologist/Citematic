@@ -72,9 +72,6 @@ def test_journal_article():
     assert (j(title = 'And then…') ==
         'Bloggs, J., & Hacker, J. R. (1983). And then… <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz')
       # Title ending with ellipsis
-    assert (j(title = 'And then...') ==
-        'Bloggs, J., & Hacker, J. R. (1983). And then... <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz')
-      # Title ending with fake ellipsis
     assert (j(page = 'S15–Z90') ==
         'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, S15–Z90. doi:10.zzz/zzzzzz')
       # Page numbers that aren't numbers

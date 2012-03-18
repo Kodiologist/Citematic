@@ -227,6 +227,8 @@ sub format_nonjournal_title
     $s =~ s/`([^`']+)'/"$1"/g;
     # Correct matched single quotes that should be double quotes.
     $s =~ s/(\s|\A)'([^`' ][^`']*[^`' ])'(\s|\z)/$1"$2"$3/g;
+    # Correct fake ellipses.
+    $s =~ s/\.\.\./…/g;
     $s;}
 
 sub format_publisher
