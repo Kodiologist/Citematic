@@ -6,9 +6,9 @@ from random import random
 import json
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography
-from citeproc import NAMES, DATES, NUMBERS
+from citeproc import NAMES, DATES
 from citeproc.source import Reference, Name, Date, DateRange
-from citeproc.source import Citation, CitationItem, Locator
+from citeproc.source import Citation, CitationItem
 
 def delf(x, i):
     if i in x: del x[i]
