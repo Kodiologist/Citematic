@@ -1,7 +1,7 @@
 # -*- Python -*-
 
 from os import environ
-from apa import bib1, name
+from quickbib import bib1, name
 
 if 'MLA_CSL_PATH' not in environ:
     raise Exception('The environment variable MLA_CSL_PATH is not set')

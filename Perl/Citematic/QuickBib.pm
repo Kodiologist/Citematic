@@ -1,4 +1,4 @@
-package Citematic::APA;
+package Citematic::QuickBib;
 
 use utf8;
 use warnings;
@@ -9,8 +9,8 @@ use IPC::Run 'start';
 sub new
    {my $invocant = shift;
     my %h =
-       (python3_path => $ENV{CITEMATIC_APA_PYTHON3} || 'python3',
-        py_script_path => $ENV{CITEMATIC_APA_PYSCRIPT} || 'apa.py',
+       (python3_path => $ENV{CITEMATIC_QUICKBIB_PYTHON3} || 'python3',
+        py_script_path => $ENV{CITEMATIC_QUICKBIB_PYSCRIPT} || 'quickbib.py',
         @_);
     my $o = bless \%h, ref($invocant) || $invocant;
     $o->_init;

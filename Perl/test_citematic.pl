@@ -4,7 +4,7 @@ use utf8;
 use warnings;
 use strict;
 use Citematic 'get';
-use Citematic::APA;
+use Citematic::QuickBib;
 use Test::More;
 
 # UTF-8 nonsense
@@ -13,10 +13,10 @@ use Test::More;
     binmode $builder->failure_output, ":utf8";
     binmode $builder->todo_output, ":utf8";}
 
-my $bibber = new Citematic::APA;
+my $qb = new Citematic::QuickBib;
 
 sub apa
-   {$bibber->bib1(get(@_),
+   {$qb->bib1(get(@_),
         style_path => $ENV{APA_CSL_PATH} ||
             die('The environment variable APA_CSL_PATH is not set'),
         apa_tweaks => 1,
