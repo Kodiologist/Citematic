@@ -30,5 +30,3 @@ def j(o = None, **field_kws):
 
 def test_journal_article():
     assert j() == 'Pasternack, Robert F., and Peter J. Collins. "Resonance Light Scattering: A New Technique for Studying Chromophore Aggregation". <i>Science</i> 269 (1995): 935–9. Web.'
-
-print(j())

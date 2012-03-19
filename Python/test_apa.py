@@ -158,5 +158,3 @@ def test_chapter():
       # One-page chapter
     assert e(o = {'abbreviate_given_names': 0}) == 'Bloggs, Joesph, & Hacker, J. Random. (1983). The main title. In John Quixote Doe (Ed.), <i>The book of love</i> (pp. 12–15). Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
       # Full given names
-
-test_journal_article()
