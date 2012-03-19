@@ -18,7 +18,7 @@ my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
     ['title|t=s@' => 'a title keyword'],
     ['bypass-ebsco-cache|b' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
     ['more|m' => 'include more information in the citation (breaks APA style)'],
-    ['json=s' => 'where to save the Biblio::Citation::Format object'],
+    ['json=s' => 'where to save the CSL variables'],
     ['quiet|q', ''],
     ['help', '']);
 
@@ -57,9 +57,12 @@ my $a = Citematic::get
     doi => $doi);
 
 if ($a)
-   {my %apa_opts;
-    $opt->more and %apa_opts = 
-       (abbreviate_given_names => 0,
+   {my %apa_opts =
+       (style_path => $ENV{APA_CSL_PATH}
+            || die('The environment variable APA_CSL_PATH is not set'),
+        apa_tweaks => 1);
+    $opt->more and %apa_opts = (%apa_opts,
+        abbreviate_given_names => 0,
         always_include_issue => 1,
         include_isbn => 1);
     print Citematic::APA->new->bib1($a, %apa_opts), "\n";

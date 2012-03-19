@@ -1,16 +1,21 @@
 # -*- Python -*-
 
-from apa import APABibber, name
+from os import environ
+from apa import bib1, name
 
-bibber = APABibber("/home/hippo/Data/CSL/apa.csl")
+if 'APA_CSL_PATH' not in environ:
+    raise Exception('The environment variable APA_CSL_PATH is not set')
+
+def f(d, **kw):
+    return bib1(environ['APA_CSL_PATH'], d,
+        apa_tweaks = True, **kw)
 
 def merge_dicts(d1, d2):
     return dict(list(d1.items()) + list(d2.items()))
 
 def j(o = None, **field_kws):
     fields = merge_dicts(
-        dict(id = 'hayo',
-            type = 'article-journal',
+        dict(type = 'article-journal',
             author =
                 [name('Joesph', 'Bloggs'),
                 name('J. Random', 'Hacker')],
@@ -22,7 +27,7 @@ def j(o = None, **field_kws):
             DOI = '10.zzz/zzzzzz'),
         field_kws)
     if o is None: o = {}
-    return bibber.bib1(fields, **o)
+    return f(fields, **o)
 
 def test_journal_article():
     assert j() == 'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz'
@@ -80,8 +85,7 @@ def test_journal_article():
       # Advance online publication
 
 def test_report():
-    assert (bibber.bib1(dict(
-            id = 'foo',
+    assert (f(dict(
             type = 'report',
             author =
                [name('Anna', 'Dreber'),
@@ -96,8 +100,7 @@ def test_report():
       # Technical report
 
 def test_informal():
-    assert (bibber.bib1(dict(id = 'foo',
-            type = 'manuscript',
+    assert (f(dict(type = 'manuscript',
             author = [name('S. D.', 'Mitchell')],
             issued = {'date-parts': [[2000]]},
             title = 'The import of uncertainty',
@@ -155,3 +158,5 @@ def test_chapter():
       # One-page chapter
     assert e(o = {'abbreviate_given_names': 0}) == 'Bloggs, Joesph, & Hacker, J. Random. (1983). The main title. In John Quixote Doe (Ed.), <i>The book of love</i> (pp. 12–15). Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
       # Full given names
+
+test_journal_article()

@@ -11,7 +11,6 @@ sub new
     my %h =
        (python3_path => $ENV{CITEMATIC_APA_PYTHON3} || 'python3',
         py_script_path => $ENV{CITEMATIC_APA_PYSCRIPT} || 'apa.py',
-        csl_path => $ENV{CITEMATIC_APA_CSL} || 'apa.csl',
         @_);
     my $o = bless \%h, ref($invocant) || $invocant;
     $o->_init;
@@ -22,7 +21,7 @@ sub _init
     $self->{in} = '';
     $self->{out} = '';
     $self->{handle} = start
-        [$self->{python3_path}, $self->{py_script_path}, $self->{csl_path}],
+        [$self->{python3_path}, $self->{py_script_path},],
         \($self->{in}), \($self->{out})
       or die $?;
     return 1;}

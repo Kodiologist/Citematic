@@ -16,7 +16,11 @@ use Test::More;
 my $bibber = new Citematic::APA;
 
 sub apa
-   {$bibber->bib1(get(@_), always_include_issue => 1, include_isbn => 1)}
+   {$bibber->bib1(get(@_),
+        style_path => $ENV{APA_CSL_PATH} ||
+            die('The environment variable APA_CSL_PATH is not set'),
+        apa_tweaks => 1,
+        always_include_issue => 1, include_isbn => 1)}
 
 note '~~~ Journal articles (EBSCO) ~~~';
 
