@@ -10,6 +10,8 @@ from citeproc import NAMES, DATES
 from citeproc.source import Reference, Name, Date, DateRange
 from citeproc.source import Citation, CitationItem
 from citeproc.string import String
+import citeproc.formatter.plain
+import citeproc.formatter.html
 
 # ------------------------------------------------------------
 # Public
@@ -20,17 +22,21 @@ def name(given, family, suffix = None):
     if suffix is not None: n['suffix'] = suffix
     return n
 
-def bib1(style_path, d, trim = True, **rest):
-    return bib(style_path, [d], trim = trim, **rest)
+def bib1(style_path, d, **rest):
+    return bib(style_path, [d], **rest)
 
 def bib(style_path,
         ds,
-        trim = False,
+        formatter = "chocolate",
         apa_tweaks = True,
         # The below options are ignored unless apa_tweaks is on.
         always_include_issue = False,
         include_isbn = False,
         abbreviate_given_names = True):
+
+    if isinstance(formatter, str):
+        try:             formatter = formatter_from_name[formatter]
+        except KeyError: raise ValueError('Unknown formatter "{}"'.format(formatter))        
 
     style = get_style(style_path, apa_tweaks,
         include_isbn, abbreviate_given_names)
@@ -61,26 +67,21 @@ def bib(style_path,
 
     bibliography = CitationStylesBibliography(
         style,
-        {ref.key: ref for ref in parse_references(ds)})
+        {ref.key: ref for ref in parse_references(ds)},
+        formatter)
     bibliography.register(Citation(
         [ CitationItem(d['id']) for d in ds ]))
     s = bibliography.bibliography()
-    if trim:
-        s = sub(r'</?div[^>]*>', '', s)
-        s = sub(' *\n *', '\n', s)
-        s = s.strip()
-        s = s.replace('\n', '\n\n')
-          # To provide a bit more visual separation.
 
     # Fix spacing and punctuation issues.
     s = s.replace('  ', ' ')
     s = sub(r'([.!?…])\.', r'\1', s)
-    s = s.replace('&amp;', '&')
     s = s.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
     if apa_tweaks:
-        # Italicize the stuff between a journal name and a volume
-        # number.
-        s = sub(r'</i>, <i>(\d)', r', \1', s)
+        if formatter is citeproc.formatter.html or formatter is chocolate:
+            # Italicize the stuff between a journal name and a volume
+            # number.
+            s = sub(r'</i>, <i>(\d)', r', \1', s)
         # Make "p." into "pp." when more than one page is cited.
         s = sub(r'(\W)p\. (\S+[,–])', r'\1pp. \2', s)
         # Replace the ellipsis placeholder.
@@ -93,10 +94,37 @@ def bib(style_path,
 # ------------------------------------------------------------
 
 def delf(x, i):
-    if i in x: del x[i]
+    try:             del x[i]
+    except KeyError: pass
 
 def sub1(*p, **kw):
     return sub(*p, count = 1, **kw)
+
+class chocolate(object):
+    "A formatter that isn't quite plain."
+
+    def preformat(text):  return text
+
+    def _tagger(tag): return lambda s: "<{0}>{1}</{0}>".format(tag, s)
+
+    Italic = _tagger('i')
+    Oblique = Italic
+    Bold = str
+    Light = str
+    Underline = str
+    Superscript = _tagger('sup')
+    Subscript = _tagger('sub')
+    SmallCaps = str
+
+    class Bibliography(str):
+        def __new__(cls, items):
+            items = map(str, items)
+            return super().__new__(cls, '\n\n'.join(items))
+
+formatter_from_name = dict(
+    plain = citeproc.formatter.plain,
+    html = citeproc.formatter.html,
+    chocolate = chocolate)
 
 style_cache = {}
 
