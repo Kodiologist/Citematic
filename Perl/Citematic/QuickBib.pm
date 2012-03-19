@@ -9,8 +9,7 @@ use IPC::Run 'start';
 sub new
    {my $invocant = shift;
     my %h =
-       (python3_path => $ENV{CITEMATIC_QUICKBIB_PYTHON3} || 'python3',
-        py_script_path => $ENV{CITEMATIC_QUICKBIB_PYSCRIPT} || 'quickbib.py',
+       (python3_path => $ENV{CITEMATIC_PYTHON3_PATH} || 'python3',
         @_);
     my $o = bless \%h, ref($invocant) || $invocant;
     $o->_init;
@@ -21,7 +20,7 @@ sub _init
     $self->{in} = '';
     $self->{out} = '';
     $self->{handle} = start
-        [$self->{python3_path}, $self->{py_script_path},],
+        [$self->{python3_path}, '-m', 'quickbib'],
         \($self->{in}), \($self->{out})
       or die $?;
     return 1;}
