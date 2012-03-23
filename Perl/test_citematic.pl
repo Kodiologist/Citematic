@@ -194,6 +194,9 @@ is apa(author => ['foxcroft', 'lister-sharp'], title => ['concerns']),
 is apa(year => 1998, author => ['agresti', 'coull']),
     'Agresti, A., & Coull, B. A. (1998). Approximate is better than "exact" for interval estimation of binomial proportions. <i>The American Statistician, 52</i>(2), 119–126. doi:10.2307/2685469',
     'The American Statistician (backtick in given form of title)';
+is apa(year => 2011, author => ['knutson'], title => ['gain', 'loss learning']),
+    'Knutson, B., Samanez-Larkin, G. R., & Kuhnen, C. M. (2011). Gain and loss learning differentially contribute to life financial outcomes. <i>PLoS ONE</i>. doi:10.1371/journal.pone.0024390',
+    'PLoS ONE';
 
 
 note '~~~ Journal articles (IDEAS) ~~~';

@@ -12,7 +12,6 @@ use WWW::Mechanize;
 use HTTP::Cookies;
 use URI::Escape;
 use HTML::Entities 'decode_entities';
-use Lingua::EN::Titlecase;
 use Text::Aspell;
 use JSON qw(from_json to_json);
 use File::Slurp qw(slurp write_file);
@@ -180,12 +179,15 @@ sub digest_journal_title
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
     $j eq 'American Statistician'
         and return 'The American Statistician';
+    $j =~ /PLoS ONE/i
+        and return 'PLoS ONE';
 
     if ($j =~ /Memory (?:and|&) Cognition/i
             or $j =~ /Psychology (?:and|&) Health/i)
        {$j =~ s/and/&/;}
     else
        {$j =~ s/&/and/;}
+    $j =~ s/\b(An|And|As|At|But|By|Down|For|From|In|Into|Nor|Of|On|Onto|Or|Over|So|The|Till|To|Up|Via|With|Yet)\b/\l$1/g;
     $j =~ s!(?:/|:).+!!
         unless $j =~ /\AJournal of Experimental Psychology/i;
     $j;}
@@ -250,7 +252,7 @@ sub journal_article
         author => $authors,
         issued => {'date-parts' => [[$year]]},
         title => format_nonjournal_title($article_title),
-        'container-title' => Lingua::EN::Titlecase->new($journal)->title,
+        'container-title' => $journal,
         volume => $volume,
         issue => $issue,
         page => digest_pages($first_page, $last_page),
@@ -303,7 +305,7 @@ sub from_doi
    {η query_crossref id => $_[0];}
 
 sub get_doi
-   {my ($year, $journal, $first_author_surname, $volume, $first_page) = @_;
+   {my ($year, $journal, $article_title, $first_author_surname, $volume, $first_page) = @_;
 
     my %record = η
        (query_crossref
@@ -311,6 +313,7 @@ sub get_doi
               # CrossRef accepts only the first author, sadly.
             date => $year,
             title => $journal,
+            atitle => $article_title,
             ($volume ? (volume => $volume) : ()),
             ($first_page ? (spage => $first_page) : ()))
         || return undef);
@@ -472,26 +475,33 @@ sub ebsco
                 , \s+
                 } {✠}x
             or die "Source: $record{Source}";
+
         my $volume = $1;
         my $issue = $3 || $4;
         if (defined $issue)
            {defined $2 and $2 eq 'Suppl' and $issue = "Suppl. $issue";
             $issue =~ /No\.\s*(.+)/ and $issue = $1;
             $issue =~ s/\.(\S)/. $1/;
-            $issue =~ s! (\d+) [-/] (\d+) !$1, $2!x}
+            $issue =~ s! (\d+) [-/] (\d+) !$1, $2!x;}
               # Dunno if *that's* right, but it seems the most
               # reasonable alternative.
-        $record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die 's2';
-        my $journal = digest_journal_title $1;
-        my ($fpage, $lpage) =
-            $record{Source} =~ s!p(?:p\. )?([A-Z]?\d+)-([A-Z]?\d+)!!
-          ? ($1, $2)
-          : $record{Source} =~ s!p(?:p\. )?([A-Z]?)(\d+).+?(\d+)p\b!!
-          ? ("$1$2", $1 . ($2 + $3 - 1))
-          : $record{Source} =~ s!p(?:p\. )?([A-Z]?\d+)!!
-          ? ($1, undef)
-          : die 'p';
-        $lpage = expand_last_page_number $fpage, $lpage;
+        my ($journal, $fpage, $lpage);
+        if ($record{Source} =~ s! \[ (PLoS [^\]]+?) \] !!x)
+           {$journal = digest_journal_title $1;
+            $volume = undef;
+            $issue = undef;}
+        else
+           {$record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die 's2';
+            $journal = digest_journal_title $1;
+            ($fpage, $lpage) =
+                $record{Source} =~ s!p(?:p\. )?([A-Z]?\d+)-([A-Z]?\d+)!!
+              ? ($1, $2)
+              : $record{Source} =~ s!p(?:p\. )?([A-Z]?)(\d+).+?(\d+)p\b!!
+              ? ("$1$2", $1 . ($2 + $3 - 1))
+              : $record{Source} =~ s!p(?:p\. )?([A-Z]?\d+)!!
+              ? ($1, undef)
+              : die 'p';
+            $lpage = expand_last_page_number $fpage, $lpage;}
         $year ||=
             $record{Source} =~ /(?<!:.)((?:1[6789]|20)\d\d)/
           ? $1
@@ -499,7 +509,8 @@ sub ebsco
         my $doi = $record{'Digital Object Identifier'} ||
             $terms{doi} ||
             get_doi
-                $year, $journal, $authors->[0]{family}, $volume, $fpage;
+                $year, $journal, $title,
+                $authors->[0]{family}, $volume, $fpage;
 
         return journal_article $authors, $year, $title,
             $journal, $volume, $issue, $fpage, $lpage, $doi;}
@@ -605,7 +616,8 @@ sub ideas
     $lpage = expand_last_page_number $fpage, $lpage;
 
     my $doi = $terms{doi} || get_doi
-        $record{year}, $record{journal_title}, $authors->[0]{family},
+        $record{year}, $record{journal_title}, $record{title},
+        $authors->[0]{family},
         $record{volume}, $fpage;
 
     return journal_article
