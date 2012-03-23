@@ -28,6 +28,10 @@ def bib1(style_path, d, **rest):
 def bib(style_path,
         ds,
         formatter = "chocolate",
+        dumb_quotes = True,
+          # Setting this to False won't educate any straight
+          # quotes in the data, but leaving it True will stupefy
+          # all the smart quotes in the output.
         apa_tweaks = True,
         # The below options are ignored unless apa_tweaks is on.
         always_include_issue = False,
@@ -76,7 +80,8 @@ def bib(style_path,
     # Fix spacing and punctuation issues.
     s = s.replace('  ', ' ')
     s = sub(r'([.!?…])\.', r'\1', s)
-    s = s.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
+    if dumb_quotes:
+        s = s.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
     if apa_tweaks:
         if formatter is citeproc.formatter.html or formatter is chocolate:
             # Italicize the stuff between a journal name and a volume
