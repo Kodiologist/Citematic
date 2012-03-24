@@ -36,6 +36,7 @@ def bib(style_path,
         # The below options are ignored unless apa_tweaks is on.
         always_include_issue = False,
         include_isbn = False,
+        url_after_doi = False,
         abbreviate_given_names = True):
 
     if isinstance(formatter, str):
@@ -43,7 +44,7 @@ def bib(style_path,
         except KeyError: raise ValueError('Unknown formatter "{}"'.format(formatter))        
 
     style = get_style(style_path, apa_tweaks,
-        include_isbn, abbreviate_given_names)
+        include_isbn, url_after_doi, abbreviate_given_names)
 
     ds = deepcopy(ds)
     for d in ds:
@@ -133,9 +134,9 @@ formatter_from_name = dict(
 
 style_cache = {}
 
-def get_style(style_path, apa_tweaks, include_isbn, abbreviate_given_names):
+def get_style(style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_given_names):
 
-    idx = (style_path, apa_tweaks, include_isbn, abbreviate_given_names)
+    idx = (style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_given_names)
     if idx in style_cache:
         return style_cache[idx]
 
@@ -160,6 +161,10 @@ def get_style(style_path, apa_tweaks, include_isbn, abbreviate_given_names):
         if include_isbn:
             text = sub1('(<text macro="access")',
                 r'<text variable="ISBN" prefix=" ISBN " suffix = "."/> \1',
+                text)
+        if url_after_doi:
+            text = sub1('(<text variable="DOI" prefix="doi:"/>)',
+                r'<group delimiter=". ">\1<text variable="URL" prefix="Retrieved from "/></group>',
                 text)
 
     style = CitationStylesStyle(StringIO(text))

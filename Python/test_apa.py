@@ -32,7 +32,7 @@ def j(o = None, **field_kws):
 def test_journal_article():
     assert j() == 'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz'
       # Simple journal article
-    assert j(doi = None), 'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315.'
+    assert j(DOI = None), 'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315.'
       # No DOI
     assert j(o = {'always_include_issue': True}) == 'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>(7), 293–315. doi:10.zzz/zzzzzz'
       # With issue number
@@ -40,6 +40,15 @@ def test_journal_article():
       # Issue number requested but unavailable
     assert j(o = {'abbreviate_given_names': False}), 'Bloggs, Joesph, & Hacker, J. Random. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz'
       # With full given names
+    assert (j(o = {'url_after_doi': True}, URL = 'http://example.com') ==
+        'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz. Retrieved from http://example.com')
+      # With URL
+    assert (j(o = {'url_after_doi': True}) ==
+        'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz')
+      # URL requested but not available
+    assert (j(DOI = None, URL = 'http://example.com') ==
+        'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. Retrieved from http://example.com')
+      # No DOI, so URL included by default
     assert (j(o = {'abbreviate_given_names': False},
             author = [name('J.', 'Bloggs'), name('J. R.', 'Hacker')]) ==
         'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz')
