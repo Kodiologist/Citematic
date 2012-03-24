@@ -414,7 +414,7 @@ sub ebsco
                    {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
                 note 'Full text (PDF): ', $agent->uri;}
             elsif ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
-               {note 'Serial Solutions: http:', uri_escape
+               {note 'OpenURL: http:', uri_escape
                     uri_unescape($1),
                     ':<>';}
             return χ
