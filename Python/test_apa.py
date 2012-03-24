@@ -158,3 +158,23 @@ def test_chapter():
       # One-page chapter
     assert e(o = {'abbreviate_given_names': 0}) == 'Bloggs, Joesph, & Hacker, J. Random. (1983). The main title. In John Quixote Doe (Ed.), <i>The book of love</i> (pp. 12–15). Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
       # Full given names
+
+def test_magazine_article():
+    assert (f(dict(type = 'article-magazine',
+            author = [name('John', 'Cloud')],
+            issued = {'date-parts': [[2006, 2, 13]]},
+            container_title = 'Time',
+            title = 'The third wave of therapy',
+            URL = 'http://www.time.com/time/magazine/article/0,9171,1156613-1,00.html')) ==
+        'Cloud, J. (2006, February 13). The third wave of therapy. <i>Time</i>. Retrieved from http://www.time.com/time/magazine/article/0,9171,1156613-1,00.html')
+
+def test_newspaper_article():
+    assert (f(dict(type = 'article-newspaper',
+            author = [name('Benedict', 'Carey')],
+            issued = {'date-parts': [[2011, 6, 23]]},
+            container_title = 'The New York Times',
+            title = 'Expert on mental illness reveals her own fight',
+            URL = 'http://www.nytimes.com/2011/06/23/health/23lives.html')) ==
+        'Carey, B. (2011, June 23). Expert on mental illness reveals her own fight. <i>The New York Times</i>. Retrieved from http://www.nytimes.com/2011/06/23/health/23lives.html')
+  # Yes, the "The" in "The New York Times" is included: see
+  # http://www.apastyle.org/learn/faqs/cite-newspaper.aspx
