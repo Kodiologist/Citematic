@@ -6,6 +6,9 @@ use strict;
 use URI::Escape ();
 use HTML::Entities 'encode_entities';
 
+use parent 'Exporter';
+our @EXPORT_OK = 'coins';
+
 sub kv
    {my @a;
     while (@_)
