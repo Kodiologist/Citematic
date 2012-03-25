@@ -3,7 +3,7 @@
 use utf8;
 use warnings;
 use strict;
-use Citematic;
+use Citematic::Get;
 use Citematic::QuickBib;
 use Encode 'decode';
 use JSON qw(to_json);
@@ -27,8 +27,8 @@ if ($opt->help)
     exit;}
 
 my @title_words = @{$opt->title || []};
-local $Citematic::verbose = not $opt->quiet;
-local $Citematic::bypass_ebsco_cache = $opt->bypass_ebsco_cache;
+local $Citematic::Get::verbose = not $opt->quiet;
+local $Citematic::Get::bypass_ebsco_cache = $opt->bypass_ebsco_cache;
 
 # Interpret arguments that look like years, DOIs, or
 # formatted citations appropriately. Interpret the remainder
@@ -50,7 +50,7 @@ push @author_words, grep {runsub
     0;}}
   @ARGV;
 
-my $a = Citematic::get
+my $a = Citematic::Get::get
    (author => \@author_words,
     year => $year,
     title => \@title_words,

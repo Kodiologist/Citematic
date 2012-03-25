@@ -3,7 +3,7 @@
 use utf8;
 use warnings;
 use strict;
-use Citematic 'get';
+use Citematic::Get 'get';
 use Citematic::QuickBib;
 use Test::More;
 

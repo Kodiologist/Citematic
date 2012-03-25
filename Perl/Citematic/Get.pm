@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-package Citematic;
+package Citematic::Get;
 
 use utf8;
 use warnings;
@@ -635,7 +635,7 @@ sub get
 #   year (scalar)
 #   title (array ref)
 #   doi (scalar)
-# Returns a Biblio::Citation::Format object or undef.
+# Returns a hashref of CSL input data or undef.
    {my %terms = @_;
     $terms{author} ||= [];
     $terms{title} ||= [];
