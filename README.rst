@@ -1,50 +1,69 @@
-Citematic uses `EBSCOhost`_, `IDEAS`_ (i.e., `RePEc`_), and `CrossRef`_ to get an APA-style citation for search terms. In the case of EBSCOhost, it also tries to get full-text URLs. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with the web interfaces.
+Citematic::Get uses EBSCOhost_, IDEAS_ (i.e., RePEc_), and CrossRef_ to get bibliographic data for search terms. In the case of EBSCOhost, it also tries to get full-text URLs. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with the web interfaces.
+
+The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, Citematic::COinS has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
+
+.. __: https://github.com/citation-style-language/schema/blob/master/csl-data.json
+.. __: http://zotero.org/styles
 
 Examples
 ============================================================
-
-Supposing you've made an alias or symlink ``cite`` to ``Citematic.pm``:
   
 * ``$ cite 1983 tversky kahneman``
 
-    Tversky, A., & Kahneman, D. (1983). Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment. \|Psychological Review, 90\|, 293–315. \`doi:10.1037/0033-295X.90.4.293\`
+    Tversky, A., & Kahneman, D. (1983). Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment. <i>Psychological Review, 90</i>, 293–315. doi:10.1037/0033-295X.90.4.293
 
 * ``$ cite nisbett -t 'telling more than we can know'``
 
-    Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. \|Psychological Review, 84\|, 231–259. \`doi:10.1037/0033-295X.84.3.231\`
+    Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. <i>Psychological Review, 84</i>, 231–259. doi:10.1037/0033-295X.84.3.231
 
 * ``$ cite 10.1080/00224545.1979.9933632``
 
-    Zak, I. (1979). Modal personality of young Jews and Arabs in Israel. \|Journal of Social Psychology, 109\|, 3–10. \`doi:10.1080/00224545.1979.9933632\`
+    Zak, I. (1979). Modal personality of young Jews and Arabs in Israel. <i>Journal of Social Psychology, 109</i>, 3–10. doi:10.1080/00224545.1979.9933632
 
-* ``$ cite 'McMackin, J., & Slovic, P. (2000).'``
+* ``$ cite 'Yates, J. F., Veinott, E. S., & Patalano, A. L. (2003).'``
 
-    McMackin, J., & Slovic, P. (2000). When does explicit justification impair decision making? \|Applied Cognitive Psychology, 14\|, 527–541. \`doi:10.1002/1099-0720(200011/12)14:6<527::AID-ACP671>3.0.CO;2-J\`
+    Yates, J. F., Veinott, E. S., & Patalano, A. L. (2003). Hard decisions, bad decisions: On decision quality and decision aiding. In S. L. Schneider & J. Shanteau (Eds.), <i>Emerging perspectives on judgment and decision research</i> (pp. 1–63). New York, NY: Cambridge University Press.
 
-See the test suite for more.
+See ``cite --help`` for a description of command-line options. See ``Perl/test_citematic.pm`` for more examples of what Citematic::Get can find and ``Python/test_apa.py`` for more examples of what quickbib can format.
 
 Installation
 ============================================================
 
-First, ensure you have each of the Perl modules listed at the top of ``Citematic.pm``. You can install modules with ``sudo cpan install WWW::Mechanize`` or ``sudo cpanm WWW::Mechanize`` (using cpanminus_) or your package manager. Getopt::Long::Descriptive is also required for the command-line interface. Test::More is required to run the tests.
+1. Ensure you have the following Perl modules. You can install modules with ``sudo cpan install WWW::Mechanize`` or ``sudo cpanm WWW::Mechanize`` (using cpanminus_) or your package manager.
 
-Next, copy the example configuration file to ``$HOME/.citematic`` and edit it. `Registering for CrossRef`_ is easy. Getting access to EBSCOhost is harder. There's a good chance that your school (if you're using Citematic, you must be a student or an academic, right? right?) or your local library has an institutional subscription that you can use from home. You may be able to log in with a single HTTP ``POST`` (the Firefox extension `Tamper Data`_ is helpful for figuring out how), in which case editing ``ebsco_login`` will be particularly easy. And if your IP address is already authenticated, then you don't need to log in at all, and you can set ``ebsco_login`` to a no-op like whitespace. (Perl programmers note that ``$_`` refers to a WWW::Mechanize object in this context.)
+  * Citematic::Get requires: File::Slurp HTML::Entities HTTP::Cookies JSON LWP::Simple List::Util Text::Aspell URI::Escape WWW::Mechanize XML::Simple parent
+  * Citematic::QuickBib requires: IPC::Run JSON 
+  * Citematic::COinS requires: HTML::Entities URI::Escape
+  * ``cite`` requires: File::Slurp Getopt::Long::Descriptive
+
+2. Ensure you have Python 3, then get and install (as by putting it in ``/usr/lib/python3/dist-packages``) citeproc-py_ and its own dependencies.
+
+3. Download `apa.csl`_ (and, if you'll be running quickbib's one test for it, `mla.csl`_) and set the environment variable ``APA_CSL_PATH`` to where you put it (ditto ``MLA_CSL_PATH``).
+
+4. Copy the example configuration file to ``$HOME/.citematic`` and edit it. `Registering for CrossRef`_ is easy. Getting access to EBSCOhost is harder. There's a good chance that your school (if you're using Citematic, you must be a student or an academic, right? right?) or your local library has an institutional subscription that you can use from home. You may be able to log in with a single HTTP ``POST`` (the Firefox extension `Tamper Data`_ is helpful for figuring out how), in which case editing ``ebsco_login`` will be particularly easy. And if your IP address is already authenticated, then you don't need to log in at all, and you can set ``ebsco_login`` to a no-op like ``1``. (Perl programmers note that ``$_`` refers to a WWW::Mechanize object in this context.)
+
+Running the tests
+============================================================
+
+For quickbib, enter the Python directory and say ``py.test``. This requires `pytest`_.
+
+For Citematic::Get, say ``perl test_citematic.pl``. This requires Test::More.
 
 Caveats
 ============================================================
 
-If you look at the code, you'll see that a great many cases need to be covered in order to parse all the idiosyncratic record formats. You'd hope that all that data would be systematically structured, huh? It isn't really, hence regexes. I've done a pretty good job (if I do say so myself) of covering psychology articles (particularly those represented in PsycINFO and PsycARTICLES), but more regexes will no doubt be needed if you plunge further into the depths of, say, MEDLINE. And while I implemented support for IDEAS so I can get economics articles, fields like mathematics and chemistry will probably need more databases. In short, I wrote this program for my own use, so I took pains to support the sort of articles I read (in experimental social psychology and JDM), but the further your interests are from mine, the more work you'd have to do to make Citematic useful. Patches are more than welcome; I would love for Citematic to be universal.
+If you look at the code of Citematic::Get, you'll see that a great many cases need to be covered in order to parse all the idiosyncratic record formats. You'd hope that all that data would be systematically structured, huh? It isn't really, hence regexes. I've done a pretty good job (if I do say so myself) of covering psychology articles (particularly those represented in PsycINFO and PsycARTICLES), but more regexes will no doubt be needed if you plunge further into the depths of, say, MEDLINE. And while I implemented support for IDEAS so I can get economics articles, fields like mathematics and chemistry will probably require more databases. In short, I wrote this program for my own use, so I took pains to support the sort of articles I read (in experimental social psychology and JDM), but the further your interests are from mine, the more work you'd have to do to make Citematic::Get useful. Patches are more than welcome; I would love for Citematic to be as well-rounded in scraping as it is in formatting.
 
-Another thing: every query is cached, but the cache never times out. You'll need to delete the cache file or edit it by hand (or in the case of EBSCO, use the ``-i`` option) in order to see any updates to the databases.
+Another thing: every query is cached, but the cache never times out. You'll need to delete the cache file or edit it by hand (or in the case of EBSCO, use the ``-b`` option to ``cite``) in order to see any updates to the databases.
 
 Will I get in trouble for using this program?
 ============================================================
 
-So far as I can tell from `EBSCOhost's terms of use`_, `St. Louis Fed's legal-notices page`_, and `CrossRef's terms and conditions`_, no. You will notice that Citematic does not use Google Scholar or Scirus, which forbid automated queries.
+So far as I can tell from `EBSCOhost's terms of use`_, `St. Louis Fed's legal-notices page`_, and `CrossRef's terms and conditions`_, no. You will notice that Citematic::Get does not use Google Scholar or Scirus, which forbid automated queries.
 
 There may be some restrictions on what you can do with the data you get, which apply just the same as if you'd used the web interface (e.g., EBSCO's terms say something about "non-commercial use"), but given that fair-use laws apply, I doubt you'll have any problems.
 
-And, of course, since this is mostly done with web scraping, server-side changes could suddenly render Citematic inoperable.
+And, of course, since this is mostly done with web scraping, server-side changes could suddenly render Citematic::Get inoperable.
 
 Why didn't you use Z39.80?
 ============================================================
@@ -59,7 +78,7 @@ It's pronounced "CITE-uh", you numskull.
 Licenses
 ============================================================
 
-Citematic contains some code, in modified form, from Brecht Machiels's citeproc-py_, to which the below two-clause BSD-style license applies. Citematic itself is licensed under the GPL.
+Citematic (specifically, quickbib) contains some code, in modified form, from citeproc-py, to which the below two-clause BSD-style license applies. Citematic itself is licensed under the GPL.
 
 License for citeproc-py
 ----------------------------------------
@@ -88,8 +107,13 @@ Citematic is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 .. _EBSCOhost: http://ebscohost.com/
 .. _IDEAS: http://ideas.repec.org/
 .. _RePEc: http://repec.org
+.. _`Citation Style Language`: http://citationstyles.org/downloads/specification.html
+.. _`ContextObjects in Spans`: http://ocoins.info/
+.. _`apa.csl`: https://github.com/citation-style-language/styles/blob/master/apa.csl
+.. _`mla.csl`: https://github.com/citation-style-language/styles/blob/master/mla.csl
 .. _CrossRef: http://crossref.org/
 .. _`registering for CrossRef`: http://www.crossref.org/requestaccount/
+.. _`pytest`: http://pytest.org/
 .. _`EBSCOhost's terms of use`: http://support.epnet.com/ehost/terms.html
 .. _`St. Louis Fed's legal-notices page`: http://research.stlouisfed.org/legal.html
 .. _`CrossRef's terms and conditions`: http://www.crossref.org/requestaccount/termsandconditions.html
