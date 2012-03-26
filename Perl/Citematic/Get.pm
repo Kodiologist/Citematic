@@ -287,18 +287,16 @@ sub query_crossref
     my $x = $global_cache->{crossref}{$url} ||= XMLin
         LWP::Simple::get($url),
         ForceArray => ['contributor', 'year'],
-        GroupTags => {contributors => 'contributor'},
-        NoAttr => 1;
+        GroupTags => {contributors => 'contributor'};
     $x = $x->{query_result}{body}{query};
     exists $x->{contributors}
         or return err 'No results.';
     $x = {%$x}; # Don't modify the thing we're caching.
-    $x->{year} = $x->{year}[0];
-      # Sometimes, multiple years are returned by CrossRef for
-      # different versions of an item (say, print and online).
-      # I'll go with the first if only because at least in
-      # the case of 10.1177/1745691610393980, the print date
-      # comes first.
+    $x->{year} =
+       (first {$_->{media_type} eq 'print'} α $x->{year}
+           or $x->{year}[0])
+         ->{content};
+    $x->{doi} = $x->{doi}{content};
     $x;}
 
 sub from_doi
