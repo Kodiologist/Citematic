@@ -212,7 +212,7 @@ sub format_nonjournal_title
         # But we'll try to fix it.
         if ($s =~ /[[:lower:]]/)
           # The Title Is Probably Capitalized Like This.
-           {$s =~ s {[- ('"]\K([[:upper:]])([^-. ()'"]+)}
+           {$s =~ s {[- ('‘"“]\K([[:upper:]])([^-. ()'‘’"“’]+)}
                {my $lower = lc($1) . $2;
                 if ($speller->check($lower))
                    {$lower;}
@@ -293,9 +293,9 @@ sub query_crossref
         or return err 'No results.';
     $x = {%$x}; # Don't modify the thing we're caching.
     $x->{year} =
-       (first {$_->{media_type} eq 'print'} α $x->{year}
-           or $x->{year}[0])
-         ->{content};
+        (first {ref and $_->{media_type} eq 'print'} α $x->{year}) ||
+        $x->{year}[0];
+    ref $x->{year} and $x->{year} = $x->{year}{content};
     $x->{doi} = $x->{doi}{content};
     $x;}
 
@@ -464,20 +464,24 @@ sub ebsco
            {$year = $2 ? $1 : "19$1";}
         $record{Source} =~ s{
                 \s+
-                (?:Vol \.? \s)?
-                (\d+) \s?
-                \(?
-                (?: (Issue | Suppl | Pt | Whole \s No\.) \s (\d+ (?: / \d+)?) |
-                    \( ( [-,. 0-9A-Za-z]+ ) \) )?
-                \)?
+                (?: Vol \.? \s (?<volume> \d+) |
+                  (?<volume> \d+) (?= \( ) )
+                \s*
+                (?: \(?
+                       (?<issue_type> Issue | Suppl | Pt | Whole \s No\.)
+                        \s
+                        (?<issue> \d+ (?: / \d+)?)
+                        \)? |
+                    \( (?<issue> [-,. 0-9A-Za-z]+ ) \) )?
                 , \s+
                 } {✠}x
             or die "Source: $record{Source}";
 
-        my $volume = $1;
-        my $issue = $3 || $4;
+        my $volume = $+{volume};
+        my $issue = $+{issue};
         if (defined $issue)
-           {defined $2 and $2 eq 'Suppl' and $issue = "Suppl. $issue";
+           {defined $+{issue_type} and $+{issue_type} eq 'Suppl'
+                and $issue = "Suppl. $issue";
             $issue =~ /No\.\s*(.+)/ and $issue = $1;
             $issue =~ s/\.(\S)/. $1/;
             $issue =~ s! (\d+) [-/] (\d+) !$1, $2!x;}
