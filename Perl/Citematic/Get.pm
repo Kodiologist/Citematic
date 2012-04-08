@@ -260,7 +260,7 @@ sub journal_article
 
 sub book_chapter
    {my ($authors, $year, $chapter_title, $editors, $book, $volume,
-        $first_page, $last_page, $place, $publisher, $isbn) = @_;
+        $edition, $first_page, $last_page, $place, $publisher, $isbn) = @_;
     citation
         type => 'chapter',
         author => $authors,
@@ -269,6 +269,7 @@ sub book_chapter
         editor => $editors,
         'container-title' => $book,
         volume => $volume,
+        edition => $edition,
         page => digest_pages($first_page, $last_page),
         'publisher-place' => $place,
         publisher => format_publisher($publisher),
@@ -520,14 +521,16 @@ sub ebsco
     elsif ($record{'Document Type'} eq 'Chapter')
 
        {$record{Source} =~ m{
-            \A (?<book> [^.]+?) \. \s
+            \A (?<book> [^.(]+?)
+            (?: \s \( (?<edition> [^)]+) \) )?
+            \. \s
             (?: (?<volume> \d+) \. \s)?
             (?<editors> .+?) \s \(Ed\.\); \s
             pp\. \s (?<fpage> \d+) - (?<lpage> \d+) \. \s
             (?<place> [^,:]+, \s [^,:]+), \s [^,:]+: \s
             (?<publisher> [^,]+) , \s
             (?: [^,]+ , \s)?
-            (?<year> \d\d\d\d) \.}x or die;
+            (?<year> \d\d\d\d) \.}x or die 'chapter';
         my %src = %+;
 
         (my $book = $src{book}) =~ s/:  /: /;
@@ -541,7 +544,8 @@ sub ebsco
             $record{ISBN} =~ /([-0-9Xx]+)/;
 
         return book_chapter $authors, $src{year}, $title,
-            $editors, $book, $src{volume}, $src{fpage}, $src{lpage},
+            $editors, $book, $src{volume}, $src{edition},
+            $src{fpage}, $src{lpage},
             $src{place}, $src{publisher}, $isbn;}
 
     else

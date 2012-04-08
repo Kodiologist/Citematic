@@ -241,6 +241,9 @@ is apa(author => ['yates', 'veinott', 'patalano']),
 is apa(title => ['self-reflection', 'self-persuasion']),
     'Wilson, T. D. (1990). Self-persuasion via self-reflection. In J. M. Olson & M. P. Zanna (Eds.), <i>Self-inference processes: The Ontario symposium</i> (Vol. 6, pp. 43–67). Hillsdale, NJ: Lawrence Erlbaum. ISBN 0-8058-0551-6.',
     'Self-inference processes (multiple-volume work)';
+is apa(year => 2008, author => ['cosmides', 'tooby'], title => ['emotions']),
+    'Tooby, J., & Cosmides, L. (2008). The evolutionary psychology of the emotions and their relationship to internal regulatory variables. In M. Lewis, J. M. Haviland-Jones, & L. F. Barrett (Eds.), <i>Handbook of emotions</i> (3rd ed., pp. 114–137). New York, NY: Guilford Press. ISBN 1-59385-650-4.',
+    'Handbook of emotions (book with an edition number)';
 is apa(year => 1992, author => ['massaro'], title => ['fuzzy']),
     'Massaro, D. W. (1992). Broadening the domain of the fuzzy logical model of perception. In H. L. Pick Jr., P. W. van den Broek, & D. C. Knill (Eds.), <i>Cognition: Conceptual and methodological issues</i> (pp. 51–84). Washington, DC: American Psychological Association. ISBN 1-55798-165-5.',
     'Cognition: Conceptual and methodological issues (editor with "Jr.")';
