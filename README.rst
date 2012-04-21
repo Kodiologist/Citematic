@@ -65,7 +65,7 @@ There may be some restrictions on what you can do with the data you get, which a
 
 And, of course, since this is mostly done with web scraping, server-side changes could suddenly render Citematic::Get inoperable.
 
-Why didn't you use Z39.80?
+Why didn't you use Z39.50?
 ============================================================
 
 I couldn't get it to work.
