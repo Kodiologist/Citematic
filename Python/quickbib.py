@@ -76,6 +76,7 @@ def bib(style_path,
         formatter)
     bibliography.register(Citation(
         [ CitationItem(d['id']) for d in ds ]))
+    if len(ds) > 1: bibliography.sort()
     s = bibliography.bibliography()
 
     # Fix spacing and punctuation issues.
