@@ -169,6 +169,9 @@ is apa(doi => '10.1080/00224545.1979.9933632'),
 is apa(doi => '10.1007/s11238-010-9234-3'),
     'Zeisberger, S., Vrecko, D., & Langer, T. (2012). Measuring the time stability of prospect theory preferences. <i>Theory and Decision, 72</i>(3), 359–386. doi:10.1007/s11238-010-9234-3',
     'Theory and Decision (DOI search, multiple years in CrossRef)';
+is apa(title => ['toward a synthesis of cognitive biases']),
+    'Hilbert, M. (2012). Toward a synthesis of cognitive biases: How noisy information processing can bias human decision making. <i>Psychological Bulletin, 138</i>(2), 211–237. doi:10.1037/a0025940',
+    'Psychological Bulletin (multiple DOIs in PsycINFO record)';
 is apa(title => ['happiness makes us selfish']),
     'Tan, H. B., & Forgas, J. P. (2010). When happiness makes us selfish, but sadness makes us fair: Affective influences on interpersonal strategies in the dictator game. <i>Journal of Experimental Social Psychology, 46</i>(3), 571–576. doi:10.1016/j.jesp.2010.01.007',
     'Journal of Experimental Social Psychology (impoverished PsycINFO record)';
