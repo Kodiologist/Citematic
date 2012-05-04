@@ -536,6 +536,20 @@ sub ebsco
             (?<year> \d\d\d\d) \.}x or die 'chapter';
         my %src = %+;
 
+        if (exists $record{'Series Title'}
+                and $record{'Series Title'} =~ /\A(Annals of The New York Academy of Sciences); Vol\. (\d+)/i)
+          # Annals of the NYAS is actually a journal.
+           {my ($journal, $volume) = ($1, $2);
+            my $doi =
+                $record{'Digital Object Identifier'} ||
+                $terms{doi} ||
+                get_doi
+                    $src{year}, $journal, $title,
+                    $authors->[0]{family}, $volume, $src{fpage};
+            return journal_article $authors, $src{year}, $title,
+                'Annals of the New York Academy of Sciences',
+                $volume, undef, $src{fpage}, $src{lpage}, $doi;}
+
         (my $book = $src{book}) =~ s/:  /: /;
         $src{volume} and $book =~ s/, Vol\z//;
         my $editors = σ
