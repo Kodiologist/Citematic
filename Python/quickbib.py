@@ -27,11 +27,12 @@ def bib1(style_path, d, **rest):
 
 def bib(style_path,
         ds,
+        also_return_keys = False,
         formatter = "chocolate",
         dumb_quotes = True,
-          # Setting this to False won't educate any straight
-          # quotes in the data, but leaving it True will stupefy
-          # all the smart quotes in the output.
+          # Turning this off won't educate any straight quotes in
+          # the data, but leaving it on will stupefy all the
+          # smart quotes in the output.
         apa_tweaks = True,
         # The below options are ignored unless apa_tweaks is on.
         always_include_issue = False,
@@ -48,7 +49,8 @@ def bib(style_path,
 
     ds = deepcopy(ds)
     for d in ds:
-        d['id'] = str(random())
+        if 'id' not in d:
+            d['id'] = str(random())
         for k in list(d.keys()):
             if d[k] is None: del d[k]
         if apa_tweaks:
@@ -94,7 +96,7 @@ def bib(style_path,
         # Replace the ellipsis placeholder.
         s = s.replace('⣥<ellipsis>⣥, ., &', '…')
 
-    return s
+    return (bibliography.keys, s) if also_return_keys else s
 
 # ------------------------------------------------------------
 # Private
