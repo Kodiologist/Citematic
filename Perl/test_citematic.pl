@@ -95,6 +95,9 @@ is apa(year => 1998, author => ['Hsee'], title => ['less is better']),
 is apa(year => 2006, author => ['ditto', 'pizarro']),
     'Ditto, P. H., Pizarro, D. A., Epstein, E. B., Jacobson, J. A., & MacDonald, T. K. (2006). Visceral influences on risk-taking behavior. <i>Journal of Behavioral Decision Making, 19</i>(2), 99–113. doi:10.1002/bdm.520',
     'Journal of Behavioral Decision Making (miscapitalized title)';
+is apa(year => 2007, author => ['levin', 'pederson']),
+    'Levin, I. P., Weller, J. A., Pederson, A. A., & Harshman, L. A. (2007). Age-related differences in adaptive decision making: Sensitivity to expected value in risky choice. <i>Judgment and Decision Making, 2</i>(4), 225–233. Retrieved from http://journal.sjdm.org/7404/jdm7404.htm',
+    'Judgment and Decision Making';
 is apa(title => ['short-term memory', 'we stand']),
     'Crowder, R. G. (1993). Short-term memory: Where do we stand? <i>Memory & Cognition, 21</i>(2), 142–145. doi:10.3758/BF03202725',
     'Memory & Cognition (title search, ampersand in journal title)';

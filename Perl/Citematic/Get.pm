@@ -246,7 +246,7 @@ sub citation
 
 sub journal_article
    {my ($authors, $year, $article_title, $journal, $volume, $issue,
-        $first_page, $last_page, $doi) = @_;
+        $first_page, $last_page, $doi, $url) = @_;
     citation
         type => 'article-journal',
         author => $authors,
@@ -256,7 +256,8 @@ sub journal_article
         volume => $volume,
         issue => $issue,
         page => digest_pages($first_page, $last_page),
-        DOI => $doi;}
+        DOI => $doi,
+        URL => $url;}
 
 sub book_chapter
    {my ($authors, $year, $chapter_title, $editors, $book, $volume,
@@ -460,7 +461,7 @@ sub ebsco
             return journal_article $authors, $d{year},
                 $title, $d{journal_title},
                 $d{volume}, $d{issue}, $d{first_page} || $1, $d{last_page} || $2,
-                $record{'Digital Object Identifier'};}
+                $record{'Digital Object Identifier'}, undef;}
         my $year;
         if ($record{Source} =~ s{,?\s+\d{1,2}/\d{1,2}/(\d{4})}{})
            {$year = $1;}
@@ -517,9 +518,14 @@ sub ebsco
             get_doi
                 $year, $journal, $title,
                 $authors->[0]{family}, $volume, $fpage;
+        my $url;
+        lc($journal) eq 'judgment and decision making'
+          # This is an open-access journal, but it doesn't have
+          # DOIs, so get a URL.
+            and $url = sjdm_url_from_title($title);
 
         return journal_article $authors, $year, $title,
-            $journal, $volume, $issue, $fpage, $lpage, $doi;}
+            $journal, $volume, $issue, $fpage, $lpage, $doi, $url;}
 
     elsif ($record{'Document Type'} eq 'Chapter')
 
@@ -548,7 +554,7 @@ sub ebsco
                     $authors->[0]{family}, $volume, $src{fpage};
             return journal_article $authors, $src{year}, $title,
                 'Annals of the New York Academy of Sciences',
-                $volume, undef, $src{fpage}, $src{lpage}, $doi;}
+                $volume, undef, $src{fpage}, $src{lpage}, $doi, undef;}
 
         (my $book = $src{book}) =~ s/:  /: /;
         $src{volume} and $book =~ s/, Vol\z//;
@@ -646,7 +652,25 @@ sub ideas
     return journal_article
         $authors, $record{year}, $record{title},
         $journal, $record{volume}, $record{issue},
-        $fpage, $lpage, $doi;}
+        $fpage, $lpage, $doi, undef;}
+
+# ------------------------------------------------------------
+# Society for Judgment and Decision-Making
+# ------------------------------------------------------------
+
+sub sjdm_url_from_title
+   {my $title = shift;
+    progress 'Trying SJDM';
+    $global_cache->{sjdm}{lc($title)} ||= do
+       {my $page = LWP::Simple::get(query_url
+            'http://www.sjdm.org/cgi-bin/namazu.cgi',
+            max => 10, result => 'normal', sort => 'score',
+            idxname => 'journal',
+            query => "{$title}");
+          # Curly braces signify an exact match in Namazu.
+          # (http://www.namazu.org/doc/manual.html#query-phrase)
+        $page =~ m/<dd><a href="(.+?)">/ or return err 'No results.';
+        $1;}}
 
 # ------------------------------------------------------------
 # Public interface
