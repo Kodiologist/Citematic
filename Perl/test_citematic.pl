@@ -190,6 +190,9 @@ is apa(year => 2006, author => ['wheeler', 'george', 'marlatt']),
 is apa(doi => '10.1177/107906320601800302'),
     'Wheeler, J. G., George, W. H., & Marlatt, G. A. (2006). Relapse prevention for sexual offenders: Considerations for the "abstinence violation effect". <i>Sexual Abuse, 18</i>(3), 233–248. doi:10.1177/107906320601800302',
     'Sexual Abuse (DOI search for title with double quotes in CrossRef)';
+is apa(title => ['hormones and history'], author => ['zehr']),
+    'Wallen, K., & Zehr, J. L. (2004). Hormones and history: The evolution and development of primate female sexuality. <i>Journal of Sex Research, 41</i>(1), 101–112. doi:10.1080/00224490409552218',
+    'Journal of Sex Research';
 is apa(year => 1997, author => ['holdershaw', 'gendall']),
     'Holdershaw, J., Gendall, P., & Garland, R. (1997). The widespread use of odd pricing in the retail sector. <i>Marketing Bulletin, 8</i>, 53–58.',
     'Marketing Bulletin (last author missing from EBSCO record)';
