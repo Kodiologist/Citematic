@@ -64,6 +64,11 @@ def bib(style_path,
             if d['type'] == 'report' and 'publisher' in d and 'URL' in d:
                 d['URL'] = '{} website: {}'.format(
                     d.pop('publisher'), d['URL'])
+            # Add structure words for presentations and include
+            # the event place.
+            if d['type'] == 'speech' and d['genre'] == 'paper':
+                d['event'] = 'meeting of the {}, {}'.format(
+                    d.pop('publisher'), d['event-place'])
             # Abbreviate a long list of authors with an ellipsis
             # and the final author.
             if d.get('author') and len(d['author']) > 7:

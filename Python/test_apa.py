@@ -7,6 +7,7 @@ if 'APA_CSL_PATH' not in environ:
     raise Exception('The environment variable APA_CSL_PATH is not set')
 
 def f(d, **kw):
+    for k in d: d[k.replace('_', '-')] = d.pop(k)
     return bib1(environ['APA_CSL_PATH'], d,
         apa_tweaks = True, **kw)
 
@@ -187,3 +188,18 @@ def test_newspaper_article():
         'Carey, B. (2011, June 23). Expert on mental illness reveals her own fight. <i>The New York Times</i>. Retrieved from http://www.nytimes.com/2011/06/23/health/23lives.html')
   # Yes, the "The" in "The New York Times" is included: see
   # http://www.apastyle.org/learn/faqs/cite-newspaper.aspx
+
+def test_conference_paper():
+  # If I understand
+  #   http://forums.zotero.org/discussion/4782/csl-getting-conference-name-to-show-up-properly-in-bibliography#Comment_20601 ,
+  # correctly, "paper-conference" should only be used for papers
+  # published in proceedings; otherwise, one should use "speech".
+    assert (f(dict(type = 'speech',
+            URL = 'http://www.bapfelbaumphd.com/Sexual_Reality.html',
+            author = [name('Bernard', 'Apfelbaum')],
+            issued = {'date-parts': [[1984, 11]]},
+            title = 'Sexual reality and how we dismiss it',
+            genre = 'paper',
+            publisher = 'American Association of the Advancement of Science',
+            event_place = 'San Francisco State University, San Francisco, CA')) ==
+        'Apfelbaum, B. (1984, November). <i>Sexual reality and how we dismiss it</i>. Paper presented at the meeting of the American Association of the Advancement of Science, San Francisco State University, San Francisco, CA. Retrieved from http://www.bapfelbaumphd.com/Sexual_Reality.html')
