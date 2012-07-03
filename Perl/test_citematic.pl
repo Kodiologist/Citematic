@@ -193,6 +193,9 @@ is apa(doi => '10.1177/107906320601800302'),
 is apa(title => ['hormones and history'], author => ['zehr']),
     'Wallen, K., & Zehr, J. L. (2004). Hormones and history: The evolution and development of primate female sexuality. <i>Journal of Sex Research, 41</i>(1), 101–112. doi:10.1080/00224490409552218',
     'Journal of Sex Research';
+is apa(title => ['reconsiderations about greek']),
+    'Percy, W. A., III. (2005). Reconsiderations about Greek homosexualities. <i>Journal of Homosexuality, 49</i>(3, 4), 13–61. doi:10.1300/J082v49n03_02',
+    'Journal of Homosexuality (author with "III")';
 is apa(year => 1997, author => ['holdershaw', 'gendall']),
     'Holdershaw, J., Gendall, P., & Garland, R. (1997). The widespread use of odd pricing in the retail sector. <i>Marketing Bulletin, 8</i>, 53–58.',
     'Marketing Bulletin (last author missing from EBSCO record)';
