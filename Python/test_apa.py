@@ -95,7 +95,9 @@ def test_journal_article():
       # Advance online publication
 
 def test_report():
-    assert (f(dict(
+# Technical report
+    def r(publisher_website):
+        return f(publisher_website = publisher_website, d = dict(
             type = 'report',
             author =
                [name('Anna', 'Dreber'),
@@ -105,9 +107,11 @@ def test_report():
             title = 'Beauty queens and battling knights: Risk taking and attractiveness in chess',
             genre = 'Discussion Paper No. 5314',
             publisher = 'Institute for the Study of Labor',
-            URL = 'http://ftp.iza.org/dp5314.pdf')) ==
+            URL = 'http://ftp.iza.org/dp5314.pdf'))
+    assert (r(True) ==
         'Dreber, A., Gerdes, C., & Gränsmark, P. (2010). <i>Beauty queens and battling knights: Risk taking and attractiveness in chess</i> (Discussion Paper No. 5314). Retrieved from Institute for the Study of Labor website: http://ftp.iza.org/dp5314.pdf')
-      # Technical report
+    assert (r(False) ==
+        'Dreber, A., Gerdes, C., & Gränsmark, P. (2010). <i>Beauty queens and battling knights: Risk taking and attractiveness in chess</i> (Discussion Paper No. 5314). Institute for the Study of Labor. Retrieved from http://ftp.iza.org/dp5314.pdf')
 
 def test_informal():
     assert (f(dict(type = 'manuscript',

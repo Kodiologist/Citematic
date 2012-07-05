@@ -38,6 +38,7 @@ def bib(style_path,
         always_include_issue = False,
         include_isbn = False,
         url_after_doi = False,
+        publisher_website = True,
         abbreviate_given_names = True):
 
     if isinstance(formatter, str):
@@ -61,7 +62,7 @@ def bib(style_path,
             # Use the weird "Retrieved from Dewey, Cheatem, &
             # Howe website: http://example.com" format perscribed
             # for reports.
-            if d['type'] == 'report' and 'publisher' in d and 'URL' in d:
+            if publisher_website and d['type'] == 'report' and 'publisher' in d and 'URL' in d:
                 d['URL'] = '{} website: {}'.format(
                     d.pop('publisher'), d['URL'])
             # Add structure words for presentations and include
