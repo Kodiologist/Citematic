@@ -247,7 +247,7 @@ is apa(author => ['bertrand', 'shafir'], title => ['advertising content']),
 
 note '~~~ Book chapters ~~~';
 
-is apa(title => ['gender role journeys']),
+is apa(title => ['gender role journeys', 'metaphor']),
     q[O'Neil, J. M., & Egan, J. (1992). Men's and women's gender role journeys: A metaphor for healing, transition, and transformation. In B. R. Wainrib (Ed.), <i>Gender issues across the life cycle</i> (pp. 107–123). New York, NY: Springer. ISBN 0-8261-7680-1.],
     'Gender issues across the life cycle (one editor)';
 is apa(author => ['yates', 'veinott', 'patalano']),
