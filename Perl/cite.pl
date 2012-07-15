@@ -20,6 +20,7 @@ my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
     ['more|m' => 'include more information in the citation (breaks APA style)'],
     ['json=s' => 'where to save the CSL variables'],
     ['quiet|q', ''],
+    ['debug|d', ''],
     ['help', '']);
 
 if ($opt->help)
@@ -28,6 +29,7 @@ if ($opt->help)
 
 my @title_words = @{$opt->title || []};
 local $Citematic::Get::verbose = not $opt->quiet;
+local $Citematic::Get::debug = $opt->debug;
 local $Citematic::Get::bypass_ebsco_cache = $opt->bypass_ebsco_cache;
 
 # Interpret arguments that look like years, DOIs, or

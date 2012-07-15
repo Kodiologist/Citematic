@@ -61,12 +61,16 @@ $@ and die "Error evaluating ebsco_login: $@";
 # ------------------------------------------------------------
 
 our $verbose;
+our $debug;
 our $bypass_ebsco_cache;
 
 my $speller = new Text::Aspell;
 
 sub note
    {$verbose and print STDERR @_, "\n";}
+
+sub debug
+   {$debug and print STDERR @_, "\n";}
 
 sub progress
    {note @_, '…';}
@@ -419,6 +423,7 @@ sub ebsco
                     ':<>';}
             return χ
                 '-title' => $title,
+                '-record' => $page =~ /"plink":"(.+?)"/,
                 ($page =~ m!<p>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
                   ? ('-by' => decode_entities($1))
                   : ()),
@@ -429,6 +434,7 @@ sub ebsco
         {};});
 
     %record or return err 'No results.';
+    debug "EBSCO record: $record{'-record'}";
 
     # Parse the record.
 
