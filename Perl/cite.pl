@@ -5,6 +5,7 @@ use warnings;
 use strict;
 use Citematic::Get;
 use Citematic::QuickBib;
+use URI::Escape;
 use Encode 'decode';
 use JSON qw(to_json);
 use File::Slurp 'write_file';
@@ -18,6 +19,8 @@ my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
     ['title|t=s@' => 'a title keyword'],
     ['bypass-ebsco-cache|b' => "don't read from the cache for EBSCOhost (useful for getting fresh full-text URLs)"],
     ['more|m' => 'include more information in the citation (breaks APA style)'],
+    ['doi-url-fmt=s', 'printf format for making a URL out of a DOI',
+        {default => 'http://doi.dx.org/%s'}],
     ['json=s' => 'where to save the CSL variables'],
     ['quiet|q', ''],
     ['debug|d', ''],
@@ -59,7 +62,12 @@ my $a = Citematic::Get::get
     doi => $doi);
 
 if ($a)
-   {my %apa_opts =
+   {!$opt->quiet and $a->{DOI}
+        and print STDERR 'DOI URL: ',
+            sprintf($opt->doi_url_fmt,
+                uri_escape($a->{DOI}, '^A-Za-z0-9\-\._~/')),
+            "\n";
+    my %apa_opts =
        (style_path => $ENV{APA_CSL_PATH}
             || die('The environment variable APA_CSL_PATH is not set'),
         apa_tweaks => 1);
