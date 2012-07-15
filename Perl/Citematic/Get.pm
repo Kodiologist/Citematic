@@ -421,6 +421,10 @@ sub ebsco
                {note 'OpenURL: http:', uri_escape
                     uri_unescape($1),
                     ':<>';}
+            elsif ($page =~ /Linked Full Text/)
+               {$agent->submit_form(fields =>
+                   {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
+                note 'Linked full text: ', $agent->uri;}
             return χ
                 '-title' => $title,
                 '-record' => $page =~ /"plink":"(.+?)"/,
