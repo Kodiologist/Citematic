@@ -549,8 +549,8 @@ sub ebsco
             (?<year> \d\d\d\d) \.}x or die 'chapter';
         my %src = %+;
 
-        if (exists $record{'Series Title'}
-                and $record{'Series Title'} =~ /\A(Annals of The New York Academy of Sciences); Vol\. (\d+)/i)
+        if (exists $record{'Parent Book Series'}
+                and $record{'Parent Book Series'} =~ /\A(Annals of The New York Academy of Sciences), Vol\. (\d+)/i)
           # Annals of the NYAS is actually a journal.
            {my ($journal, $volume) = ($1, $2);
             my $doi =
