@@ -406,7 +406,7 @@ sub ebsco
             progress 'Fetching record';
             $agent->follow_link(name => "Result_$i");
             $page = $agent->content;
-            $page =~ m!<a name="citation"><span>(.+?)</span></a></dd>.*?<dt>(.+?)</div>!s
+            $page =~ m!<a name="citation"><span>(.+?)\s*</span></a></dd>.*?<dt>(.+?)</div>!s
                 or die;
             my ($title, $rows) = (decode_entities($1), $2);
             # Before returning the results, print a full-text URL
