@@ -143,7 +143,7 @@ sub digest_author
        {$str =~ s/\.([[:upper:]])/. $1/g;
           # Fix initials crammed together without spaces.
         my @suffix;
-        $str =~ s/,?\s+(Jr\.|Sr\.|III\b|IV\b|VI{0,3}\b|I?X\b)//i
+        $str =~ s/,?\s+(Jr\.|Sr\.|III\b|IV\b|VI{0,3}\b|I?X\b)(?!\.)//i
             and @suffix = (suffix => $1);
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
