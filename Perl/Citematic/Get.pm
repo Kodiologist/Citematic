@@ -448,7 +448,7 @@ sub ebsco
         map {digest_author $_}
         $record{'-by'} && $record{Database} ne 'PsycINFO' &&
               $record{'-by'} !~ /addressed to/ &&
-              $record{'Source'} !~ /\AJournal of Sex Research/
+              $record{'Source'} !~ /\AJournal of Sex Research/i
           ? $record{'-by'} =~ /[[:upper:]]{6}/
             ? split qr[(?:,|;| and| &) ],
                   apply {s/,\s+\S*[[:lower:]]{3}.+//}

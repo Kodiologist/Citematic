@@ -193,6 +193,9 @@ is apa(doi => '10.1177/107906320601800302'),
 is apa(title => ['hormones and history'], author => ['zehr']),
     'Wallen, K., & Zehr, J. L. (2004). Hormones and history: The evolution and development of primate female sexuality. <i>Journal of Sex Research, 41</i>(1), 101–112. doi:10.1080/00224490409552218',
     'Journal of Sex Research';
+is apa(title => ['stripping sex of meaning']),
+    'Goldenberg, J. L., Cox, C. R., Pyszczynski, T., Greenberg, J., & Solomon, S. (2002). Understanding human ambivalence about sex: The effects of stripping sex of meaning. <i>Journal of Sex Research, 39</i>(4), 310–320. doi:10.1080/00224490209552155',
+    'Journal of Sex Research ("of" capitalized in MEDLINE)';
 is apa(title => ['reconsiderations about greek']),
     'Percy, W. A., III. (2005). Reconsiderations about Greek homosexualities. <i>Journal of Homosexuality, 49</i>(3, 4), 13–61. doi:10.1300/J082v49n03_02',
     'Journal of Homosexuality (author with "III")';
