@@ -136,6 +136,9 @@ is apa(title => ['on land and underwater', 'memory']),
 is apa(title => ['on the psychology of drinking']),
     'Aarts, H., Dijksterhuis, A., & De Vries, P. (2001). On the psychology of drinking: Being thirsty and perceptually ready. <i>British Journal of Psychology, 92</i>(4), 631–642. doi:10.1348/000712601162383',
     'British Journal of Psychology (red-herring year and unnecessary "Pt" in MEDLINE record)';
+is apa(year => 2010, author => ['bradley', 'byrd-craven']),
+    q(Vaughn, J. E., Bradley, K. I., Byrd-Craven, J., & Kennison, S. M. (2010). The effect of mortality salience on women's judgments of male faces. <i>Evolutionary Psychology, 8</i>(3), 477–491. Retrieved from http://www.epjournal.net/articles/the-effect-of-mortality-salience-on-women%E2%80%99s-judgments-of-male-faces),
+    'Evolutionary Psychology';
 is apa(title => ['pretty women inspire']),
     'Wilson, M., & Daly, M. (2004). Do pretty women inspire men to discount the future? <i>Proceedings of the Royal Society B, 271</i>(Suppl. 4), S177–S179. doi:10.1098/rsbl.2003.0134',
     'Proceedings of the Royal Society B (article with "S" page numbers)';

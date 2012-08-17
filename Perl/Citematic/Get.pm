@@ -534,6 +534,9 @@ sub ebsco
           # This is an open-access journal, but it doesn't have
           # DOIs, so get a URL.
             and $url = sjdm_url_from_title($title);
+        lc($journal) eq 'evolutionary psychology'
+          # Same deal.
+            and $url = evpsych_url_from_title($title);
 
         return journal_article $authors, $year, $title,
             $journal, $volume, $issue, $fpage, $lpage, $doi, $url;}
@@ -682,6 +685,15 @@ sub sjdm_url_from_title
           # (http://www.namazu.org/doc/manual.html#query-phrase)
         $page =~ m/<dd><a href="(.+?)">/ or return err 'No results.';
         $1;}}
+
+# ------------------------------------------------------------
+# Evolutionary Psychology
+# ------------------------------------------------------------
+
+sub evpsych_url_from_title
+   {my $title = shift;
+    'http://www.epjournal.net/articles/' .
+        URI::Escape::uri_escape_utf8(lc join '-', $title =~ /((?:’|\w)+)/g);}
 
 # ------------------------------------------------------------
 # Public interface
