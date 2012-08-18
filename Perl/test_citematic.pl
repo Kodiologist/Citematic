@@ -188,6 +188,9 @@ is apa(title => ['toward a synthesis of cognitive biases']),
 is apa(title => ['happiness makes us selfish']),
     'Tan, H. B., & Forgas, J. P. (2010). When happiness makes us selfish, but sadness makes us fair: Affective influences on interpersonal strategies in the dictator game. <i>Journal of Experimental Social Psychology, 46</i>(3), 571–576. doi:10.1016/j.jesp.2010.01.007',
     'Journal of Experimental Social Psychology (impoverished PsycINFO record)';
+is apa(title => ['false consensus effect', 'meta-analysis']),
+    'Mullen, B., Atkins, J. L., Champion, D. S., Edwards, C., Hardy, D., Story, J. E., & Vanderklok, M. (1985). The false consensus effect: A meta-analysis of 115 hypothesis tests. <i>Journal of Experimental Social Psychology, 21</i>(3), 262–283. doi:10.1016/0022-1031(85)90020-4',
+    'Journal of Experimental Social Psychology (only one author in PsycINFO record)';
 is apa(year => 1997, author => ['landolt', 'dutton']),
     'Landolt, M. A., & Dutton, D. G. (1997). Power and personality: An analysis of gay male intimate abuse. <i>Sex Roles, 37</i>(5, 6), 335–359. doi:10.1023/A:1025649306193',
     'Sex Roles (article attributed to multiple issues)';

@@ -326,6 +326,17 @@ sub get_doi
 
     return $record{doi};}
 
+sub digest_crossref_contributors
+   {σ
+    map
+       {# Add periods to initials.
+        $_->{given_name} =~ s/ ([[:upper:]])\b(?!\.)/ $1./g;
+        χ
+            given => $_->{given_name},
+            family => $_->{surname}}
+    grep {$_->{contributor_role} eq 'author'}
+    @{shift()}}
+
 # ------------------------------------------------------------
 # EBSCOhost
 # ------------------------------------------------------------
@@ -468,11 +479,15 @@ sub ebsco
         $record{'Document Type'} eq 'Editorial')
 
        {if ($record{Source} =~ /\A[^0-9,;]+,(?: \w\w\w)? \d+, \d\d\d\d\.(?: pp?\. (\d+)-?(\d*)\.)?\z/
+            || $record{Authors} =~ /\bet al\./i
                and $record{'Digital Object Identifier'})
            # This record is impoverished. Let's try CrossRef.
            {my %d = from_doi $record{'Digital Object Identifier'};
-            return journal_article $authors, $d{year},
-                $title, $d{journal_title},
+            return journal_article
+                +($record{Authors} =~ /\bet al\./i
+                  ? digest_crossref_contributors($d{contributors})
+                  : $authors),
+                $d{year}, $title, $d{journal_title},
                 $d{volume}, $d{issue}, $d{first_page} || $1, $d{last_page} || $2,
                 $record{'Digital Object Identifier'}, undef;}
         my $year;
