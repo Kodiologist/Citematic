@@ -548,8 +548,10 @@ sub ebsco
        {$record{Source} =~ m{
             \A (?<book> [^.(]+?)
             (?: \s \( (?<edition> [^)]+) \) )?
-            \. \s
-            (?: (?<volume> \d+) \. \s)?
+            (?: \. | , \s vol\. ) \s
+            (?: (?<volume> \d+)
+                (?: \. | : \s [^.]+ \.)
+            \s)?
             (?<editors> .+?) \s \(Ed\.\); \s
             pp\. \s (?<fpage> \d+) - (?<lpage> \d+) \. \s
             (?<place> [^,:]+, \s [^,:]+), \s [^,:]+: \s

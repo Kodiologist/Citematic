@@ -272,6 +272,9 @@ is apa(author => ['yates', 'veinott', 'patalano']),
 is apa(title => ['self-reflection', 'self-persuasion']),
     'Wilson, T. D. (1990). Self-persuasion via self-reflection. In J. M. Olson & M. P. Zanna (Eds.), <i>Self-inference processes: The Ontario symposium</i> (Vol. 6, pp. 43–67). Hillsdale, NJ: Lawrence Erlbaum. ISBN 0-8058-0551-6.',
     'Self-inference processes (multiple-volume work)';
+is apa(title => ['relapse and relapse prevention']),
+    'Hsu, S. H., & Marlatt, G. A. (2012). Addiction syndrome: Relapse and relapse prevention. In H. Shaffer, D. A. LaPlante, & S. E. Nelson (Eds.), <i>APA addiction syndrome handbook</i> (Vol. 2, pp. 105–132). Washington, DC: American Psychological Association. ISBN 1-4338-1105-7.',
+    'APA addiction syndrome handbook (EBSCO record with volume subtitle)';
 is apa(year => 2008, author => ['cosmides', 'tooby'], title => ['emotions']),
     'Tooby, J., & Cosmides, L. (2008). The evolutionary psychology of the emotions and their relationship to internal regulatory variables. In M. Lewis, J. M. Haviland-Jones, & L. F. Barrett (Eds.), <i>Handbook of emotions</i> (3rd ed., pp. 114–137). New York, NY: Guilford Press. ISBN 1-59385-650-4.',
     'Handbook of emotions (book with an edition number)';
