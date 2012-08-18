@@ -413,15 +413,15 @@ sub ebsco
             # to STDERR.
             if ($page =~ /HTML Full Text/)
                {note 'Full text (HTML): ', $agent->uri;}
-            elsif ($page =~ /PDF Full Text/)
+            if ($page =~ /PDF Full Text/)
                {$agent->submit_form(fields =>
                    {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
                 note 'Full text (PDF): ', $agent->uri;}
-            elsif ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
+            if ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
                {note 'OpenURL: http:', uri_escape
                     uri_unescape($1),
                     ':<>';}
-            elsif ($page =~ /Linked Full Text/)
+            if ($page =~ /Linked Full Text/)
                {$agent->submit_form(fields =>
                    {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
                 note 'Linked full text: ', $agent->uri;}
