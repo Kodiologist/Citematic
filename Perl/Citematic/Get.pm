@@ -179,6 +179,8 @@ sub digest_journal_title
         and return 'Proceedings of the Royal Society B';
     $j =~ /Philosophical Transactions of the Royal Society of London\. Series ([AB])/i
         and return "Philosophical Transactions of the Royal Society $1";
+    $j =~ /Journals of Gerontology\W+Series B/i
+        and return 'The Journals of Gerontology, Series B: Psychological Sciences and Social Sciences';
     $j =~ /IEEE Transactions on Systems/i
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
     $j eq 'American Statistician'
@@ -480,8 +482,8 @@ sub ebsco
            {$year = $2 ? $1 : "19$1";}
         $record{Source} =~ s{
                 \s+
-                (?: Vol \.? \s (?<volume> \d+) |
-                  (?<volume> \d+) (?= \( ) )
+                (?: Vol \.? \s (?<volume> \d+) [A-Z]* |
+                  (?<volume> \d+) [A-Z]* (?= \( ) )
                 \s*
                 (?: \(?
                        (?<issue_type> Issue | Suppl | Pt | Whole \s No\.)

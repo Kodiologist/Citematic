@@ -145,6 +145,10 @@ is apa(title => ['pretty women inspire']),
 is apa(year => 2008, author => ['knutson', 'greer']),
     'Knutson, B., & Greer, S. M. (2008). Anticipatory affect: Neural correlates and consequences for choice. <i>Philosophical Transactions of the Royal Society B, 363</i>(1511), 3771–3786. doi:10.1098/rstb.2008.0155',
     'Philosophical Transactions of the Royal Society B';
+is apa(year => 2010, author => ['Scheibe', 'Carstensen']),
+    'Scheibe, S., & Carstensen, L. L. (2010). Emotional aging: Recent findings and future trends. <i>The Journals of Gerontology, Series B: Psychological Sciences and Social Sciences, 65</i>(2), 135–144. doi:10.1093/geronb/gbp132',
+      # As specified in http://www.oxfordjournals.org/our_journals/geronb/for_authors/general.html
+    'Journals of Gerontology B';
 is apa(year => 2003, author => ['oppenheimer'], title => ['not so fast']),
     'Oppenheimer, D. M. (2003). Not so fast! (and not so frugal!): Rethinking the recognition heuristic. <i>Cognition, 90</i>(1), B1–B9. doi:10.1016/S0010-0277(03)00141-0',
     'Cognition (article with "B" page numbers)';
