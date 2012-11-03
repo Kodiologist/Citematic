@@ -472,7 +472,7 @@ sub ebsco
           : split qr[;\s*|<br />], $record{Authors};
 
     defined $record{'Digital Object Identifier'}
-        and $record{'Digital Object Identifier'} =~ s/[\x{0d}\x{0a}].*//s;
+        and $record{'Digital Object Identifier'} =~ s/(?:\x{0d}|\x{0a}|<br).*//s;
 
     if (!$record{'Document Type'} or
         $record{'Document Type'} eq 'Article' or
