@@ -466,7 +466,9 @@ sub ebsco
             ? split qr[(?:,|;| and| &) ],
                   apply {s/,\s+\S*[[:lower:]]{3}.+//}
                   $record{'-by'}
-            : split qr[(?:,|;| and| &) ], $record{'-by'}
+            : $record{'-by'} =~ / and .+?,.+?,/
+              ? map {/(.+?),/; $1} split / and /, $record{'-by'}
+              : split qr[(?:,|;| and| &) ], $record{'-by'}
           : split qr[;\s*|<br />], $record{Authors};
 
     defined $record{'Digital Object Identifier'}

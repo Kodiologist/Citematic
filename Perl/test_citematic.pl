@@ -138,6 +138,9 @@ is apa(title => ['on land and underwater', 'memory']),
 is apa(title => ['on the psychology of drinking']),
     'Aarts, H., Dijksterhuis, A., & De Vries, P. (2001). On the psychology of drinking: Being thirsty and perceptually ready. <i>British Journal of Psychology, 92</i>(4), 631–642. doi:10.1348/000712601162383',
     'British Journal of Psychology (red-herring year and unnecessary "Pt" in MEDLINE record)';
+is apa(year => 2002, author => ['Aarts', 'Dijksterhuis']),
+    'Aarts, H., & Dijksterhuis, A. (2002). Category activation effects in judgment and behaviour: The moderating role of perceived comparability. <i>British Journal of Social Psychology, 41</i>(1), 123–138. doi:10.1348/014466602165090',
+    'British Journal of Psychology (byline)';
 is apa(year => 2010, author => ['bradley', 'byrd-craven']),
     q(Vaughn, J. E., Bradley, K. I., Byrd-Craven, J., & Kennison, S. M. (2010). The effect of mortality salience on women's judgments of male faces. <i>Evolutionary Psychology, 8</i>(3), 477–491. Retrieved from http://www.epjournal.net/articles/the-effect-of-mortality-salience-on-women%E2%80%99s-judgments-of-male-faces),
     'Evolutionary Psychology';
