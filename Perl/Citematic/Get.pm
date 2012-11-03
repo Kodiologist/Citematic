@@ -422,22 +422,22 @@ sub ebsco
             $page =~ m!<a name="citation"><span>(.+?)\s*</span></a></dd>.*?<dt>(.+?)</div>!s
                 or die;
             my ($title, $rows) = (decode_entities($1), $2);
-            # Before returning the results, print a full-text URL
+            # Before returning the results, print full-text URLs
             # to STDERR.
             if ($page =~ /HTML Full Text/)
                {note 'Full text (HTML): ', $agent->uri;}
-            if ($page =~ /PDF Full Text/)
-               {$agent->submit_form(fields =>
-                   {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
-                note 'Full text (PDF): ', $agent->uri;}
+            if ($page =~ /PDF Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
+               {my $a = $agent->clone;
+                $a->submit_form(fields => {'__EVENTTARGET' => $1});
+                note 'Full text (PDF): ', $a->uri;}
             if ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
                {note 'OpenURL: http:', uri_escape
                     uri_unescape($1),
                     ':<>';}
-            if ($page =~ /Linked Full Text/)
-               {$agent->submit_form(fields =>
-                   {'__EVENTTARGET' => 'ctl00$ctl00$Column1$Column1$formatButtonsTop$formatButtonRepeater$ctl02$linkButton'});
-                note 'Linked full text: ', $agent->uri;}
+            if ($page =~ /Linked Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
+               {my $a = $agent->clone;
+                $a->submit_form(fields => {'__EVENTTARGET' => $1});
+                note 'Linked full text: ', $a->uri;}
             return χ
                 '-title' => $title,
                 '-record' => $page =~ /"plink":"(.+?)"/,
