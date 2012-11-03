@@ -70,9 +70,20 @@ def bib(style_path,
             if d['type'] == 'speech' and d['genre'] == 'paper':
                 d['event'] = 'meeting of the {}, {}'.format(
                     d.pop('publisher'), d['event-place'])
+            # When abbreviating given names, remove hyphens
+            # preceding lowercase letters. Otherwise, weird
+            # stuff happens.
+            if abbreviate_given_names and 'author' in d:
+               for a in d['author']:
+                   a['given'] = sub(
+                       '-(.)',
+                       lambda mo:
+                           ("" if mo.group(1).islower() else "-") +
+                           mo.group(1),
+                       a['given'])
             # Abbreviate a long list of authors with an ellipsis
             # and the final author.
-            if d.get('author') and len(d['author']) > 7:
+            if 'author' in d and len(d['author']) > 7:
                 d['author'] = (
                     d['author'][0:6] +
                     [{'given': '', 'family': '⣥<ellipsis>⣥'}] +

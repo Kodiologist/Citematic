@@ -123,6 +123,9 @@ is apa(title => ['yet high-quality, data?']),
 is apa(year => 2009, author => ['Bruggeman', 'pick']),
     'Bruggeman, H., Piuneu, V. S., Rieser, J. J., & Pick, H. L., Jr. (2009). Biomechanical versus inertial information: Stable individual differences in perception of self-rotation. <i>Journal of Experimental Psychology: Human Perception and Performance, 35</i>(5), 1472–1480. doi:10.1037/a0015782',
     'J Exp Psych: Human Perception and Performance (author with "Jr.")';
+is apa(year => 1994, author => ['shiu', 'pashler']),
+    'Shiu, L., & Pashler, H. (1994). Negligible effect of spatial precuing on identification of single digits. <i>Journal of Experimental Psychology: Human Perception and Performance, 20</i>(5), 1037–1054. doi:10.1037/0096-1523.20.5.1037',
+    'J Exp Psych: Human Perception and Performance (author with hyphen followed by lowercase letter in first name)';
 is apa(year => 1997, author => ['bettman', 'payne']),
     'Luce, M. F., Bettman, J. R., & Payne, J. W. (1997). Choice processing in emotionally difficult decisions. <i>Journal of Experimental Psychology: Learning, Memory, and Cognition, 23</i>(2), 384–405. doi:10.1037/0278-7393.23.2.384',
     'J Exp Psych: Learning, Memory, and Cognition (comma in journal title)';

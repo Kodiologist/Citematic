@@ -73,7 +73,12 @@ def test_journal_article():
       # Authors with suffixes
     assert (j(author = [name('Mary-Jane', 'Sally')]) ==
         'Sally, M.-J. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz')
-      # Given name with hyphen
+      # Given name with hyphen followed by a capital
+    assert (j(author = [name('Mary-jane', 'Sally')]) ==
+        'Sally, M. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz')
+      # Given name with hyphen follow by a lowercase letter
+      # (Actually, I'm not sure if this should be
+      # "M." or "M.-j." or "M.-J.".)
     assert (j(author = [name('Áéíóú', 'Xyzzy'),
          name('Þómas Þybalt', 'Turner'), name('Ōy', 'Sam')]) ==
          'Xyzzy, Á., Turner, Þ. Þ., & Sam, Ō. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz')
