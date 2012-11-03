@@ -190,6 +190,9 @@ is apa(doi => '10.1080/00224545.1979.9933632'),
 is apa(doi => '10.1007/s11238-010-9234-3'),
     'Zeisberger, S., Vrecko, D., & Langer, T. (2012). Measuring the time stability of prospect theory preferences. <i>Theory and Decision, 72</i>(3), 359–386. doi:10.1007/s11238-010-9234-3',
     'Theory and Decision (DOI search, multiple years in CrossRef)';
+is apa(doi => '10.1037/0022-3514.58.2.308'),
+    'Greenberg, J., Pyszczynski, T., Solomon, S., Rosenblatt, A., Veeder, M., Kirkland, S., & Lyon, D. (1990). Evidence for terror management theory II: The effects of mortality salience on reactions to those who threaten or bolster the cultural worldview. <i>Journal of Personality and Social Psychology, 58</i>(2), 308–318. doi:10.1037/0022-3514.58.2.308',
+    'JPSP (DOI search, "et al" in CrossRef)';
 is apa(title => ['toward a synthesis of cognitive biases']),
     'Hilbert, M. (2012). Toward a synthesis of cognitive biases: How noisy information processing can bias human decision making. <i>Psychological Bulletin, 138</i>(2), 211–237. doi:10.1037/a0025940',
     'Psychological Bulletin (multiple DOIs in PsycINFO record)';

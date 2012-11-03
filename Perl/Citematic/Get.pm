@@ -300,6 +300,7 @@ sub query_crossref
     exists $x->{contributors}
         or return err 'No results.';
     $x = {%$x}; # Don't modify the thing we're caching.
+    $x->{contributors} = σ grep {$_->{surname} ne 'et al'} α $x->{contributors};
     $x->{year} =
         (first {ref and $_->{media_type} eq 'print'} α $x->{year}) ||
         $x->{year}[0];
