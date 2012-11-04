@@ -32,6 +32,9 @@ is apa(year => 1991, author => ['smith', 'dechter']),
 is apa(year => 1967, author => ['valins', 'ray']),
     'Valins, S., & Ray, A. A. (1967). Effects of cognitive desensitization on avoidance behavior. <i>Journal of Personality and Social Psychology, 7</i>(4, Pt. 1), 345–350. doi:10.1037/h0025239',
     'JPSP (old article)';
+is apa(year => 1966, author => ['lerner', 'simmons']),
+    q{Lerner, M. J., & Simmons, C. H. (1966). Observer's reaction to the "innocent victim": Compassion or rejection? <i>Journal of Personality and Social Psychology, 4</i>(2), 203–210. doi:10.1037/h0023562},
+    'JPSP (single quotes in given form of title)';
 is apa(year => 2005, author => [qw(Bechara Damasio Tranel)]),
     'Bechara, A., Damasio, H., Tranel, D., & Damasio, A. R. (2005). The Iowa Gambling Task and the somatic marker hypothesis: Some questions and answers. <i>Trends in Cognitive Sciences, 9</i>(4), 159–162. doi:10.1016/j.tics.2005.02.002',
     'Trends in Cognitive Sciences';
@@ -210,9 +213,6 @@ is apa(title => ['false consensus effect', 'meta-analysis']),
 is apa(year => 1997, author => ['landolt', 'dutton']),
     'Landolt, M. A., & Dutton, D. G. (1997). Power and personality: An analysis of gay male intimate abuse. <i>Sex Roles, 37</i>(5, 6), 335–359. doi:10.1023/A:1025649306193',
     'Sex Roles (article attributed to multiple issues)';
-is apa(year => 2006, author => ['wheeler', 'george', 'marlatt']),
-    'Wheeler, J. G., George, W. H., & Marlatt, G. A. (2006). Relapse prevention for sexual offenders: Considerations for the "abstinence violation effect". <i>Sexual Abuse, 18</i>(3), 233–248. doi:10.1177/107906320601800302',
-    'Sexual Abuse (single quotes in given form of title)';
 is apa(doi => '10.1177/107906320601800302'),
     'Wheeler, J. G., George, W. H., & Marlatt, G. A. (2006). Relapse prevention for sexual offenders: Considerations for the "abstinence violation effect". <i>Sexual Abuse, 18</i>(3), 233–248. doi:10.1177/107906320601800302',
     'Sexual Abuse (DOI search for title with double quotes in CrossRef)';

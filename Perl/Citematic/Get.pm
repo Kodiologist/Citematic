@@ -234,7 +234,7 @@ sub format_nonjournal_title
     # Correct GNU-style single quotes that should be double quotes.
     $s =~ s/`([^`']+)'/"$1"/g;
     # Correct matched single quotes that should be double quotes.
-    $s =~ s/(\s|\A)'([^`' ][^`']*[^`' ])'(\s|\z)/$1"$2"$3/g;
+    $s =~ s/(\W|\A)'([^`' ][^`']*[^`' ])'(\W|\z)/$1"$2"$3/g;
     # Correct fake ellipses.
     $s =~ s/\.\.\./…/g;
     $s;}
