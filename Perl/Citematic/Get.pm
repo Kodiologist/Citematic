@@ -185,6 +185,8 @@ sub digest_journal_title
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
     $j eq 'American Statistician'
         and return 'The American Statistician';
+    $j =~ /\AJournal of Psychology:/i
+        and return 'The Journal of Psychology: Interdisciplinary and Applied';
     $j =~ /PLoS ONE/i
         and return 'PLoS ONE';
 

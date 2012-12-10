@@ -147,6 +147,11 @@ is apa(title => ['on the psychology of drinking']),
 is apa(year => 2002, author => ['Aarts', 'Dijksterhuis']),
     'Aarts, H., & Dijksterhuis, A. (2002). Category activation effects in judgment and behaviour: The moderating role of perceived comparability. <i>British Journal of Social Psychology, 41</i>(1), 123–138. doi:10.1348/014466602165090',
     'British Journal of Psychology (byline)';
+is apa(year => 1983, author => ['zakin']),
+    q(Zakin, D. F. (1983). Physical attractiveness, sociability, athletic ability, and children's preference for their peers. <i>The Journal of Psychology: Interdisciplinary and Applied, 115</i>, 117–122. doi:10.1080/00223980.1983.9923606),
+      # The issue number seems not to be in the PsycARTICLES record.
+      # I don't know what to make of this.
+    'J Psychol: Interdisciplinary and Applied';
 is apa(year => 2010, author => ['bradley', 'byrd-craven']),
     q(Vaughn, J. E., Bradley, K. I., Byrd-Craven, J., & Kennison, S. M. (2010). The effect of mortality salience on women's judgments of male faces. <i>Evolutionary Psychology, 8</i>(3), 477–491. Retrieved from http://www.epjournal.net/articles/the-effect-of-mortality-salience-on-women%E2%80%99s-judgments-of-male-faces),
     'Evolutionary Psychology';
