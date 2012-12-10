@@ -697,16 +697,21 @@ sub ideas
 sub sjdm_url_from_title
    {my $title = shift;
     progress 'Trying SJDM';
-    $global_cache->{sjdm}{lc($title)} ||= do
+    my $v = $global_cache->{sjdm}{lc($title)} ||= do
        {my $page = LWP::Simple::get(query_url
             'http://www.sjdm.org/cgi-bin/namazu.cgi',
             max => 10, result => 'normal', sort => 'score',
             idxname => 'journal',
             query => "{$title}");
-          # Curly braces signify an exact match in Namazu.
-          # (http://www.namazu.org/doc/manual.html#query-phrase)
-        $page =~ m/<dd><a href="(.+?)">/ or return err 'No results.';
-        $1;}}
+          # In Namazu, curly braces signify an exact match.
+          # http://www.namazu.org/doc/manual.html#query-phrase
+        write_file '/tmp/bond.html', $page;
+        $page =~ m!<dd><a href="/home/baron/public_html/journal/(.+?)">!
+          ? $1
+          : undef};
+    defined $v
+      ? "http://journal.sjdm.org/$v"
+      : err 'No results.';}
 
 # ------------------------------------------------------------
 # Evolutionary Psychology
@@ -714,6 +719,7 @@ sub sjdm_url_from_title
 
 sub evpsych_url_from_title
    {my $title = shift;
+    $title =~ s/'/’/;
     'http://www.epjournal.net/articles/' .
         URI::Escape::uri_escape_utf8(lc join '-', $title =~ /((?:’|\w)+)/g);}
 
