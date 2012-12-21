@@ -472,7 +472,7 @@ sub ebsco
             : $record{'-by'} =~ / and .+?,.+?,/
               ? map {/(.+?),/; $1} split / and /, $record{'-by'}
               : split qr[(?:,|;| and| &) ], $record{'-by'}
-          : split qr[;\s*|<br />], $record{Authors};
+          : split qr[\s*;\s*|<br />], $record{Authors};
 
     defined $record{'Digital Object Identifier'}
         and $record{'Digital Object Identifier'} =~ s/(?:\x{0d}|\x{0a}|<br).*//s;
