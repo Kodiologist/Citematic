@@ -180,6 +180,9 @@ is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
 is apa(author => ['redelmeier', 'kahneman'], title => ['colonoscopy']),
     'Redelmeier, D. A., Katz, J., & Kahneman, D. (2003). Memories of colonoscopy: A randomized trial. <i>Pain, 104</i>(1, 2), 187–194. doi:10.1016/S0304-3959(03)00003-4',
     'Pain (article attributed to multiple issues)';
+is apa(author => ['toates'], title => ['integrative theoretical framework']),
+    'Toates, F. (2009). An integrative theoretical framework for understanding sexual motivation, arousal, and behavior. <i>Journal of Sex Research, 46</i>(2, 3), 168–193. doi:10.1080/00224490902747768',
+    'Journal of Sex Research (article attributed to multiple months and multiple issues)';
 is apa(year => 2007, author => ['whitaker', 'saltzman']),
     'Whitaker, D. J., Saltzman, L. S., Haileyesus, T., & Swahn, M. (2007). Differences in frequency of violence and reported injury between relationships with reciprocal and nonreciprocal intimate partner violence. <i>American Journal of Public Health, 97</i>(5), 941–947. doi:10.2105/AJPH.2005.079020',
     'American Journal of Public Health';
@@ -221,9 +224,6 @@ is apa(year => 1997, author => ['landolt', 'dutton']),
 is apa(doi => '10.1177/107906320601800302'),
     'Wheeler, J. G., George, W. H., & Marlatt, G. A. (2006). Relapse prevention for sexual offenders: Considerations for the "abstinence violation effect". <i>Sexual Abuse, 18</i>(3), 233–248. doi:10.1177/107906320601800302',
     'Sexual Abuse (DOI search for title with double quotes in CrossRef)';
-is apa(title => ['hormones and history'], author => ['zehr']),
-    'Wallen, K., & Zehr, J. L. (2004). Hormones and history: The evolution and development of primate female sexuality. <i>Journal of Sex Research, 41</i>(1), 101–112. doi:10.1080/00224490409552218',
-    'Journal of Sex Research';
 is apa(title => ['stripping sex of meaning']),
     'Goldenberg, J. L., Cox, C. R., Pyszczynski, T., Greenberg, J., & Solomon, S. (2002). Understanding human ambivalence about sex: The effects of stripping sex of meaning. <i>Journal of Sex Research, 39</i>(4), 310–320. doi:10.1080/00224490209552155',
     'Journal of Sex Research ("of" capitalized in MEDLINE)';

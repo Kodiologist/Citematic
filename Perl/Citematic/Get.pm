@@ -64,6 +64,8 @@ our $verbose;
 our $debug;
 our $bypass_ebsco_cache;
 
+my $mon_re = qr/(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/;
+
 my $speller = new Text::Aspell;
 
 sub note
@@ -498,7 +500,7 @@ sub ebsco
         my $year;
         if ($record{Source} =~ s{,?\s+\d{1,2}/\d{1,2}/(\d{4})}{})
            {$year = $1;}
-        elsif ($record{Source} =~ s/,?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d\d(\d\d)?)//)
+        elsif ($record{Source} =~ s/,?\s+$mon_re(?:-$mon_re)?(\d\d(\d\d)?)//)
            {$year = $2 ? $1 : "19$1";}
         $record{Source} =~ s{
                 \s+
