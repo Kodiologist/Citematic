@@ -349,6 +349,15 @@ sub digest_crossref_contributors
 sub ctl
    {'ctl00$ctl00$MainContentArea$MainContentArea$' . join '$', @_;}
 
+sub ebsco_worse_db
+# Given two database names, returns true if the first is
+# considered worse than the second.
+   {my ($db1, $db2) = @_;
+    # Use the ranking: PsycINFO == PsycARTICLES > everything else.
+    $_ = $_ eq 'PsycINFO' || $_ eq 'PsycARTICLES'
+        foreach $db1, $db2;
+    $db1 < $db2;}
+
 sub ebsco
 # Allowed %terms:
 #   author (array ref)
@@ -414,13 +423,32 @@ sub ebsco
             # No results.
             and return {};
         $page =~ /Result_1/ or die;
-        # Use the first result that isn't just a correction. I
-        # would just use "NOT PZ Erratum/Correction" in the
-        # search string, but then records with no "Document Type"
-        # field at all, including some journal articles, would
-        # also be excluded.
+
+        $page =~ /var ep = (\{.+?\})\n/ or die;
+        my @hover = (undef,
+            map
+               {$_->{basic_title} = lc join '', $_->{Title} =~ /([[:alpha:]]+)/g;
+                $_->{DV} = delete $_->{DisplayValues};
+                $_}
+            α from_json($1)->{clientData}{hoverPreviewJsonData});
+
         for (my $i = 1 ; $page =~ /Result_$i/ ; ++$i)
-           {$page =~ m!Result_$i.+\[Erratum/Correction\]! and next;
+           {# Avoid corrections. (I would just use "NOT PZ
+            # Erratum/Correction" in the search string, but then
+            # records with no "Document Type" field at all,
+            # including some journal articles, would also be
+            # excluded.)
+            $page =~ m!Result_$i.+\[Erratum/Correction\]!
+                and next;
+            # If the article we're looking at now has an apparent
+            # duplicate in the next position, but the duplicate
+            # is from a better database, use that.
+            $hover[$i + 1]
+                and $hover[$i]{basic_title} eq $hover[$i + 1]{basic_title}
+                and $hover[$i]{DV}{Date} eq $hover[$i + 1]{DV}{Date}
+                and ebsco_worse_db($hover[$i]{DV}{Database}, $hover[$i + 1]{DV}{Database})
+                and next;
+            # Okay, use this article.
             progress 'Fetching record';
             $agent->follow_link(name => "Result_$i");
             $page = $agent->content;
