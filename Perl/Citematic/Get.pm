@@ -40,7 +40,7 @@ our %config =
 $config{storage_dir} =~ s!/\z!!;
 
 my $ebsco_cookie_jar_path = "$config{storage_dir}/ebsco-cookies";
-my $cache_path = "$config{storage_dir}/cache";
+my $cache_path = "$config{storage_dir}/cache.json";
 
 my $global_cache;
    {my $t = -e $cache_path && slurp $cache_path;
