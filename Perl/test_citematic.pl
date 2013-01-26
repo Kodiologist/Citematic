@@ -64,7 +64,10 @@ is apa(year => 1994, title => ['earth is round']),
     'American Psychologist ("<" in article title)';
 is apa(title => ['alleged sex research']),
     'Benjamin, L. T., Jr., Whitaker, J. L., Ramsey, R. M., & Zeve, D. R. (2007). John B. Watson\'s alleged sex research: An appraisal of the evidence. <i>American Psychologist, 62</i>(2), 131–139. doi:10.1037/0003-066X.62.2.131',
-    'American Psychologist (miscapitalized title with middle initial)';
+    'American Psychologist (author with "Jr.", miscapitalized title with middle initial)';
+is get(title => ['alleged sex research'])->{author}[0]{suffix},
+    'Jr.',
+    '…suffix has a period (1)';
 is apa(year => 2000, author => ['McMackin', 'Slovic']),
     'McMackin, J., & Slovic, P. (2000). When does explicit justification impair decision making? <i>Applied Cognitive Psychology, 14</i>(6), 527–541. doi:10.1002/1099-0720(200011/12)14:6<527::AID-ACP671>3.0.CO;2-J',
     'Applied Cognitive Psychology';
@@ -125,7 +128,10 @@ is apa(title => ['yet high-quality, data?']),
     'Perspectives on Psychological Science (title search containing question mark)';
 is apa(year => 2009, author => ['Bruggeman', 'pick']),
     'Bruggeman, H., Piuneu, V. S., Rieser, J. J., & Pick, H. L., Jr. (2009). Biomechanical versus inertial information: Stable individual differences in perception of self-rotation. <i>Journal of Experimental Psychology: Human Perception and Performance, 35</i>(5), 1472–1480. doi:10.1037/a0015782',
-    'J Exp Psych: Human Perception and Performance (author with "Jr.")';
+    'J Exp Psych: Human Perception and Performance (author with "Jr.", MEDLINE record)';
+is get(year => 2009, author => ['Bruggeman', 'pick'])->{author}[3]{suffix},
+    'Jr.',
+    '…suffix has a period (2)';
 is apa(year => 1994, author => ['shiu', 'pashler']),
     'Shiu, L., & Pashler, H. (1994). Negligible effect of spatial precuing on identification of single digits. <i>Journal of Experimental Psychology: Human Perception and Performance, 20</i>(5), 1037–1054. doi:10.1037/0096-1523.20.5.1037',
     'J Exp Psych: Human Perception and Performance (author with hyphen followed by lowercase letter in first name)';
@@ -147,7 +153,7 @@ is apa(title => ['on the psychology of drinking']),
 is apa(year => 2002, author => ['Aarts', 'Dijksterhuis']),
     'Aarts, H., & Dijksterhuis, A. (2002). Category activation effects in judgment and behaviour: The moderating role of perceived comparability. <i>British Journal of Social Psychology, 41</i>(1), 123–138. doi:10.1348/014466602165090',
     'British Journal of Psychology (byline)';
-is apa(year => 1983, author => ['zakin']),
+is apa(year => 1983, author => ['zakin'], title => ['athletic']),
     q(Zakin, D. F. (1983). Physical attractiveness, sociability, athletic ability, and children's preference for their peers. <i>The Journal of Psychology: Interdisciplinary and Applied, 115</i>, 117–122. doi:10.1080/00223980.1983.9923606),
       # The issue number seems not to be in the PsycARTICLES record.
       # I don't know what to make of this.

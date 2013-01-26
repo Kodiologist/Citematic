@@ -39,7 +39,6 @@ our %config =
 -e $config{storage_dir} or mkdir $config{storage_dir} or die "Couldn't create $config{storage_dir}: $!";
 $config{storage_dir} =~ s!/\z!!;
 
-my $ebsco_post_path = "$config{storage_dir}/ebscopost";
 my $ebsco_cookie_jar_path = "$config{storage_dir}/ebsco-cookies";
 my $cache_path = "$config{storage_dir}/cache";
 
@@ -65,6 +64,7 @@ our $debug;
 our $bypass_ebsco_cache;
 
 my $mon_re = qr/(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/;
+my $suffix_re = qr/(?:Jr\.?|Sr\.?|III\b|IV\b|VI{0,3}\b(?!\.)|I?X\b(?!\.))/;
 
 my $speller = new Text::Aspell;
 
@@ -135,6 +135,11 @@ sub fix_allcaps_name
     $name =~ s/-(\w)/-\U$1/g;
     $prefix . $name;}
 
+sub format_suffix
+   {my $str = shift;
+    $str =~ s/\A([SJ]r)\.?/$1./;
+    $str}
+
 sub digest_author
    {my $str = shift;
     $str =~ s/\(.+?\)//g;
@@ -145,16 +150,20 @@ sub digest_author
        {$str =~ s/\.([[:upper:]])/. $1/g;
           # Fix initials crammed together without spaces.
         my @suffix;
-        $str =~ s/,?\s+(Jr\.|Sr\.|III\b|IV\b|VI{0,3}\b|I?X\b)(?!\.)//i
-            and @suffix = (suffix => $1);
+        $str =~ s/,?\s+($suffix_re)//i
+            and @suffix = (suffix => format_suffix $1);
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
         $surn =~ /[[:lower:]]/ or $surn = fix_allcaps_name $surn;
         χ family => $surn, given => $rest, @suffix;}
-    elsif ($str =~ /[[:lower:]]\s+[[:upper:]]{1,4}\z/)
+    elsif ($str =~ /[[:lower:]]\s+[[:upper:]]{1,4}(?:\s+$suffix_re)?\z/)
       # We have something of the form "Smith AR".
-       {$str =~ s/\s+([[:upper:]]+)\z//;
-        χ family => $str, given => join(' ', map {"$_."} split //, $1);}
+       {$str =~ s/\s+([[:upper:]]+)\s*($suffix_re?)\z//;
+        my ($given, @suffix) = $1;
+        $2 and @suffix = (suffix => format_suffix $2);
+        χ family => $str,
+            given => join(' ', map {"$_."} split //, $given),
+            @suffix;}
     else
       # We have something of the form "Allen R. Smith".
        {$str =~ /[[:upper:]]{5}/
@@ -198,8 +207,10 @@ sub digest_journal_title
     else
        {$j =~ s/&/and/;}
     $j =~ s/\b(An|And|As|At|But|By|Down|For|From|In|Into|Nor|Of|On|Onto|Or|Over|So|The|Till|To|Up|Via|With|Yet)\b/\l$1/g;
-    $j =~ s!(?:/|:).+!!
-        unless $j =~ /\AJournal of Experimental Psychology/i;
+    if ($j =~ /\AJournal of Experimental Psychology/i)
+       {$j =~ s/\./:/}
+    else
+       {$j =~ s![/:.].+!!}
     $j;}
 
 sub expand_last_page_number
@@ -346,9 +357,6 @@ sub digest_crossref_contributors
 # EBSCOhost
 # ------------------------------------------------------------
 
-sub ctl
-   {'ctl00$ctl00$MainContentArea$MainContentArea$' . join '$', @_;}
-
 sub ebsco_worse_db
 # Given two database names, returns true if the first is
 # considered worse than the second.
@@ -369,7 +377,7 @@ sub ebsco
     progress 'Trying EBSCOhost';
 
     my %search_fields =
-       (ctl('findField', 'SearchTerm1') => join(' AND ',
+       (SearchTerm => join(' AND ',
             $terms{author} ? map {qq(AU "$_")} α $terms{author} : (),
             $terms{title} ? map {my $t = $_; $t =~ s/[?"“”]//g; qq(TI "$t")} α $terms{title} : ()),
               # We remove question marks because they seem to
@@ -391,31 +399,34 @@ sub ebsco
                 autosave => 1,
                 ignore_discard => 1));
 
-        if (-e $ebsco_post_path)
+        # Get a session ID from the cookie jar, if it has one.
+        my ($sid, $ebsco_domain);
+        $agent->cookie_jar->scan(sub
+           {defined $sid and return;
+            my ($domain, $key, $val) = @_[4, 1, 2];
+            $domain =~ m!\.ebscohost\.com\b! and $key eq 'EHost2'
+                or return;
+            $val =~ /(?:&|\A)sid=(.+?)(?:&|\z)/ or die;
+            $sid = uri_unescape $1;
+            $ebsco_domain = $domain});
+
+        my $query = sub
+           {my ($base_url, $sid) = @_;
+            $agent->get(query_url "$base_url/ehost/Search/PerformSearch",
+                sid => $sid,
+                PerformSearchSettingValue => 3,
+                  # This seems to be necessary for EBSCO to
+                  # pay attention to fields like the year.
+                %search_fields);};
+        if ($sid)
           # Try to just query.
-           {my ($action_url, $saved_fields) =
-                α from_json slurp($ebsco_post_path), {utf8 => 1};
-            $agent->post($action_url, {@$saved_fields, %search_fields});}
-        if (!(-e $ebsco_post_path)
-            || $agent->title !~ /\AEBSCOhost: (?:Basic Search|Result List)/)
+           {$query->("http://$ebsco_domain", $sid);}
+        if (!$sid || $agent->title !~ /\AEBSCOhost: (?:Basic Search|Result List)/)
           # We'll need to log in first.
            {progress 'Logging in';
             $ebsco_login->($agent);
-
-            # Now we're at the search screen. Save the form details
-            # for quicker querying in the future.
-            write_file $ebsco_post_path, to_json
-                σ
-                   ($agent->current_form->action . '',
-                    σ
-                        ctl('findField', 'SearchButton') =>
-                            $agent->current_form->value(ctl 'findField', 'SearchButton'),
-                        $agent->current_form->form),
-                {utf8 => 1};
             progress 'Querying';
-            $agent->submit_form
-               (button => ctl('findField', 'SearchButton'),
-                fields => \%search_fields);}
+            $query->('', $agent->current_form->value('__sid'));}
 
         my $page = $agent->content;
         $page =~ /class="smart-text-ran-warning"><span>Note: Your initial search query did not yield any results/
