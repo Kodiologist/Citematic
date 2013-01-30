@@ -266,6 +266,12 @@ TODO:
 is apa(year => 2011, author => ['knutson'], title => ['gain', 'loss learning']),
     'Knutson, B., Samanez-Larkin, G. R., & Kuhnen, C. M. (2011). Gain and loss learning differentially contribute to life financial outcomes. <i>PLoS ONE</i>. doi:10.1371/journal.pone.0024390',
     'PLoS ONE';
+is apa(doi => 'doi:10.1371/journal.pone.0047225'),
+    'Peters, J., Miedl, S. F., & Büchel, C. (2012). Formal comparison of dual-parameter temporal discounting models in controls and pathological gamblers. <i>PLoS ONE</i>. doi:10.1371/journal.pone.0047225',
+    'PLoS ONE (DOI search, editor in CrossRef record)';
+is apa(title => ['formal comparison of dual-parameter temporal']),
+    'Peters, J., Miedl, S. F., & Büchel, C. (2012). Formal comparison of dual-parameter temporal discounting models in controls and pathological gamblers. <i>PLoS ONE</i>. doi:10.1371/journal.pone.0047225',
+    'PLoS ONE ("page" apparently needed for CrossRef to find record)';
 
 
 note '~~~ Journal articles (IDEAS) ~~~';

@@ -315,7 +315,10 @@ sub query_crossref
     exists $x->{contributors}
         or return err 'No results.';
     $x = {%$x}; # Don't modify the thing we're caching.
-    $x->{contributors} = σ grep {$_->{surname} ne 'et al'} α $x->{contributors};
+    $x->{contributors} = σ
+        grep {$_->{contributor_role} eq 'author' and
+            $_->{surname} ne 'et al'}
+        α $x->{contributors};
     $x->{year} =
         (first {ref and $_->{media_type} eq 'print'} α $x->{year}) ||
         $x->{year}[0];
@@ -350,7 +353,6 @@ sub digest_crossref_contributors
         χ
             given => $_->{given_name},
             family => $_->{surname}}
-    grep {$_->{contributor_role} eq 'author'}
     @{shift()}}
 
 # ------------------------------------------------------------
@@ -591,7 +593,12 @@ sub ebsco
             $terms{doi} ||
             get_doi
                 $year, $journal, $title,
-                $authors->[0]{family}, $volume, $fpage;
+                $authors->[0]{family}, $volume,
+                $fpage ||
+                    ($record{Source} =~ /\bpp\. (e\d+)\./ ? $1 : undef);
+                  # In this last case, we aren't providing a real
+                  # page number, but CrossRef benefits from it,
+                  # anyway.
         my $url;
         lc($journal) eq 'judgment and decision making'
           # This is an open-access journal, but it doesn't have
