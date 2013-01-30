@@ -338,7 +338,10 @@ sub get_doi
            (aulast => $first_author_surname,
               # CrossRef accepts only the first author, sadly.
             date => $year,
-            title => $journal,
+            title => $journal =~ /Canadian Journal of Experimental Psychology/i
+              ? # CrossRef doesn't like the English title alone.
+                'Canadian Journal of Experimental Psychology/Revue canadienne de psychologie expérimentale'
+              : $journal,
             atitle => $article_title,
             ($volume ? (volume => $volume) : ()),
             ($first_page ? (spage => $first_page) : ()))
