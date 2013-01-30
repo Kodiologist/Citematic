@@ -302,10 +302,11 @@ sub book_chapter
 # ------------------------------------------------------------
 
 sub query_crossref
-   {my $url = query_url 'http://www.crossref.org/openurl/',
+   {my %p = @_;
+    my $url = query_url 'http://www.crossref.org/openurl/',
         pid => $config{crossref_email},
         noredirect => 'true',
-        @_;
+        map {$_ => $p{$_}} sort keys %p;
     progress 'Trying CrossRef';
     my $x = $global_cache->{crossref}{$url} ||= XMLin
         LWP::Simple::get($url),
@@ -380,8 +381,8 @@ sub ebsco
 
     my %search_fields =
        (SearchTerm => join(' AND ',
-            $terms{author} ? map {qq(AU "$_")} α $terms{author} : (),
-            $terms{title} ? map {my $t = $_; $t =~ s/[?"“”]//g; qq(TI "$t")} α $terms{title} : ()),
+            $terms{author} ? map {qq(AU "$_")} sort(@{$terms{author}}) : (),
+            $terms{title} ? map {my $t = $_; $t =~ s/[?"“”]//g; qq(TI "$t")} sort(@{$terms{title}}) : ()),
               # We remove question marks because they seem to
               # have special meaning but I can't figure out how
               # to escape them properly.
@@ -681,7 +682,7 @@ sub ideas
     # Query.
 
     my $url = query_url 'http://ideas.repec.org/cgi-bin/htsearch',
-        'q' => join(' ', α $terms{keywords}),
+        'q' => join(' ', sort @{$terms{keywords}}),
         ul => "%/$ideas_categories{articles}/%",
         ul => "%/$ideas_categories{chapters}/%",
         ul => "%/$ideas_categories{books}/%",
