@@ -239,6 +239,9 @@ is apa(title => ['stripping sex of meaning']),
 is apa(title => ['reconsiderations about greek']),
     'Percy, W. A., III. (2005). Reconsiderations about Greek homosexualities. <i>Journal of Homosexuality, 49</i>(3, 4), 13–61. doi:10.1300/J082v49n03_02',
     'Journal of Homosexuality (author with "III")';
+is apa(ebsco_record => {db => 'psyh', AN => '2007-04227-011'}),
+    'Osterholt, K. M., Roe, L. S., & Rolls, B. J. (2007). Incorporation of air into a snack food reduces energy intake. <i>Appetite, 48</i>(3), 351–358. doi:10.1016/j.appet.2006.10.007',
+    'Appetite (record search)';
 is apa(title => ['clinician', 'old dogs']),
     'Carpenter, K. M., Cheng, W. Y., Smith, J. L., Brooks, A. C., Amrhein, P. C., Wain, R. M., & Nunes, E. V. (2012). "Old dogs" and new skills: How clinician characteristics relate to motivational interviewing skills before, during, and after training. <i>Journal of Consulting and Clinical Psychology, 80</i>(4), 560–573. doi:10.1037/a0028362',
     'Journal of Consulting and Clinical Psychology (author with "V" as a middle initial)';

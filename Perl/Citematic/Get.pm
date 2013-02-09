@@ -380,6 +380,7 @@ sub ebsco
 #   year (scalar)
 #   title (array ref)
 #   doi (scalar) [not used for searching, but included in citation]
+#   ebsco_record (hash ref with keys "db" and "AN")
    {my %terms = @_;
 
     progress 'Trying EBSCOhost';
@@ -393,6 +394,9 @@ sub ebsco
               # to escape them properly.
         $terms{year}
           ? ('common_DT1_FromYear' => $terms{year}, 'common_DT1_ToYear' => $terms{year})
+          : (),
+        $terms{ebsco_record} && %{$terms{ebsco_record}}
+          ? (RECORD => $terms{ebsco_record})
           : ());
 
     my $cache_key = to_json
@@ -420,87 +424,102 @@ sub ebsco
 
         my $query = sub
            {my ($base_url, $sid) = @_;
-            $agent->get(query_url "$base_url/ehost/Search/PerformSearch",
-                sid => $sid,
-                PerformSearchSettingValue => 3,
-                  # This seems to be necessary for EBSCO to
-                  # pay attention to fields like the year.
-                %search_fields);};
+            if (exists $search_fields{RECORD})
+               {$base_url =~ s/\w+(\.ebscohost\.)/search$1/ or die;
+                $agent->get(query_url "$base_url/login.aspx",
+                    direct => 'true',
+                    db => $search_fields{RECORD}{db},
+                    AN => $search_fields{RECORD}{AN});}
+            else
+               {$agent->get(query_url "$base_url/ehost/Search/PerformSearch",
+                    sid => $sid,
+                    PerformSearchSettingValue => 3,
+                      # This seems to be necessary for EBSCO to
+                      # pay attention to fields like the year.
+                    %search_fields);}};
         if ($sid)
           # Try to just query.
            {$query->("http://$ebsco_domain", $sid);}
-        if (!$sid || $agent->title !~ /\AEBSCOhost: (?:Basic Search|Result List)/)
+        if (!$sid || $agent->title !~ /\AEBSCOhost: /)
           # We'll need to log in first.
            {progress 'Logging in';
             $ebsco_login->($agent);
             progress 'Querying';
-            $query->('', $agent->current_form->value('__sid'));}
+            $query->("http://" . $agent->uri->host,
+                $agent->current_form->value('__sid'));}
 
         my $page = $agent->content;
         $page =~ /class="smart-text-ran-warning"><span>Note: Your initial search query did not yield any results/
             || $page =~ /<span class="std-warning-text">No results were found/
+            || $agent->title eq 'EBSCOhost'
             # No results.
             and return {};
-        $page =~ /Result_1/ or die;
 
-        $page =~ /var ep = (\{.+?\})\n/ or die;
-        my @hover = (undef,
-            map
-               {$_->{basic_title} = lc join '', $_->{Title} =~ /([[:alpha:]]+)/g;
-                $_->{DV} = delete $_->{DisplayValues};
-                $_}
-            α from_json($1)->{clientData}{hoverPreviewJsonData});
+        RESULTS: {if ($agent->title =~ /\AEBSCOhost: (?:Basic Search|Result List)/)
+           # We're looking at search results. Choose a record.
+           {$page =~ /Result_1/ or die;
 
-        for (my $i = 1 ; $page =~ /Result_$i/ ; ++$i)
-           {# Avoid corrections. (I would just use "NOT PZ
-            # Erratum/Correction" in the search string, but then
-            # records with no "Document Type" field at all,
-            # including some journal articles, would also be
-            # excluded.)
-            $page =~ m!Result_$i.+\[Erratum/Correction\]!
-                and next;
-            # If the article we're looking at now has an apparent
-            # duplicate in the next position, but the duplicate
-            # is from a better database, use that.
-            $hover[$i + 1]
-                and $hover[$i]{basic_title} eq $hover[$i + 1]{basic_title}
-                and $hover[$i]{DV}{Date} eq $hover[$i + 1]{DV}{Date}
-                and ebsco_worse_db($hover[$i]{DV}{Database}, $hover[$i + 1]{DV}{Database})
-                and next;
-            # Okay, use this article.
-            progress 'Fetching record';
-            $agent->follow_link(name => "Result_$i");
-            $page = $agent->content;
-            $page =~ m!<a name="citation"><span>(.+?)\s*</span></a></dd>.*?<dt>(.+?)</div>!s
-                or die;
-            my ($title, $rows) = (decode_entities($1), $2);
-            # Before returning the results, print full-text URLs
-            # to STDERR.
-            if ($page =~ /HTML Full Text/)
-               {note 'Full text (HTML): ', $agent->uri;}
-            if ($page =~ /PDF Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
-               {my $a = $agent->clone;
-                $a->submit_form(fields => {'__EVENTTARGET' => $1});
-                note 'Full text (PDF): ', $a->uri;}
-            if ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
-               {note 'OpenURL: http:', uri_escape
-                    uri_unescape($1),
-                    ':<>';}
-            if ($page =~ /Linked Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
-               {my $a = $agent->clone;
-                $a->submit_form(fields => {'__EVENTTARGET' => $1});
-                note 'Linked full text: ', $a->uri;}
-            return χ
-                '-title' => $title,
-                '-record' => $page =~ /"plink":"(.+?)"/,
-                ($page =~ m!<p>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
-                  ? ('-by' => decode_entities($1))
-                  : ()),
-                map {decode_entities $_}
-                    map {s/:\s*\z//; s/\s+\z//; $_}
-                    split /(?:<\/?d[tdl]>)+/, $rows;}
-        # No results.
-        {};});
+            $page =~ /var ep = (\{.+?\})\n/ or die;
+            my @hover = (undef,
+                map
+                   {$_->{basic_title} = lc join '', $_->{Title} =~ /([[:alpha:]]+)/g;
+                    $_->{DV} = delete $_->{DisplayValues};
+                    $_}
+                α from_json($1)->{clientData}{hoverPreviewJsonData});
+
+            for (my $i = 1 ; $page =~ /Result_$i/ ; ++$i)
+               {# Avoid corrections. (I would just use "NOT PZ
+                # Erratum/Correction" in the search string, but then
+                # records with no "Document Type" field at all,
+                # including some journal articles, would also be
+                # excluded.)
+                $page =~ m!Result_$i.+\[Erratum/Correction\]!
+                    and next;
+                # If the article we're looking at now has an apparent
+                # duplicate in the next position, but the duplicate
+                # is from a better database, use that.
+                $hover[$i + 1]
+                    and $hover[$i]{basic_title} eq $hover[$i + 1]{basic_title}
+                    and $hover[$i]{DV}{Date} eq $hover[$i + 1]{DV}{Date}
+                    and ebsco_worse_db($hover[$i]{DV}{Database}, $hover[$i + 1]{DV}{Database})
+                    and next;
+                # Okay, use this article.
+                progress 'Fetching record';
+                $agent->follow_link(name => "Result_$i");
+                $page = $agent->content;
+                last RESULTS;}
+
+            die "all results are errata?";}}
+
+        # Now we should be on a single record's page.
+        $page =~ m!<a name="citation"><span>(.+?)\s*</span></a></dd>.*?<dt>(.+?)</div>!s
+            or die;
+        my ($title, $rows) = (decode_entities($1), $2);
+        # Before returning the results, print full-text URLs
+        # to STDERR.
+        if ($page =~ /HTML Full Text/)
+           {note 'Full text (HTML): ', $agent->uri;}
+        if ($page =~ /PDF Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
+           {my $a = $agent->clone;
+            $a->submit_form(fields => {'__EVENTTARGET' => $1});
+            note 'Full text (PDF): ', $a->uri;}
+        if ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
+           {note 'OpenURL: http:', uri_escape
+                uri_unescape($1),
+                ':<>';}
+        if ($page =~ /Linked Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
+           {my $a = $agent->clone;
+            $a->submit_form(fields => {'__EVENTTARGET' => $1});
+            note 'Linked full text: ', $a->uri;}
+        return χ
+            '-title' => $title,
+            '-record' => $page =~ /"plink":"(.+?)"/,
+            ($page =~ m!<p>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
+              ? ('-by' => decode_entities($1))
+              : ()),
+            map {decode_entities $_}
+                map {s/:\s*\z//; s/\s+\z//; $_}
+                split /(?:<\/?d[tdl]>)+/, $rows;});
 
     %record or return err 'No results.';
     debug "EBSCO record: $record{'-record'}";
@@ -789,6 +808,7 @@ sub get
 #   year (scalar)
 #   title (array ref)
 #   doi (scalar)
+#   ebsco_record (hash ref with keys "db" and "AN")
 # Returns a hashref of CSL input data or undef.
    {my %terms = @_;
     $terms{author} ||= [];
