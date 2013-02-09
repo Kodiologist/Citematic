@@ -207,7 +207,8 @@ sub digest_journal_title
     else
        {$j =~ s/&/and/;}
     $j =~ s/\b(An|And|As|At|But|By|Down|For|From|In|Into|Nor|Of|On|Onto|Or|Over|So|The|Till|To|Up|Via|With|Yet)\b/\l$1/g;
-    if ($j =~ /\AJournal of Experimental Psychology/i)
+    if ($j =~ /\AJournal of Experimental Psychology/i or
+        $j =~ /\AAmerican Economic Journal/i)
        {$j =~ s/\./:/}
     else
        {$j =~ s![/:.].+!!}

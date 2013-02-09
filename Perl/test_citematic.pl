@@ -299,6 +299,9 @@ is apa(year => 1997, author => ['weber', 'milliman']),
 is apa(author => ['bertrand', 'shafir'], title => ['advertising content']),
     'Bertrand, M., Karlan, D. S., Mullainathan, S., Shafir, E., & Zinman, J. (2010). What\'s advertising content worth? Evidence from a consumer credit marketing field experiment. <i>Quarterly Journal of Economics, 125</i>(1), 263–305. doi:10.1162/qjec.2010.125.1.263',
     'Quarterly Journal of Economics';
+is apa(year => 2010, author => ['meier', 'sprenger'], title => ['credit']),
+    'Meier, S., & Sprenger, C. (2010). Present-biased preferences and credit card borrowing. <i>American Economic Journal: Applied Economics, 2</i>(1), 193–210. doi:10.1257/app.2.1.193',
+    'American Economic Journal: Applied Economics';
 
 
 note '~~~ Book chapters ~~~';
