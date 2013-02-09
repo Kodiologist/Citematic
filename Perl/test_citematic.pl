@@ -68,6 +68,9 @@ is apa(title => ['alleged sex research']),
 is get(title => ['alleged sex research'])->{author}[0]{suffix},
     'Jr.',
     '…suffix has a period (1)';
+is apa(year => 2012, author => ['mckerchar', 'renda']),
+    'McKerchar, T. L., & Renda, C. R. (2012). Delay and probability discounting in humans: An overview. <i>Psychological Record, 62</i>(4), 817–834.',
+    'Psychological Record';
 is apa(year => 2000, author => ['McMackin', 'Slovic']),
     'McMackin, J., & Slovic, P. (2000). When does explicit justification impair decision making? <i>Applied Cognitive Psychology, 14</i>(6), 527–541. doi:10.1002/1099-0720(200011/12)14:6<527::AID-ACP671>3.0.CO;2-J',
     'Applied Cognitive Psychology';
