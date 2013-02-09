@@ -495,6 +495,7 @@ sub ebsco
         $page =~ m!<a name="citation"><span>(.+?)\s*</span></a></dd>.*?<dt>(.+?)</div>!s
             or die;
         my ($title, $rows) = (decode_entities($1), $2);
+
         # Before returning the results, print full-text URLs
         # to STDERR.
         if ($page =~ /HTML Full Text/)
@@ -511,9 +512,12 @@ sub ebsco
            {my $a = $agent->clone;
             $a->submit_form(fields => {'__EVENTTARGET' => $1});
             note 'Linked full text: ', $a->uri;}
+
+        $page =~ /var ep = (\{.+?\})\n/ or die;
+        my %clientdata = η from_json($1)->{clientData};
         return χ
             '-title' => $title,
-            '-record' => $page =~ /"plink":"(.+?)"/,
+            '-record' => $clientdata{plink},
             ($page =~ m!<p>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
               ? ('-by' => decode_entities($1))
               : ()),
