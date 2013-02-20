@@ -583,7 +583,7 @@ sub ebsco
                         (?<issue> \d+ (?: / \d+)?)
                         \)? |
                     \( (?<issue> [-,. 0-9A-Za-z]+ ) \) )?
-                , \s+
+                [.,] \s+
                 } {✠}x
             or die "Source: $record{Source}";
 

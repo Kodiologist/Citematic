@@ -278,6 +278,9 @@ is apa(doi => 'doi:10.1371/journal.pone.0047225'),
 is apa(title => ['formal comparison of dual-parameter temporal']),
     'Peters, J., Miedl, S. F., & Büchel, C. (2012). Formal comparison of dual-parameter temporal discounting models in controls and pathological gamblers. <i>PLoS ONE</i>. doi:10.1371/journal.pone.0047225',
     'PLoS ONE ("page" apparently needed for CrossRef to find record)';
+is apa(year => 2010, author => ['Waterman'], title => ['squirrel']),
+    'Waterman, J. M. (2010). The adaptive function of masturbation in a promiscuous African ground squirrel. <i>PLoS ONE</i>. doi:10.1371/journal.pone.0013060',
+    'PLoS ONE (period instead of comma in MEDLINE record)';
 
 
 note '~~~ Journal articles (IDEAS) ~~~';
