@@ -393,7 +393,7 @@ sub ebsco
               # have special meaning but I can't figure out how
               # to escape them properly.
         $terms{year}
-          ? ('common_DT1_FromYear' => $terms{year}, 'common_DT1_ToYear' => $terms{year})
+          ? ('common_DT1_FromYear' => "$terms{year}", 'common_DT1_ToYear' => "$terms{year}")
           : (),
         $terms{ebsco_record} && %{$terms{ebsco_record}}
           ? (RECORD => $terms{ebsco_record})
