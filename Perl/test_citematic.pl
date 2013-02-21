@@ -112,11 +112,9 @@ is apa(year => 2007, author => ['levin', 'pederson']),
 is apa(title => ['short-term memory', 'we stand']),
     'Crowder, R. G. (1993). Short-term memory: Where do we stand? <i>Memory & Cognition, 21</i>(2), 142–145. doi:10.3758/BF03202725',
     'Memory & Cognition (title search, ampersand in journal title)';
-TODO:
-   {local $TODO = 'The ending page number in PsycINFO is currently 726 rather than the correct 665';
-    is apa(year => 2000, author => ['Stanovich', 'West']),
-        'Stanovich, K. E., & West, R. F. (2000). Individual differences in reasoning: Implications for the rationality debate? <i>Behavioral and Brain Sciences, 23</i>(5), 645–665. doi:10.1017/S0140525X00003435',
-        'Behavioral and Brain Sciences (no ampersand)';}
+is apa(year => 2000, author => ['Stanovich', 'West']),
+    'Stanovich, K. E., & West, R. F. (2000). Individual differences in reasoning: Implications for the rationality debate? <i>Behavioral and Brain Sciences, 23</i>(5), 645–665. doi:10.1017/S0140525X00003435',
+    'Behavioral and Brain Sciences (no ampersand)';
 is apa(year => 2009, author => ['brown', 'locker']),
     'Brown, S., & Locker, E. (2009). Defensive responses to an emotive anti-alcohol message. <i>Psychology & Health, 24</i>(5), 517–528. doi:10.1080/08870440801911130',
     'Psychology & Health (extra junk between title and first <dt> on EBSCO page)';
