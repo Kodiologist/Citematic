@@ -216,11 +216,6 @@ is apa(doi => '10.1037/0022-3514.58.2.308'),
 is apa(title => ['toward a synthesis of cognitive biases']),
     'Hilbert, M. (2012). Toward a synthesis of cognitive biases: How noisy information processing can bias human decision making. <i>Psychological Bulletin, 138</i>(2), 211–237. doi:10.1037/a0025940',
     'Psychological Bulletin (multiple DOIs in PsycINFO record)';
-is lc apa(year => 2012, author => ['kim', 'zauberman']),
-    lc q{Kim, B. K., & Zauberman, G. (2012). Can Victoria's Secret change the future? A subjective time perception account of sexual-cue effects on impatience. <i>Journal of Experimental Psychology: General</i>. doi:10.1037/a0028954},
-    'J Exp Psych: General (multiple DOIs in PsycINFO record)';
-      # The "lc"s are there because this title has an
-      # insoluble capitalization issue.
 is apa(title => ['happiness makes us selfish']),
     'Tan, H. B., & Forgas, J. P. (2010). When happiness makes us selfish, but sadness makes us fair: Affective influences on interpersonal strategies in the dictator game. <i>Journal of Experimental Social Psychology, 46</i>(3), 571–576. doi:10.1016/j.jesp.2010.01.007',
     'Journal of Experimental Social Psychology (impoverished PsycINFO record)';
