@@ -199,8 +199,8 @@ sub digest_journal_title
         and return 'The American Statistician';
     $j =~ /\AJournal of Psychology:/i
         and return 'The Journal of Psychology: Interdisciplinary and Applied';
-    $j =~ /PLoS ONE/i
-        and return 'PLoS ONE';
+    $j =~ /PLOS ONE/i
+        and return 'PLOS ONE';
 
     if ($j =~ /Memory (?:and|&) Cognition/i
             or $j =~ /Psychology (?:and|&) Health/i)
@@ -598,7 +598,7 @@ sub ebsco
               # Dunno if *that's* right, but it seems the most
               # reasonable alternative.
         my ($journal, $fpage, $lpage);
-        if ($record{Source} =~ s! \[ (PLoS [^\]]+?) \] !!x)
+        if ($record{Source} =~ s! \[ (PL[oO]S [^\]]+?) \] !!x)
            {$journal = digest_journal_title $1;
             $volume = undef;
             $issue = undef;}
