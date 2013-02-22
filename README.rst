@@ -98,7 +98,7 @@ The views and conclusions contained in the software and documentation are those 
 License for Citematic
 ----------------------------------------
 
-Citematic is copyright 2012 Kodi Arfer.
+Citematic is copyright 2011–2013 Kodi Arfer.
 
 Citematic is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
