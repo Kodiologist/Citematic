@@ -323,7 +323,9 @@ sub query_crossref
             $_->{surname} ne 'et al'}
         α $x->{contributors};
     $x->{year} =
-        (first {ref and $_->{media_type} eq 'print'} α $x->{year}) ||
+        (first
+            {ref and exists $_->{media_type} and $_->{media_type} eq 'print'}
+            α $x->{year}) ||
         $x->{year}[0];
     ref $x->{year} and $x->{year} = $x->{year}{content};
     $x->{doi} = $x->{doi}{content};
