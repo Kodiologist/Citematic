@@ -27,7 +27,7 @@ def bib1(style_path, d, **rest):
 
 def bib(style_path,
         ds,
-        also_return_keys = False,
+        return_cites_and_keys = False,
         formatter = "chocolate",
         dumb_quotes = True,
           # Turning this off won't educate any straight quotes in
@@ -93,8 +93,8 @@ def bib(style_path,
         style,
         {ref.key: ref for ref in parse_references(ds)},
         formatter)
-    bibliography.register(Citation(
-        [ CitationItem(d['id']) for d in ds ]))
+    cites = [ Citation([CitationItem(d['id'])]) for d in ds ]
+    for c in cites: bibliography.register(c)
     if len(ds) > 1: bibliography.sort()
     s = bibliography.bibliography()
 
@@ -113,7 +113,11 @@ def bib(style_path,
         # Replace the ellipsis placeholder.
         s = s.replace('⣥<ellipsis>⣥, ., &', '…')
 
-    return (bibliography.keys, s) if also_return_keys else s
+    if return_cites_and_keys:
+        fcites = [bibliography.cite(c, lambda x: None) for c in cites]
+        return (fcites, bibliography.keys, s)
+    else:
+        return s
 
 # ------------------------------------------------------------
 # Private
@@ -195,7 +199,9 @@ def parse_references(refs):
     def f(ref_):
         ref = deepcopy(ref_)
         ref_data = {}
-        ref_key = ref.pop('id')
+        ref_key = ref.pop('id').lower()
+          # We need a lower() here because of the one
+          # in the constructor of CitationItem.
         ref_type = ref.pop('type')
         for key, value in ref.items():
             python_key = key.replace('-', '_')
