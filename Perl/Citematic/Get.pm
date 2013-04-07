@@ -506,7 +506,7 @@ sub ebsco
            {my $a = $agent->clone;
             $a->submit_form(fields => {'__EVENTTARGET' => $1});
             note 'Full text (PDF): ', $a->uri;}
-        if ($page =~ m!OpenIlsLink\(.+?su=http%3A(.+?)'!)
+        if ($page =~ m!OpenIlsLink\?.+?su=http%3A(.+?)%26sid%3D!)
            {note 'OpenURL: http:', uri_escape
                 uri_unescape($1),
                 ':<>';}
