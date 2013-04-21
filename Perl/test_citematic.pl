@@ -41,7 +41,7 @@ is apa(year => 2005, author => [qw(Bechara Damasio Tranel)]),
 is apa(year => 2004, author => ['maia', 'McClelland']),
     'Maia, T. V., & McClelland, J. L. (2004). A reexamination of the evidence for the somatic marker hypothesis: What participants really know in the Iowa gambling task. <i>Proceedings of the National Academy of Sciences, 101</i>(45), 16075–16080. doi:10.1073/pnas.0406666101',
     'PNAS';
-is apa(year => 1997, author => ['Wallen', 'Tannenbaum']),
+is apa(year => 1997, author => ['Wallen', 'Tannenbaum'], title => ['hormonal']),
     'Wallen, K., & Tannenbaum, P. L. (1997). Hormonal modulation of sexual behavior and affiliation in rhesus monkeys. <i>Annals of the New York Academy of Sciences, 807</i>, 185–202. doi:10.1111/j.1749-6632.1997.tb51920.x',
     'Annals of the NYAS';
 is apa(year => 1983, author => ['Tversky', 'Kahneman']),
