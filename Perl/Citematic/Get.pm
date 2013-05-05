@@ -414,15 +414,16 @@ sub ebsco
                 ignore_discard => 1));
 
         # Get a session ID from the cookie jar, if it has one.
-        my ($sid, $ebsco_domain);
+        my ($sid, $ebsco_domain, @ebsco_cookie);
         $agent->cookie_jar->scan(sub
            {defined $sid and return;
             my ($domain, $key, $val) = @_[4, 1, 2];
             $domain =~ m!\.ebscohost\.com\b! and $key eq 'EHost2'
                 or return;
-            $val =~ /(?:&|\A)sid=(.+?)(?:&|\z)/ or die;
+            $val =~ /(?:&|\A)sid=([^&]+)/ or die;
             $sid = uri_unescape $1;
-            $ebsco_domain = $domain});
+            $ebsco_domain = $domain;
+            @ebsco_cookie = @_;});
 
         my $query = sub
            {my ($base_url, $sid) = @_;
@@ -441,8 +442,14 @@ sub ebsco
                     %search_fields);}};
         if ($sid)
           # Try to just query.
-           {$query->("http://$ebsco_domain", $sid);}
-        if (!$sid || $agent->title !~ /\AEBSCOhost: /)
+           {$query->("http://$ebsco_domain", $sid);
+            if ($agent->title !~ /\AEBSCOhost: /)
+              # Rats, didn't work. Delete the cookie we used; it's
+              # no good.
+               {$sid = '';
+                $ebsco_cookie[8] = 0;
+                $agent->cookie_jar->set_cookie(@ebsco_cookie);}}
+        if (!$sid)
           # We'll need to log in first.
            {progress 'Logging in';
             $ebsco_login->($agent);
