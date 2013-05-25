@@ -309,22 +309,22 @@ is apa(year => 2010, author => ['meier', 'sprenger'], title => ['credit']),
 note '~~~ Book chapters ~~~';
 
 is apa(title => ['gender role journeys', 'metaphor']),
-    q[O'Neil, J. M., & Egan, J. (1992). Men's and women's gender role journeys: A metaphor for healing, transition, and transformation. In B. R. Wainrib (Ed.), <i>Gender issues across the life cycle</i> (pp. 107–123). New York, NY: Springer. ISBN 0-8261-7680-1.],
+    q[O'Neil, J. M., & Egan, J. (1992). Men's and women's gender role journeys: A metaphor for healing, transition, and transformation. In B. R. Wainrib (Ed.), <i>Gender issues across the life cycle</i> (pp. 107–123). New York, NY: Springer. ISBN 978-0-8261-7680-6.],
     'Gender issues across the life cycle (one editor)';
 is apa(author => ['yates', 'veinott', 'patalano']),
-    'Yates, J. F., Veinott, E. S., & Patalano, A. L. (2003). Hard decisions, bad decisions: On decision quality and decision aiding. In S. L. Schneider & J. Shanteau (Eds.), <i>Emerging perspectives on judgment and decision research</i> (pp. 1–63). New York, NY: Cambridge University Press. ISBN 0-521-80151-6.',
+    'Yates, J. F., Veinott, E. S., & Patalano, A. L. (2003). Hard decisions, bad decisions: On decision quality and decision aiding. In S. L. Schneider & J. Shanteau (Eds.), <i>Emerging perspectives on judgment and decision research</i> (pp. 1–63). New York, NY: Cambridge University Press. ISBN 978-0-521-80151-5.',
     'Emerging perspectives on JDM (two editors)';
 is apa(title => ['self-reflection', 'self-persuasion']),
-    'Wilson, T. D. (1990). Self-persuasion via self-reflection. In J. M. Olson & M. P. Zanna (Eds.), <i>Self-inference processes: The Ontario symposium</i> (Vol. 6, pp. 43–67). Hillsdale, NJ: Lawrence Erlbaum. ISBN 0-8058-0551-6.',
+    'Wilson, T. D. (1990). Self-persuasion via self-reflection. In J. M. Olson & M. P. Zanna (Eds.), <i>Self-inference processes: The Ontario symposium</i> (Vol. 6, pp. 43–67). Hillsdale, NJ: Lawrence Erlbaum. ISBN 978-0-8058-0551-2.',
     'Self-inference processes (multiple-volume work)';
 is apa(title => ['relapse and relapse prevention']),
-    'Hsu, S. H., & Marlatt, G. A. (2012). Addiction syndrome: Relapse and relapse prevention. In H. Shaffer, D. A. LaPlante, & S. E. Nelson (Eds.), <i>APA addiction syndrome handbook</i> (Vol. 2, pp. 105–132). Washington, DC: American Psychological Association. ISBN 1-4338-1105-7.',
+    'Hsu, S. H., & Marlatt, G. A. (2012). Addiction syndrome: Relapse and relapse prevention. In H. Shaffer, D. A. LaPlante, & S. E. Nelson (Eds.), <i>APA addiction syndrome handbook</i> (Vol. 2, pp. 105–132). Washington, DC: American Psychological Association. ISBN 978-1-4338-1105-0.',
     'APA addiction syndrome handbook (EBSCO record with volume subtitle)';
 is apa(year => 2008, author => ['cosmides', 'tooby'], title => ['emotions']),
-    'Tooby, J., & Cosmides, L. (2008). The evolutionary psychology of the emotions and their relationship to internal regulatory variables. In M. Lewis, J. M. Haviland-Jones, & L. F. Barrett (Eds.), <i>Handbook of emotions</i> (3rd ed., pp. 114–137). New York, NY: Guilford Press. ISBN 1-59385-650-4.',
+    'Tooby, J., & Cosmides, L. (2008). The evolutionary psychology of the emotions and their relationship to internal regulatory variables. In M. Lewis, J. M. Haviland-Jones, & L. F. Barrett (Eds.), <i>Handbook of emotions</i> (3rd ed., pp. 114–137). New York, NY: Guilford Press. ISBN 978-1-59385-650-2.',
     'Handbook of emotions (book with an edition number)';
 is apa(year => 1992, author => ['massaro'], title => ['fuzzy']),
-    'Massaro, D. W. (1992). Broadening the domain of the fuzzy logical model of perception. In H. L. Pick Jr., P. W. van den Broek, & D. C. Knill (Eds.), <i>Cognition: Conceptual and methodological issues</i> (pp. 51–84). Washington, DC: American Psychological Association. ISBN 1-55798-165-5.',
+    'Massaro, D. W. (1992). Broadening the domain of the fuzzy logical model of perception. In H. L. Pick Jr., P. W. van den Broek, & D. C. Knill (Eds.), <i>Cognition: Conceptual and methodological issues</i> (pp. 51–84). Washington, DC: American Psychological Association. ISBN 978-1-55798-165-3.',
     'Cognition: Conceptual and methodological issues (editor with "Jr.")';
 
 

@@ -12,6 +12,7 @@ use WWW::Mechanize;
 use HTTP::Cookies;
 use URI::Escape;
 use HTML::Entities 'decode_entities';
+use Business::ISBN;
 use Text::Aspell;
 use JSON qw(from_json to_json);
 use File::Slurp qw(slurp write_file);
@@ -261,6 +262,10 @@ sub format_publisher
     $s =~ s/ Publishing Co\z| Associates\z//;
     $s;}
 
+sub format_isbn
+   {my $s = shift;
+    defined $s and Business::ISBN->new($s)->as_isbn13->as_string;}
+
 sub citation
    {my %h = @_;
     defined $h{$_} or delete $h{$_}
@@ -297,7 +302,7 @@ sub book_chapter
         page => digest_pages($first_page, $last_page),
         'publisher-place' => $place,
         publisher => format_publisher($publisher),
-        ISBN => $isbn;}
+        ISBN => format_isbn($isbn);}
 
 # ------------------------------------------------------------
 # CrossRef
