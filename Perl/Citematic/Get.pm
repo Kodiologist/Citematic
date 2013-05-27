@@ -990,6 +990,8 @@ sub get
 #   ebsco_record (hash ref with keys "db" and "AN")
 # Returns a hashref of CSL input data or undef.
    {my %terms = @_;
+    first {$_ and !ref || (ref eq 'ARRAY' and @$_) || (ref eq 'HASH' and %$_)} values %terms
+        or return err 'No search terms.';
     $terms{author} ||= [];
     $terms{title} ||= [];
 
