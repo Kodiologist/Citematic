@@ -333,6 +333,9 @@ note '~~~ Entire books ~~~';
 is apa(year => 1956, title => ['when prophecy fails'], author => ['festinger']),
     'Festinger, L., Riecken, H. W., & Schachter, S. (1956). <i>When prophecy fails</i>. Minneapolis, MN: University of Minnesota Press. doi:10.1037/10030-000',
     'When prophecy fails';
+is apa(doi => '10.1037/10030-000'),
+    'Festinger, L., Riecken, H. W., & Schachter, S. (1956). <i>When prophecy fails</i>. Minneapolis, MN: University of Minnesota Press. doi:10.1037/10030-000',
+    'When prophecy fails (DOI search)';
 is apa(title => ['gender issues across the life cycle']),
     'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
     'Gender issues across the life cycle (one editor)';

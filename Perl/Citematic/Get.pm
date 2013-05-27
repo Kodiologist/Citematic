@@ -987,7 +987,7 @@ sub get
        {my %d = from_doi $terms{doi};
         $terms{author} = σ map {$_->{surname}} α $d{contributors};
         $terms{year} = $d{year};
-        $terms{title} = σ $d{article_title};
+        $terms{title} = σ $d{article_title} || $d{volume_title};
         $terms{doi} = $d{doi};}
     ebsco %terms or congress %terms or ideas
         keywords => [@{$terms{author}}, @{$terms{title}}],
