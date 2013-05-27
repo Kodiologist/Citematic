@@ -1,4 +1,4 @@
-Citematic::Get uses EBSCOhost_, IDEAS_ (i.e., RePEc_), and CrossRef_ to get bibliographic data for search terms. In the case of EBSCOhost, it also tries to get full-text URLs. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with the web interfaces.
+Citematic::Get uses EBSCOhost_, the `Library of Congress`_, IDEAS_ (i.e., RePEc_), and CrossRef_ to get bibliographic data for search terms. In the case of EBSCOhost, it also tries to get full-text URLs. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with the web interfaces.
 
 The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, Citematic::COinS has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
 
@@ -24,6 +24,10 @@ Examples
 
     Yates, J. F., Veinott, E. S., & Patalano, A. L. (2003). Hard decisions, bad decisions: On decision quality and decision aiding. In S. L. Schneider & J. Shanteau (Eds.), <i>Emerging perspectives on judgment and decision research</i> (pp. 1–63). New York, NY: Cambridge University Press.
 
+* ``$ cite 2000 -t 'programming perl'``
+
+    Wall, L., Christiansen, T., & Orwant, J. (2000). <i>Programming Perl</i> (3rd ed.). Beijing, PRC: O'Reilly.
+
 See ``cite --help`` for a description of command-line options. See ``Perl/test_citematic.pm`` for more examples of what Citematic::Get can find and ``Python/test_apa.py`` for more examples of what quickbib can format.
 
 Installation
@@ -31,7 +35,7 @@ Installation
 
 1. Ensure you have the following Perl modules. You can install modules with ``sudo cpan install WWW::Mechanize`` or ``sudo cpanm WWW::Mechanize`` (using cpanminus_) or your package manager.
 
-  * Citematic::Get requires: File::Slurp HTML::Entities HTTP::Cookies JSON LWP::Simple List::Util Text::Aspell URI::Escape WWW::Mechanize XML::Simple parent
+  * Citematic::Get requires: Business::ISBN File::Slurp HTML::Entities HTTP::Cookies JSON LWP::Simple List::Util Text::Aspell URI::Escape WWW::Mechanize XML::Simple parent
   * Citematic::QuickBib requires: IPC::Run JSON 
   * Citematic::COinS requires: HTML::Entities URI::Escape
   * ``cite`` requires: File::Slurp Getopt::Long::Descriptive
@@ -52,7 +56,7 @@ For Citematic::Get, say ``perl test_citematic.pl``. This requires Test::More.
 Caveats
 ============================================================
 
-If you look at the code of Citematic::Get, you'll see that a great many cases need to be covered in order to parse all the idiosyncratic record formats. You'd hope that all that data would be systematically structured, huh? It isn't really, hence regexes. I've done a pretty good job (if I do say so myself) of covering psychology articles (particularly those represented in PsycINFO and PsycARTICLES), but more regexes will no doubt be needed if you plunge further into the depths of, say, MEDLINE. And while I implemented support for IDEAS so I can get economics articles, fields like mathematics and chemistry will probably require more databases. In short, I wrote this program for my own use, so I took pains to support the sort of articles I read (in experimental social psychology and JDM), but the further your interests are from mine, the more work you'd have to do to make Citematic::Get useful. Patches are more than welcome; I would love for Citematic to be as well-rounded in scraping as it is in formatting.
+If you look at the code of Citematic::Get, you'll see that a great many cases need to be covered in order to parse all the idiosyncratic record formats. You'd hope that all that data would be systematically structured, huh? It isn't really, hence regexes. I've done a pretty good job (if I do say so myself) of covering psychology articles (particularly those represented in PsycINFO and PsycARTICLES), but more regexes will no doubt be needed if you plunge further into the depths of, say, MEDLINE. And while I implemented support for IDEAS so I can get economics articles, fields like mathematics and chemistry will probably require more databases. In short, I wrote this program for my own use, so I took pains to support the sort of articles I read (in experimental social psychology and JDM), as well as books (the Library of Congress covers pretty much every book), but the further your interests are from mine, the more work you'd have to do to make Citematic::Get useful. Patches are more than welcome; I would love for Citematic to be as well-rounded in scraping as it is in formatting.
 
 Another thing: every query is cached, but the cache never times out. You'll need to delete the cache file or edit it by hand (or in the case of EBSCO, use the ``-b`` option to ``cite``) in order to see any updates to the databases.
 
@@ -105,6 +109,7 @@ Citematic is free software: you can redistribute it and/or modify it under the t
 Citematic is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the `GNU General Public License`_ for more details.
 
 .. _EBSCOhost: http://ebscohost.com/
+.. _`Library of Congress`: http://catalog2.loc.gov/
 .. _IDEAS: http://ideas.repec.org/
 .. _RePEc: http://repec.org
 .. _`Citation Style Language`: http://citationstyles.org/downloads/specification.html

@@ -328,28 +328,44 @@ is apa(year => 1992, author => ['massaro'], title => ['fuzzy']),
     'Cognition: Conceptual and methodological issues (editor with "Jr.")';
 
 
-=for wholebooks
-
 note '~~~ Entire books ~~~';
 
-is apa(title => ['when prophecy fails'], author => ['festinger']),
-    'Festinger, L., Henry, W., & Schachter, S. (1956). <i>When prophecy fails</i>. Minneapolis, MN: University of Minnesota Press.',
-    'When prophecy fails (authors)';
-is apa(title => ['gender issues', 'life cycle']),
-    'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer',
+is apa(year => 1956, title => ['when prophecy fails'], author => ['festinger']),
+    'Festinger, L., Riecken, H. W., & Schachter, S. (1956). <i>When prophecy fails</i>. Minneapolis, MN: University of Minnesota Press.',
+    'When prophecy fails';
+is apa(title => ['gender issues across the life cycle']),
+    'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
     'Gender issues across the life cycle (one editor)';
 is apa(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['consequences']),
-    'Duncan, G. J., & Brooks-Gunn, J. (Eds.). (1997). Consequences of growing up poor. New York, NY: Russell Sage Foundation.',
+    'Duncan, G. J., & Brooks-Gunn, J. (Eds.). (1997). <i>Consequences of growing up poor</i>. New York, NY: Russell Sage Foundation. ISBN 978-0-87154-143-7.',
     'Consequences of growing up poor (two editors)';
-is apa(year => 2010, author => ['thorndike', 'thorndike-christ']),
-    'Thorndike, R. M., & Thorndike-Chirst, T. (2010). <i>Measurement and evaluation in psychology and education</i> (8th ed.). Boston: Prentice Hall.',
+is apa(author => ['Gilovich', 'Griffin', 'Kahneman']),
+    'Gilovich, T., Griffin, D., & Kahneman, D. (Eds.). (2002). <i>Heuristics and biases: The psychology of intuitive judgment</i>. New York, NY: Cambridge University Press. ISBN 978-0-521-79260-8.',
+    'Heuristics and biases (three editors)';
+is apa(year => 1984, author => ['Brownmiller'], title => ['Femininity']),
+    'Brownmiller, S. (1984). <i>Femininity</i>. New York, NY: Simon & Schuster. ISBN 978-0-671-24692-1.',
+    'Femininity';
+is apa(year => 2009, author => ['stearns'], title => ['sexuality']),
+    'Stearns, P. N. (2009). <i>Sexuality in world history</i>. London, UK: Routledge. ISBN 978-0-415-77776-6.',
+    'Sexuality in world history';
+is apa(year => 2010, author => ['thorndike-christ'], title => ['measurement']),
+    'Thorndike, R. M., & Thorndike-Christ, T. (2010). <i>Measurement and evaluation in psychology and education</i> (8th ed.). Boston, MA: Prentice Hall. ISBN 978-0-13-240397-9.',
     'Measurement and evaluation in psychology and education';
 is apa(year => 2010, author => ['aronson', 'wilson', 'akert']),
-    'Aronson, E., Wilson, T. D., & Akert, R. M. (2010). <i>Social psychology</i> (7th ed.). Upper Saddle River, NJ: Pearson Education.',
+    'Aronson, E., Wilson, T. D., & Akert, R. M. (2010). <i>Social psychology</i> (7th ed.). Upper Saddle River, NJ: Prentice Hall. ISBN 978-0-13-814478-4.',
     'Social psychology';
-
-=cut
-
+is apa(year => 2009, author => ['hastie', 'friedman']),
+    'Hastie, T., Tibshirani, R., & Friedman, J. H. (2009). <i>The elements of statistical learning: Data mining, inference, and prediction</i> (2nd ed.). New York, NY: Springer. ISBN 978-0-387-84857-0.',
+    'The elements of statistical learning';
+is apa(year => 2000, title => ['programming perl']),
+    q(Wall, L., Christiansen, T., & Orwant, J. (2000). <i>Programming Perl</i> (3rd ed.). Beijing, PRC: O'Reilly. ISBN 978-0-596-00027-1.),
+    'Programming Perl';
+is apa(year => 2000, author => ['carothers'], title => ['analysis']),
+    'Carothers, N. L. (2000). <i>Real analysis</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-49749-7.',
+    'Real analysis';
+is apa(year => 2005, title => [q(student's introduction to english)]),
+    q(Huddleston, R. D., & Pullum, G. K. (2005). <i>A student's introduction to English grammar</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-84837-4.),
+    q[A student's introduction to English grammar (title search with single quote)];
 
 
 done_testing;

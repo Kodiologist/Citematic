@@ -230,7 +230,8 @@ sub digest_pages
 
 sub format_nonjournal_title
    {my $s = shift;
-    if (matches(qr/\b[[:upper:]]/, $s) /
+    if ($s =~ / / and
+        matches(qr/\b[[:upper:]]/, $s) /
         matches(qr/\b[[:alpha:]]/, $s) > 1/2)
        {warning 'The article title may be miscapitalized.';
         # But we'll try to fix it.
@@ -247,8 +248,9 @@ sub format_nonjournal_title
           # THE TITLE IS IN ALL CAPS.
            {$s =~ s {([^- .?!]+)} {fix_allcaps_word $1}eg;
             $s = ucfirst $s;}}
-    # Insert a space and capitalize after colons.
-    $s =~ s/([:?])\W+(\w)/$1 . ' ' . uc $2/ge;
+    # Insert a space and capitalize after (but remove spaces
+    # before) colons and question marks.
+    $s =~ s/\s*([:?])\W+(\w)/$1 . ' ' . uc $2/ge;
     # Correct GNU-style single quotes that should be double quotes.
     $s =~ s/`([^`']+)'/"$1"/g;
     # Correct matched single quotes that should be double quotes.
@@ -259,8 +261,23 @@ sub format_nonjournal_title
 
 sub format_publisher
    {my $s = shift;
-    $s =~ s/ Publishing Co\z| Associates\z//;
+    $s =~ s! \A [^/]+ / ([^/]+) \z!$1!x;
+    $s =~ s/ Pub(?:lishing|\.)? Co.?\z| Associates\z//;
     $s;}
+
+sub format_place
+   {my $s = shift;
+    $s =~ s/\s*;.+//;
+    $s =~ s/ \s* \[ ([^\]]+) \] \z/, $1/x;
+    $s =~ s/\bU\.K\./UK/;
+    $s =~ s/\A[^,]+,[^,]+\K,.+//;
+    $s eq 'New York' ? 'New York, NY'
+      : $s eq 'Boston' ? 'Boston, MA'
+      : $s eq 'Minneapolis' ? 'Minneapolis, MN'
+      : $s eq 'London' ? 'London, UK'
+      : $s eq 'Berlin' ? 'Berlin, Germany'
+      : $s eq 'Beijing' ? 'Beijing, PRC'
+      : $s}
 
 sub format_isbn
    {my $s = shift;
@@ -300,7 +317,22 @@ sub book_chapter
         volume => $volume,
         edition => $edition,
         page => digest_pages($first_page, $last_page),
-        'publisher-place' => $place,
+        'publisher-place' => format_place($place),
+        publisher => format_publisher($publisher),
+        ISBN => format_isbn($isbn);}
+
+sub whole_book
+   {my ($authors, $year, $book, $editors, $volume,
+        $edition, $place, $publisher, $isbn) = @_;
+    citation
+        type => 'book',
+        author => $authors,
+        issued => {'date-parts' => [[$year]]},
+        title => format_nonjournal_title($book),
+        editor => $editors,
+        volume => $volume,
+        edition => $edition,
+        'publisher-place' => format_place($place),
         publisher => format_publisher($publisher),
         ISBN => format_isbn($isbn);}
 
@@ -563,7 +595,31 @@ sub ebsco
     defined $record{'Digital Object Identifier'}
         and $record{'Digital Object Identifier'} =~ s/(?:\x{0d}|\x{0a}|<br).*//s;
 
-    if (!$record{'Document Type'} or
+    if (!$record{'Document Type'} and
+        $record{'Publication Type'} =~ /\ABook;/)
+       {$record{Source} =~ /\A
+                \s*
+                (?<place> [^:]+)
+                : \s
+                (?<publisher> [^,]+)
+                , \s
+                (?<year> \d\d\d\d)
+                \.
+                /x
+            or die "Book source: $record{Source}";
+        my ($year, $place, $publisher) = @+{qw(year place publisher)};
+        my $editors;
+        if ($record{'Publication Type'} =~ /\bEdited Book\b/)
+           {$editors = $authors;
+            undef $authors;}
+        my $isbn;
+        exists $record{ISBN} and ($isbn) =
+            $record{ISBN} =~ /([-0-9Xx]+)/;
+        whole_book
+            $authors, $year, $title, $editors, undef,
+            undef, $place, $publisher, $isbn;}
+
+    elsif (!$record{'Document Type'} or
         $record{'Document Type'} eq 'Article' or
         $record{'Document Type'} eq 'Journal Article' or
         $record{'Document Type'} eq 'Comment/Reply' or
@@ -705,6 +761,93 @@ sub ebsco
        {die qq(Can't handle document type "$record{'Document Type'}");}}
 
 # ------------------------------------------------------------
+# Library of Congress
+# ------------------------------------------------------------
+
+sub congress
+# Allowed %terms:
+#   author (array ref)
+#     [Actually matches editors, too, which is useful for edited
+#     collections of papers.]
+#   year (scalar)
+#   title (array ref)
+   {my %terms = @_;
+
+    progress 'Trying the Library of Congress';
+
+    my $url = query_url 'http://catalog2.loc.gov/vwebv/search',
+        do
+           {my ($i, @a) = 0;
+            foreach ([$terms{author}, 'KPNC'], [$terms{title}, 'KTIL'])
+               {my ($a, $field) = @$_;
+                foreach my $s (sort @$a)
+                   {++$i;
+                    $s = lc $s;
+                    $s =~ tr/"?%//;
+                    push @a,
+                        "searchArg$i" => $s,
+                        "searchCode$i" => $field,
+                        "argType$i" => 'phrase',
+                        "combine$i" => 'and';}}
+            @a},
+        $terms{year}
+          ? (yearOption => 'range',
+                fromYear => $terms{year}, toYear => $terms{year})
+          : (),
+        type => 'a?', # Textual items only (to exclude, e.g., movies)
+        searchType => 2;
+
+    my %record = η($global_cache->{congress}{$url} ||= runsub
+       {my $agent = new WWW::Mechanize;
+        $agent->get($url);
+
+        $agent->content =~ m!<strong>Your search found no results.</strong>!
+            and return {};
+
+        if ($agent->title eq 'LC Online Catalog - Titles List')
+           {progress 'Fetching record';
+            $agent->follow_link(url_regex => qr/\AholdingsInfo\?/);}
+
+        my $page = $agent->content;
+        my %f = map {decode_entities $_}
+           ($page =~ m!<th class="fieldLabel">([^<]+)</th>.+?="subfieldData">\s*([^<]+[^< ])!sg,
+            $page =~ m!<h2>([^<]+)</h2>.+?="subfieldData">\s*([^<]+[^< ])!sg);
+        $f{'Related names'} = $page =~ m!<h2>Related names</h2>\s*<ul>(.+?)</ul>!s
+          ? [map {decode_entities $_} $1 =~ /="subfieldData">\s*([^<]+)/g]
+          : [];
+
+        \%f;});
+
+    %record or return err 'No results.';
+
+    my ($authors, $editors);
+    ($record{'Main title'} =~ / editors?\.\z/ ||
+              $record{'Main title'} =~ m!/ edited by !
+          ? $editors : $authors) = σ
+        map {digest_author $_}
+        grep {! /\. Convention/}
+        grep {defined}
+        $record{'Personal name'}, α $record{'Related names'};
+    $record{'Published/Created'} =~ /\A([^:]+) : ([^,]+), c?(\d\d\d\d)(?:\.|-\S+)\z/
+        or $record{'Published/Created'} =~ /\A([^,]+), ([^\[]+) \[(\d\d\d\d)\]\z/
+        or die 'pc';
+    my ($place, $publisher, $year) = ($1, $2, $3);
+    $record{'Main title'} =~ m!\A([^/]+) /! or
+        $record{'Main title'} =~ m!\A(.+?), by! or
+        die 'mt';
+    my $book = $1;
+    my $volume; # TODO: I need some examples of multi-volume works.
+    my $edition = $record{Edition};
+    my $isbn;
+    if (exists $record{ISBN})
+       {$record{ISBN} =~ /\A([-0-9X]+)/ or die 'isbn';
+        $isbn = $1;}
+
+    return whole_book
+        $authors, $year, $book, $editors, $volume,
+        $edition, $place, $publisher, $isbn;}
+
+# ------------------------------------------------------------
 # IDEAS
 # ------------------------------------------------------------
 
@@ -832,6 +975,7 @@ sub get
    {my %terms = @_;
     $terms{author} ||= [];
     $terms{title} ||= [];
+
     if ($terms{doi})
       # When we're starting with a DOI, we use CrossRef only to
       # get information to plug into other databases (and not to
@@ -842,7 +986,7 @@ sub get
         $terms{year} = $d{year};
         $terms{title} = σ $d{article_title};
         $terms{doi} = $d{doi};}
-    ebsco %terms or ideas
+    ebsco %terms or congress %terms or ideas
         keywords => [@{$terms{author}}, @{$terms{title}}],
         year => $terms{year},
         doi => $terms{doi};}
