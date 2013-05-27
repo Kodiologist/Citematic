@@ -35,11 +35,11 @@ local $Citematic::Get::verbose = not $opt->quiet;
 local $Citematic::Get::debug = $opt->debug;
 local $Citematic::Get::bypass_ebsco_cache = $opt->bypass_ebsco_cache;
 
-# Interpret arguments that look like years, DOIs, EBSCO URLs, or
-# formatted citations appropriately. Interpret the remainder
-# as author keywords.
+# Interpret arguments that look like years, ISBNs, DOIs, EBSCO
+# URLs, or formatted citations appropriately. Interpret the
+# remainder as author keywords.
 
-my ($year, $doi, %ebsco_record, @author_words);
+my ($year, $isbn, $doi, %ebsco_record, @author_words);
 
 push @author_words, grep {runsub
    {if (/\A\d{4}\z/)
@@ -47,6 +47,8 @@ push @author_words, grep {runsub
     elsif (/\bebscohost\.com\b/ and
             m![#&]db=([a-zA-Z0-9]{3,6}).+?\bAN=([^=&#/]+)!)
        {%ebsco_record = (db => $1, AN => uri_unescape($2));}
+    elsif (m!\A[-0-9xX]+\z!)
+       {$isbn = $_;}
     elsif (m!\A(?:doi:)?\d+\.\d+/!)
        {$doi = $_;}
     elsif (/,/)
@@ -62,6 +64,7 @@ my $a = Citematic::Get::get
    (author => \@author_words,
     year => $year,
     title => \@title_words,
+    isbn => $isbn,
     doi => $doi,
     ebsco_record => \%ebsco_record);
 

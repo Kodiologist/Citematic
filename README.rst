@@ -28,6 +28,10 @@ Examples
 
     Wall, L., Christiansen, T., & Orwant, J. (2000). <i>Programming Perl</i> (3rd ed.). Beijing, PRC: O'Reilly.
 
+* ``$ cite 9780521431460``
+
+    Huddleston, R. D., & Pullum, G. K. (2002). <i>The Cambridge grammar of the English language</i>. Cambridge, UK: Cambridge University Press.
+
 See ``cite --help`` for a description of command-line options. See ``Perl/test_citematic.pm`` for more examples of what Citematic::Get can find and ``Python/test_apa.py`` for more examples of what quickbib can format.
 
 Installation
