@@ -369,6 +369,9 @@ is apa(year => 2000, title => ['programming perl']),
 is apa(year => 2000, author => ['carothers'], title => ['analysis']),
     'Carothers, N. L. (2000). <i>Real analysis</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-49749-7.',
     'Real analysis';
+is apa(isbn => '978-0-521-49749-7'),
+    'Carothers, N. L. (2000). <i>Real analysis</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-49749-7.',
+    'Real analysis (ISBN search)';
 is apa(year => 2005, title => [q(student's introduction to english)]),
     q(Huddleston, R. D., & Pullum, G. K. (2005). <i>A student's introduction to English grammar</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-84837-4.),
     q[A student's introduction to English grammar (title search with single quote)];

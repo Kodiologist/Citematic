@@ -780,6 +780,7 @@ sub congress
 #     collections of papers.]
 #   year (scalar)
 #   title (array ref)
+#   isbn (scalar)
    {my %terms = @_;
 
     progress 'Trying the Library of Congress';
@@ -787,17 +788,23 @@ sub congress
     my $url = query_url 'http://catalog2.loc.gov/vwebv/search',
         do
            {my ($i, @a) = 0;
-            foreach ([$terms{author}, 'KPNC'], [$terms{title}, 'KTIL'])
-               {my ($a, $field) = @$_;
-                foreach my $s (sort @$a)
-                   {++$i;
-                    $s = lc $s;
-                    $s =~ tr/"?%//;
-                    push @a,
-                        "searchArg$i" => $s,
-                        "searchCode$i" => $field,
-                        "argType$i" => 'phrase',
-                        "combine$i" => 'and';}}
+            my $add = sub
+               {my ($field, $s) = @_;
+                ++$i;
+                $s = lc $s;
+                $s =~ tr/"?%//;
+                push @a,
+                    "searchArg$i" => $s,
+                    "searchCode$i" => $field,
+                    "argType$i" => 'phrase',
+                    "combine$i" => 'and';};
+            if ($terms{author})
+               {$add->('KPNC', $_) foreach sort @{$terms{author}};}
+            if ($terms{title})
+               {$add->('KTIL', $_) foreach sort @{$terms{title}};}
+            if ($terms{isbn})
+               {$add->('KNUM', Business::ISBN->new($terms{isbn})
+                    ->as_isbn13->as_string([]));}
             @a},
         $terms{year}
           ? (yearOption => 'range',
