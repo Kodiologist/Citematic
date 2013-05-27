@@ -323,7 +323,7 @@ sub book_chapter
 
 sub whole_book
    {my ($authors, $year, $book, $editors, $volume,
-        $edition, $place, $publisher, $isbn) = @_;
+        $edition, $place, $publisher, $doi, $isbn) = @_;
     citation
         type => 'book',
         author => $authors,
@@ -334,6 +334,7 @@ sub whole_book
         edition => $edition,
         'publisher-place' => format_place($place),
         publisher => format_publisher($publisher),
+        DOI => $doi,
         ISBN => format_isbn($isbn);}
 
 # ------------------------------------------------------------
@@ -617,7 +618,9 @@ sub ebsco
             $record{ISBN} =~ /([-0-9Xx]+)/;
         whole_book
             $authors, $year, $title, $editors, undef,
-            undef, $place, $publisher, $isbn;}
+            undef, $place, $publisher,
+            $terms{doi} || $record{'Digital Object Identifier'},
+            $isbn;}
 
     elsif (!$record{'Document Type'} or
         $record{'Document Type'} eq 'Article' or
@@ -845,7 +848,7 @@ sub congress
 
     return whole_book
         $authors, $year, $book, $editors, $volume,
-        $edition, $place, $publisher, $isbn;}
+        $edition, $place, $publisher, undef, $isbn;}
 
 # ------------------------------------------------------------
 # IDEAS
