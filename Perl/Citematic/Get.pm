@@ -419,6 +419,7 @@ sub ebsco
 #   author (array ref)
 #   year (scalar)
 #   title (array ref)
+#   isbn (scalar)
 #   doi (scalar) [not used for searching, but included in citation]
 #   ebsco_record (hash ref with keys "db" and "AN")
    {my %terms = @_;
@@ -428,10 +429,13 @@ sub ebsco
     my %search_fields =
        (SearchTerm => join(' AND ',
             $terms{author} ? map {qq(AU "$_")} sort(@{$terms{author}}) : (),
-            $terms{title} ? map {my $t = $_; $t =~ s/[?"“”]//g; qq(TI "$t")} sort(@{$terms{title}}) : ()),
+            $terms{title} ? map {my $t = $_; $t =~ s/[?"“”]//g; qq(TI "$t")} sort(@{$terms{title}}) : (),
               # We remove question marks because they seem to
               # have special meaning but I can't figure out how
               # to escape them properly.
+            $terms{isbn}
+              ? 'IB ' . Business::ISBN->new($terms{isbn})->as_isbn10->as_string([])
+              : ()),
         $terms{year}
           ? ('common_DT1_FromYear' => "$terms{year}", 'common_DT1_ToYear' => "$terms{year}")
           : (),
@@ -620,6 +624,8 @@ sub ebsco
             $authors, $year, $title, $editors, undef,
             undef, $place, $publisher,
             $terms{doi} || $record{'Digital Object Identifier'},
+              # We don't try hard to obtain a DOI, since most
+              # books don't have DOIs, anyway.
             $isbn;}
 
     elsif (!$record{'Document Type'} or
@@ -972,6 +978,7 @@ sub get
 #   author (array ref)
 #   year (scalar)
 #   title (array ref)
+#   isbn (scalar)
 #   doi (scalar)
 #   ebsco_record (hash ref with keys "db" and "AN")
 # Returns a hashref of CSL input data or undef.

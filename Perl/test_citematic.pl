@@ -326,6 +326,9 @@ is apa(year => 2008, author => ['cosmides', 'tooby'], title => ['emotions']),
 is apa(year => 1992, author => ['massaro'], title => ['fuzzy']),
     'Massaro, D. W. (1992). Broadening the domain of the fuzzy logical model of perception. In H. L. Pick Jr., P. W. van den Broek, & D. C. Knill (Eds.), <i>Cognition: Conceptual and methodological issues</i> (pp. 51–84). Washington, DC: American Psychological Association. ISBN 978-1-55798-165-3.',
     'Cognition: Conceptual and methodological issues (editor with "Jr.")';
+is apa(author => ['massaro'], isbn => '978-1-55798-165-3'),
+    'Massaro, D. W. (1992). Broadening the domain of the fuzzy logical model of perception. In H. L. Pick Jr., P. W. van den Broek, & D. C. Knill (Eds.), <i>Cognition: Conceptual and methodological issues</i> (pp. 51–84). Washington, DC: American Psychological Association. ISBN 978-1-55798-165-3.',
+    'Cognition: Conceptual and methodological issues (ISBN search for chapter)';
 
 
 note '~~~ Entire books ~~~';
@@ -369,6 +372,18 @@ is apa(year => 2000, author => ['carothers'], title => ['analysis']),
 is apa(year => 2005, title => [q(student's introduction to english)]),
     q(Huddleston, R. D., & Pullum, G. K. (2005). <i>A student's introduction to English grammar</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-84837-4.),
     q[A student's introduction to English grammar (title search with single quote)];
+is apa(isbn => '0826176801'),
+    'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
+    'Gender issues across the life cycle (search by ISBN-10, pre-2007)';
+is apa(isbn => '978-0-8261-7680-6'),
+    'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
+    'Gender issues across the life cycle (search by ISBN-13, pre-2007)';
+is apa(isbn => '978-1-4338-0407-6'),
+    'Wenzel, A., Brown, G. K., & Beck, A. T. (2009). <i>Cognitive therapy for suicidal patients: Scientific and clinical applications</i>. Washington, DC: American Psychological Association. ISBN 978-1-4338-0407-6. doi:10.1037/11862-000',
+    'cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
+is apa(isbn => '1433804077'),
+    'Wenzel, A., Brown, G. K., & Beck, A. T. (2009). <i>Cognitive therapy for suicidal patients: Scientific and clinical applications</i>. Washington, DC: American Psychological Association. ISBN 978-1-4338-0407-6. doi:10.1037/11862-000',
+    'cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
 
 
 done_testing;
