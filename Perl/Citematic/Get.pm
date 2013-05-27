@@ -958,7 +958,6 @@ sub sjdm_url_from_title
             query => "{$title}");
           # In Namazu, curly braces signify an exact match.
           # http://www.namazu.org/doc/manual.html#query-phrase
-        write_file '/tmp/bond.html', $page;
         $page =~ m!<dd><a href="/home/baron/public_html/journal/(.+?)">!
           ? $1
           : undef};
