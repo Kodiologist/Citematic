@@ -109,6 +109,9 @@ is apa(year => 2006, author => ['ditto', 'pizarro']),
 is apa(year => 2007, author => ['levin', 'pederson']),
     'Levin, I. P., Weller, J. A., Pederson, A. A., & Harshman, L. A. (2007). Age-related differences in adaptive decision making: Sensitivity to expected value in risky choice. <i>Judgment and Decision Making, 2</i>(4), 225–233. Retrieved from http://journal.sjdm.org/7404/jdm7404.htm',
     'Judgment and Decision Making';
+is apa(doi => '10.1111/j.1539-6924.2008.01065.x'),
+    'Wilson, R. S., Arvai, J. L., & Arkes, H. R. (2008). My loss is your loss… sometimes: Loss aversion and the effect of motivational biases. <i>Risk Analysis, 28</i>(4), 929–938. doi:10.1111/j.1539-6924.2008.01065.x',
+    'Risk Analysis';
 is apa(title => ['short-term memory', 'we stand']),
     'Crowder, R. G. (1993). Short-term memory: Where do we stand? <i>Memory & Cognition, 21</i>(2), 142–145. doi:10.3758/BF03202725',
     'Memory & Cognition (title search, ampersand in journal title)';

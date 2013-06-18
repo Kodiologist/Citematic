@@ -257,6 +257,9 @@ sub format_nonjournal_title
     $s =~ s/(\W|\A)'([^`' ][^`']*[^`' ])'(\W|\z)/$1"$2"$3/g;
     # Correct fake ellipses.
     $s =~ s/\.\.\./…/g;
+    # Space ellipses correctly.
+    $s =~ s/(\w)\s*…/$1…/g;
+    $s =~ s/…(\w)/… $1/g;
     $s;}
 
 sub format_publisher
