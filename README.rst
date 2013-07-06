@@ -37,18 +37,20 @@ See ``cite --help`` for a description of command-line options. See ``Perl/test_c
 Installation
 ============================================================
 
-1. Ensure you have the following Perl modules. You can install modules with ``sudo cpan install WWW::Mechanize`` or ``sudo cpanm WWW::Mechanize`` (using cpanminus_) or your package manager.
+#. Ensure you have the following Perl modules. You can install modules with ``sudo cpan install WWW::Mechanize`` or ``sudo cpanm WWW::Mechanize`` (using cpanminus_) or your package manager.
 
-  * Citematic::Get requires: Business::ISBN File::Slurp HTML::Entities HTTP::Cookies JSON LWP::Simple List::Util Text::Aspell URI::Escape WWW::Mechanize XML::Simple parent
-  * Citematic::QuickBib requires: IPC::Run JSON 
-  * Citematic::COinS requires: HTML::Entities URI::Escape
-  * ``cite`` requires: File::Slurp Getopt::Long::Descriptive
+   * Citematic::Get requires: Business::ISBN File::Slurp HTML::Entities HTTP::Cookies JSON LWP::Simple List::Util Text::Aspell URI::Escape WWW::Mechanize XML::Simple parent
+   * Citematic::QuickBib requires: IPC::Run JSON 
+   * Citematic::COinS requires: HTML::Entities URI::Escape
+   * ``cite`` requires: File::Slurp Getopt::Long::Descriptive
 
-2. Ensure you have Python 3, then get and install (as by putting it in ``/usr/lib/python3/dist-packages``) citeproc-py_ and its own dependencies.
+#. Install ``Get.pm``, ``QuickBib.pm``, and ``COinS.pm`` themselves, as by putting them in ``/etc/perl/Citematic``.
 
-3. Download `apa.csl`_ (and, if you'll be running quickbib's one test for it, `mla.csl`_) and set the environment variable ``APA_CSL_PATH`` to where you put it (ditto ``MLA_CSL_PATH``).
+#. Ensure you have Python 3, then get and install (as by putting it in ``/usr/lib/python3/dist-packages``) citeproc-py_ and its own dependencies, as well as the file ``quickbib.py`` provided by Citematic.
 
-4. Copy the example configuration file to ``$HOME/.citematic`` and edit it. `Registering for CrossRef`_ is easy. Getting access to EBSCOhost is harder. There's a good chance that your school (if you're using Citematic, you must be a student or an academic, right? right?) or your local library has an institutional subscription that you can use from home. You may be able to log in with a single HTTP ``POST`` (the Firefox extension `Tamper Data`_ is helpful for figuring out how), in which case editing ``ebsco_login`` will be particularly easy. And if your IP address is already authenticated, then you don't need to log in at all, and you can set ``ebsco_login`` to a no-op like ``1``. (Perl programmers note that ``$_`` refers to a WWW::Mechanize object in this context.)
+#. Download `apa.csl`_ (and, if you'll be running quickbib's one test for it, `mla.csl`_) and set the environment variable ``APA_CSL_PATH`` to where you put it (ditto ``MLA_CSL_PATH``).
+
+#. Copy the example configuration file to ``$HOME/.citematic`` and edit it. `Registering for CrossRef`_ is easy. Getting access to EBSCOhost is harder. There's a good chance that your school (if you're using Citematic, you must be a student or an academic, right? right?) or your local library has an institutional subscription that you can use from home. You may be able to log in with a single HTTP ``POST`` (the Firefox extension `Tamper Data`_ is helpful for figuring out how), in which case editing ``ebsco_login`` will be particularly easy. And if your IP address is already authenticated, then you don't need to log in at all, and you can set ``ebsco_login`` to a no-op like ``1``. (Perl programmers note that ``$_`` refers to a WWW::Mechanize object in this context.)
 
 Running the tests
 ============================================================
