@@ -686,7 +686,7 @@ sub ebsco
             $volume = undef;
             $issue = undef;}
         else
-           {$record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | ,✠ ) !!x or die 's2';
+           {$record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | \.?,✠ ) !!x or die 's2';
             $journal = digest_journal_title $1;
             ($fpage, $lpage) =
                 $record{Source} =~ s!p(?:p\. )?([A-Z]?\d+)-([A-Z]?\d+)!!

@@ -56,6 +56,9 @@ is get(year => 1983, author => ['Tversky', 'Kahneman'])->{author}[1]{given},
 is get(year => 1983, author => ['Tversky', 'Kahneman'])->{title},
     'Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment',
     '…trailing period not left in title (1)';
+is apa(author => ['Regenwetter', 'Davis-Stober', 'Dana'], title => ['transitivity']),
+    'Regenwetter, M., Davis-Stober, C. P., & Dana, J. (2011). Transitivity of preferences. <i>Psychological Review, 118</i>(1), 42–56. doi:10.1037/a0021150',
+    'Psychological Review (confusing period in MasterFILE record)';
 is apa(year => 2010, author => ['trope', 'liberman'], title => ['construal-level theory']),
     'Trope, Y., & Liberman, N. (2010). Construal-level theory of psychological distance. <i>Psychological Review, 117</i>(2), 440–463. doi:10.1037/a0018963',
     'Psychological Review (article for which a correction exists)';
