@@ -284,7 +284,9 @@ sub format_place
 
 sub format_isbn
    {my $s = shift;
-    defined $s and Business::ISBN->new($s)->as_isbn13->as_string;}
+    defined $s
+      ? Business::ISBN->new($s)->as_isbn13->as_string
+      : $s;}
 
 sub citation
    {my %h = @_;
