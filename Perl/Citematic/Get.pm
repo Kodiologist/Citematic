@@ -849,7 +849,7 @@ sub congress
         grep {! /\. Convention/}
         grep {defined}
         $record{'Personal name'}, α $record{'Related names'};
-    $record{'Published/Created'} =~ /\A([^:]+) : ([^,]+), c?(\d\d\d\d)(?:\.|-\S+)\z/
+    $record{'Published/Created'} =~ /\A([^:]+) : ([^,]+), (?:\d\d\d\d, )?c?(\d\d\d\d)(?:\.|-\S+)\z/
         or $record{'Published/Created'} =~ /\A([^,]+), ([^\[]+) \[(\d\d\d\d)\]\z/
         or die 'pc';
     my ($place, $publisher, $year) = ($1, $2, $3);

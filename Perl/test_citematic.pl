@@ -356,6 +356,9 @@ is apa(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['consequence
 is apa(author => ['Gilovich', 'Griffin', 'Kahneman']),
     'Gilovich, T., Griffin, D., & Kahneman, D. (Eds.). (2002). <i>Heuristics and biases: The psychology of intuitive judgment</i>. New York, NY: Cambridge University Press. ISBN 978-0-521-79260-8.',
     'Heuristics and biases (three editors)';
+is apa(year => 1953, title => ['Essays in positive economics']),
+    'Friedman, M. (1953). <i>Essays in positive economics</i>. Chicago: University of Chicago Press.',
+    'Essays in positive economics';
 is apa(year => 1984, author => ['Brownmiller'], title => ['Femininity']),
     'Brownmiller, S. (1984). <i>Femininity</i>. New York, NY: Simon & Schuster. ISBN 978-0-671-24692-1.',
     'Femininity';
@@ -391,10 +394,10 @@ is apa(isbn => '978-0-8261-7680-6'),
     'Gender issues across the life cycle (search by ISBN-13, pre-2007)';
 is apa(isbn => '978-1-4338-0407-6'),
     'Wenzel, A., Brown, G. K., & Beck, A. T. (2009). <i>Cognitive therapy for suicidal patients: Scientific and clinical applications</i>. Washington, DC: American Psychological Association. ISBN 978-1-4338-0407-6. doi:10.1037/11862-000',
-    'cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
+    'Cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
 is apa(isbn => '1433804077'),
     'Wenzel, A., Brown, G. K., & Beck, A. T. (2009). <i>Cognitive therapy for suicidal patients: Scientific and clinical applications</i>. Washington, DC: American Psychological Association. ISBN 978-1-4338-0407-6. doi:10.1037/11862-000',
-    'cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
+    'Cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
 
 
 done_testing;
