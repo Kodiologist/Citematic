@@ -359,6 +359,9 @@ is apa(author => ['Gilovich', 'Griffin', 'Kahneman']),
 is apa(year => 1953, title => ['Essays in positive economics']),
     'Friedman, M. (1953). <i>Essays in positive economics</i>. Chicago: University of Chicago Press.',
     'Essays in positive economics';
+is apa(year => 1989, author => ['levinson'], title => ['family violence in cross-cultural']),
+    'Levinson, D. (1989). <i>Family violence in cross-cultural perspective</i>. Thousand Oaks, CA: Sage. ISBN 978-0-8039-3075-9.',
+    'Family violence in cross-cultural perspective';
 is apa(year => 1984, author => ['Brownmiller'], title => ['Femininity']),
     'Brownmiller, S. (1984). <i>Femininity</i>. New York, NY: Simon & Schuster. ISBN 978-0-671-24692-1.',
     'Femininity';

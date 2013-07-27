@@ -265,7 +265,10 @@ sub format_nonjournal_title
 sub format_publisher
    {my $s = shift;
     $s =~ s! \A [^/]+ / ([^/]+) \z!$1!x;
-    $s =~ s/ Pub(?:lishing|\.)? Co.?\z| Associates\z//;
+    $s =~ s/, Inc\.?\z//;
+    $s =~ s/ Associates\z//;
+    $s =~ s/ Co\.?\z//;
+    $s =~ s/ Pub(?:lishing|lications|\.)?\z//;
     $s;}
 
 sub format_place
@@ -611,7 +614,7 @@ sub ebsco
                 \s*
                 (?<place> [^:]+)
                 : \s
-                (?<publisher> [^,]+)
+                (?<publisher> [^0-9]+)
                 , \s
                 (?<year> \d\d\d\d)
                 \.
