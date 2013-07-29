@@ -12,6 +12,7 @@ use File::Slurp 'write_file';
 use Getopt::Long::Descriptive;
 
 sub runsub (&) {return $_[0]->();}
+sub normalize {my $s = $_[0]; $s =~ s/\s+/ /g; $s =~ s/\A //; $s =~ s/ \z//; $s}
 
 @ARGV = map { decode 'UTF-8', $_ } @ARGV;
 my ($opt, $usage) = Getopt::Long::Descriptive::describe_options
@@ -30,7 +31,7 @@ if ($opt->help)
    {print $usage->text;
     exit;}
 
-my @title_words = @{$opt->title || []};
+my @title_words = map {normalize $_} @{$opt->title || []};
 local $Citematic::Get::verbose = not $opt->quiet;
 local $Citematic::Get::debug = $opt->debug;
 local $Citematic::Get::bypass_ebsco_cache = $opt->bypass_ebsco_cache;
@@ -41,7 +42,7 @@ local $Citematic::Get::bypass_ebsco_cache = $opt->bypass_ebsco_cache;
 
 my ($year, $isbn, $doi, %ebsco_record, @author_words);
 
-push @author_words, grep {runsub
+push @author_words, map {normalize $_} grep {runsub
    {if (/\A\d{4}\z/)
        {$year = $_;}
     elsif (/\bebscohost\.com\b/ and
