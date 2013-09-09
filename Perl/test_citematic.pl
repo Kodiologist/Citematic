@@ -292,6 +292,12 @@ is apa(year => 2007, author => ['kogler', 'Kühberger']),
 is apa(year => 1979, author => ['kahneman', 'tversky'], title => ['prospect']),
     'Kahneman, D., & Tversky, A. (1979). Prospect theory: An analysis of decision under risk. <i>Econometrica, 47</i>(2), 263–291. doi:10.2307/1914185',
     'Econometrica';
+is apa(author => ['koop'], title => ['rank-ordered logit models']),
+    'Koop, G., & Poirier, D. J. (1994). Rank-ordered logit models: An empirical analysis of Ontario voter preferences. <i>Journal of Applied Econometrics, 9</i>(4), 369–388. doi:10.1002/jae.3950090406',
+    'Journal of Applied Econometrics';
+is get(author => ['koop'], title => ['rank-ordered logit models'])->{author}[1]{given},
+    'D. J.',
+    '…periods included in initials';
 is apa(year => 1979, author => ['simon'], title => ['business organizations']),
     'Simon, H. A. (1979). Rational decision making in business organizations. <i>American Economic Review, 69</i>(4), 493–513.',
     'American Economic Review';

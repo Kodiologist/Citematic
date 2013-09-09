@@ -156,7 +156,11 @@ sub digest_author
             and @suffix = (suffix => format_suffix $1);
         $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
         my ($surn, $rest) = ($1, $2);
-        $surn =~ /[[:lower:]]/ or $surn = fix_allcaps_name $surn;
+        $surn =~ /[[:lower:]]/
+            or $surn = fix_allcaps_name $surn;
+        # Add periods after initials, if necessary.
+        $rest =~ /\A[[:upper:]](?: [[:upper:]])*\z/
+            and $rest =~ s/\w\K/./g;
         χ family => $surn, given => $rest, @suffix;}
     elsif ($str =~ /[[:lower:]]\s+[[:upper:]]{1,4}(?:\s+$suffix_re)?\z/)
       # We have something of the form "Smith AR".
