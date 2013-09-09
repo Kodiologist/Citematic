@@ -151,6 +151,16 @@ def test_book():
         'Doe, J. Q. (Ed.). (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz')
       # With an editor and no authors
 
+def test_mononyms():
+    assert b(author = [dict(family = 'Jimbo')]) == 'Jimbo. (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
+      # Just a mononym as author.
+    assert b(author = [name('John', 'Doe'), dict(family = 'Jimbo')]) == 'Doe, J., & Jimbo. (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
+      # A mononym at the end of the author list.
+    assert b(author = [name('John', 'Doe'), dict(family = 'Jimbo'), name('Richard', 'Roe')]) == 'Doe, J., Jimbo, & Roe, R. (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
+      # A mononym in the middle.
+    # I haven't tested a mononym as the first item of a two-author
+    # list, because who's to say if it should end with a comma?
+
 def e(o = None, **field_kws):
     return b(o, **merge_dicts(
         dict(type = 'chapter',

@@ -54,6 +54,8 @@ def bib(style_path,
             d['id'] = str(random())
         for k in list(d.keys()):
             if d[k] is None: del d[k]
+        for a in d.get('author', []) + d.get('editor', []):
+            a['given'] = a.get('given') or ''
         if apa_tweaks:
             # By default, don't include the issue number for
             # journal articles.
@@ -112,6 +114,10 @@ def bib(style_path,
         s = sub(r'(\W)p\. (\S+[,–])', r'\1pp. \2', s)
         # Replace the ellipsis placeholder.
         s = s.replace('⣥<ellipsis>⣥, ., &', '…')
+        # Clean up after null given names.
+        s = sub(r', \.(,?)',
+            lambda mo: ',' if mo.group(1) else '.',
+            s)
 
     if return_cites_and_keys:
         fcites = [bibliography.cite(c, lambda x: None) for c in cites]
