@@ -1,6 +1,6 @@
 Citematic::Get uses EBSCOhost_, the `Library of Congress`_, IDEAS_ (i.e., RePEc_), and CrossRef_ to get bibliographic data for search terms. In the case of EBSCOhost, it also tries to get full-text URLs. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with the web interfaces.
 
-The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, Citematic::COinS has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
+The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, the Python module "citematic_coins" has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
 
 .. __: https://github.com/citation-style-language/schema/blob/master/csl-data.json
 .. __: http://zotero.org/styles
@@ -41,12 +41,11 @@ Installation
 
    * Citematic::Get requires: Business::ISBN File::Slurp HTML::Entities HTTP::Cookies JSON LWP::Simple List::Util Text::Aspell URI::Escape WWW::Mechanize XML::Simple parent
    * Citematic::QuickBib requires: IPC::Run JSON 
-   * Citematic::COinS requires: HTML::Entities URI::Escape
    * ``cite`` requires: File::Slurp Getopt::Long::Descriptive
 
 #. Install ``Get.pm``, ``QuickBib.pm``, and ``COinS.pm`` themselves, as by putting them in ``/etc/perl/Citematic``.
 
-#. Ensure you have Python 3, then get and install (as by putting it in ``/usr/lib/python3/dist-packages``) citeproc-py_ and its own dependencies, as well as the file ``quickbib.py`` provided by Citematic.
+#. Ensure you have Python 3, then get and install (as by putting it in ``/usr/lib/python3/dist-packages``) citeproc-py_ and its own dependencies, as well as the files ``quickbib.py`` and ``citematic_coins.py`` provided by Citematic.
 
 #. Download `apa.csl`_ (and, if you'll be running quickbib's one test for it, `mla.csl`_) and set the environment variable ``APA_CSL_PATH`` to where you put it (ditto ``MLA_CSL_PATH``).
 
@@ -58,6 +57,8 @@ Running the tests
 For quickbib, enter the Python directory and say ``py.test``. This requires `pytest`_.
 
 For Citematic::Get, say ``perl test_citematic.pl``. This requires Test::More.
+
+citematic_coins has no real test suite, but see ``coins_demo.py``.
 
 Caveats
 ============================================================
