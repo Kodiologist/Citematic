@@ -25,12 +25,12 @@ def coins_data(csl):
             'info:ofi/fmt:kev:mtx:book',
         'genre',   cond(
             csl['genre'] ==
-               'Advance online publication', 'preprint',
-            article,                         'article',
-            csl['type'] == 'chapter',        'bookitem',
-            csl['type'] == 'book',           'book',
-            csl['type'] == 'report',         'report',
-            True,                            'document'),
+                'Advance online publication', 'preprint',
+            article,                          'article',
+            csl['type'] == 'chapter',         'bookitem',
+            csl['type'] == 'book',            'book',
+            csl['type'] == 'report',          'report',
+            True,                             'document'),
         'rft_id',   'DOI' in csl and "info:doi/" + csl['DOI'] or csl['URL'],
         'atitle',   csl['title'],
         (article and 'jtitle' or 'btitle'),   csl['container-title'],
