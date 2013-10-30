@@ -497,7 +497,7 @@ sub ebsco
         if ($sid)
           # Try to just query.
            {$query->("http://$ebsco_domain", $sid);
-            if ($agent->title !~ /\AEBSCOhost: /)
+            if ($agent->title !~ /: EBSCOhost\z/)
               # Rats, didn't work. Delete the cookie we used; it's
               # no good.
                {$sid = '';
@@ -518,7 +518,7 @@ sub ebsco
             # No results.
             and return {};
 
-        RESULTS: {if ($agent->title =~ /\AEBSCOhost: (?:Basic Search|Result List)/)
+        RESULTS: {if ($agent->title =~ /\AResult List: /)
            # We're looking at search results. Choose a record.
            {$page =~ /Result_1/ or die;
 
