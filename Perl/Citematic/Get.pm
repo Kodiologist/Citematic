@@ -837,8 +837,10 @@ sub congress
             $agent->follow_link(url_regex => qr/\AholdingsInfo\?/);}
 
         my $page = $agent->content;
+        $page =~ s!<table \s class="briefRecord"> (.+?) </table>!!xs or die;
+        my $table = $1;
         my %f = map {decode_entities $_}
-           ($page =~ m!<th class="fieldLabel">([^<]+)</th>.+?="subfieldData">\s*([^<]+[^< ])!sg,
+           ($table =~ m!<th>([^<]+)</th>.+?="subfieldData">\s*([^<]+[^< ])!sg,
             $page =~ m!<h2>([^<]+)</h2>.+?="subfieldData">\s*([^<]+[^< ])!sg);
         $f{'Related names'} = $page =~ m!<h2>Related names</h2>\s*<ul>(.+?)</ul>!s
           ? [map {decode_entities $_} $1 =~ /="subfieldData">\s*([^<]+)/g]
