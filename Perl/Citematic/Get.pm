@@ -707,7 +707,7 @@ sub ebsco
               : die 'p';
             $lpage = expand_last_page_number $fpage, $lpage;}
         $year ||=
-            $record{Source} =~ /(?<!:.)((?:1[6789]|20)\d\d)/
+            $record{Source} =~ /(?<!: )((?:1[6789]|20)\d\d)/
           ? $1
           : die 'y';
         my $doi = $record{'Digital Object Identifier'} ||
