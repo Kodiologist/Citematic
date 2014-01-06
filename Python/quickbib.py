@@ -72,6 +72,9 @@ def bib(style_path,
             if d['type'] == 'speech' and d['genre'] == 'paper':
                 d['event'] = 'meeting of the {}, {}'.format(
                     d.pop('publisher'), d['event-place'])
+            if d['type'] == 'speech' and d['genre'] == 'video':
+                d['medium'] = 'Video file'
+                del d['genre']
             # When abbreviating given names, remove hyphens
             # preceding lowercase letters. Otherwise, weird
             # stuff happens.
@@ -189,6 +192,14 @@ def get_style(style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_gi
           # We'll use our own hacky way to abbreviate the author
           # list, in order to get the ellipsis-followed-by-final-
           # author style required by APA.
+        text = sub1(r'(<macro name="locators">\s+<choose>\s+)<if (.+?)</if>',
+            r'''\1
+            <if type="speech">
+              <group prefix=" [" suffix="]">
+                  <text variable="medium"/>
+              </group>
+            </if>
+            <else-if \2</else-if>''', text, flags = DOTALL)
         if not abbreviate_given_names:
             text = sub(r'\s+initialize-with="[^"]+"', '', text)
         if include_isbn:

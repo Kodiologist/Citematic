@@ -222,3 +222,13 @@ def test_conference_paper():
             publisher = 'American Association of the Advancement of Science',
             event_place = 'San Francisco State University, San Francisco, CA')) ==
         'Apfelbaum, B. (1984, November). <i>Sexual reality and how we dismiss it</i>. Paper presented at the meeting of the American Association of the Advancement of Science, San Francisco State University, San Francisco, CA. Retrieved from http://www.bapfelbaumphd.com/Sexual_Reality.html')
+
+def test_video():
+  # http://blog.apastyle.org/apastyle/2011/10/how-to-create-a-reference-for-a-youtube-video.html
+    assert (f(dict(type = 'speech',
+            URL = 'http://www.youtube.com/watch?v=6nyGCbxD848',
+            title = 'Real ghost girl caught on Video Tape 14',
+            author = [name('M.', 'Apsolon')],
+            issued = {'date-parts': [[2011, 9, 9]]},
+            genre = 'video')) ==
+        'Apsolon, M. (2011, September 9). <i>Real ghost girl caught on Video Tape 14</i> [Video file]. Retrieved from http://www.youtube.com/watch?v=6nyGCbxD848')
