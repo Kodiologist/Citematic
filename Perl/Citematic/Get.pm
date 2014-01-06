@@ -868,6 +868,7 @@ sub congress
     my $book = $1;
     my $volume; # TODO: I need some examples of multi-volume works.
     my $edition = $record{Edition};
+    $edition and $edition =~ s/\bed\.?//i;
     my $isbn;
     if (exists $record{ISBN})
        {$record{ISBN} =~ /\A([-0-9X]+)/ or die 'isbn';

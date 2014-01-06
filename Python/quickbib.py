@@ -7,7 +7,7 @@ import json
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import NAMES, DATES
-from citeproc.source import Reference, Name, Date, DateRange
+from citeproc.source import Reference, Name, Date, DateRange, Pages
 from citeproc.source import Citation, CitationItem
 from citeproc.string import String
 import citeproc.formatter.plain
@@ -23,7 +23,7 @@ def name(given, family, suffix = None):
     return n
 
 def bib1(style_path, d, **rest):
-    return bib(style_path, [d], **rest)
+    return bib(style_path, [d], **rest)[0]
 
 def bib(style_path,
         ds,
@@ -98,32 +98,35 @@ def bib(style_path,
     cites = [ Citation([CitationItem(d['id'])]) for d in ds ]
     for c in cites: bibliography.register(c)
     if len(ds) > 1: bibliography.sort()
-    s = bibliography.bibliography()
+    bibl = bibliography.bibliography()
 
-    # Fix spacing and punctuation issues.
-    s = s.replace('  ', ' ')
-    s = sub(r'([.!?…])\.', r'\1', s)
-    if dumb_quotes:
-        s = s.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
-    if apa_tweaks:
-        if formatter is citeproc.formatter.html or formatter is chocolate:
-            # Italicize the stuff between a journal name and a volume
-            # number.
-            s = sub(r'</i>, <i>(\d)', r', \1', s)
-        # Make "p." into "pp." when more than one page is cited.
-        s = sub(r'(\W)p\. (\S+[,–])', r'\1pp. \2', s)
-        # Replace the ellipsis placeholder.
-        s = s.replace('⣥<ellipsis>⣥, ., &', '…')
-        # Clean up after null given names.
-        s = sub(r', \.(,?)',
-            lambda mo: ',' if mo.group(1) else '.',
-            s)
+    for i, s in enumerate(bibl):
+        s = ''.join(s)
+        # Fix spacing and punctuation issues.
+        s = s.replace('  ', ' ')
+        s = sub(r'([.!?…])\.', r'\1', s)
+        if dumb_quotes:
+            s = s.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
+        if apa_tweaks:
+            if formatter is citeproc.formatter.html or formatter is chocolate:
+                # Italicize the stuff between a journal name and a volume
+                # number.
+                s = sub(r'</i>, <i>(\d)', r', \1', s)
+            # Make "p." into "pp." when more than one page is cited.
+            s = sub(r'(\W)p\. (\S+[,–])', r'\1pp. \2', s)
+            # Replace the ellipsis placeholder.
+            s = s.replace('⣥<ellipsis>⣥, ., &', '…')
+            # Clean up after null given names.
+            s = sub(r', \.(,?)',
+                lambda mo: ',' if mo.group(1) else '.',
+                s)
+        bibl[i] = s
 
     if return_cites_and_keys:
         fcites = [bibliography.cite(c, lambda x: None) for c in cites]
-        return (fcites, bibliography.keys, s)
+        return (fcites, bibliography.keys, bibl)
     else:
-        return s
+        return bibl
 
 # ------------------------------------------------------------
 # Private
@@ -197,7 +200,9 @@ def get_style(style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_gi
                 r'<group delimiter=". ">\1<text variable="URL" prefix="Retrieved from "/></group>',
                 text)
 
-    style = CitationStylesStyle(StringIO(text))
+    style = CitationStylesStyle(StringIO(text), validate = False)
+      # Validation is turned off since standard stylesheets,
+      # including apa.csl, appear not to be valid.
     style_cache[idx] = style
     return style
 
@@ -217,6 +222,13 @@ def parse_references(refs):
                 value = parse_date(value)
             elif python_key == 'shortTitle':
                 python_key = 'title_short'
+            elif python_key == 'page':
+                value.replace('–', '-')
+                if '-' in value:
+                    first, last = value.split('-')
+                    value = Pages(first = first, last = last)
+                else:
+                    value = Pages(first = value)
             else:
                 value = String(value)
             ref_data[python_key] = value
