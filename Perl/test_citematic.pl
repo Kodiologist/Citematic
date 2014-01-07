@@ -195,6 +195,9 @@ is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
 is apa(author => ['redelmeier', 'kahneman'], title => ['colonoscopy']),
     'Redelmeier, D. A., Katz, J., & Kahneman, D. (2003). Memories of colonoscopy: A randomized trial. <i>Pain, 104</i>(1, 2), 187–194. doi:10.1016/S0304-3959(03)00003-4',
     'Pain (article attributed to multiple issues)';
+is apa(doi => '10.1023/A:1022456626538'),
+    q{Krahé, B., Scheinberger-Olwig, R., & Bieneck, S. (2003). Men's reports of nonconsensual sexual interactions with women: Prevalence and impact. <i>Archives of Sexual Behavior, 32</i>(2), 165–175. doi:10.1023/A:1022456626538},
+    'Archives of Sexual Behavior (DOI search, no title in CrossRef record)';
 is apa(author => ['toates'], title => ['integrative theoretical framework']),
     'Toates, F. (2009). An integrative theoretical framework for understanding sexual motivation, arousal, and behavior. <i>Journal of Sex Research, 46</i>(2, 3), 168–193. doi:10.1080/00224490902747768',
     'Journal of Sex Research (article attributed to multiple months and multiple issues)';
