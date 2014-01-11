@@ -1,21 +1,23 @@
 # -*- Python -*-
 
 from os import environ
-from quickbib import bib1, name
+from quickbib import bib, name
 
 if 'APA_CSL_PATH' not in environ:
     raise Exception('The environment variable APA_CSL_PATH is not set')
 
-def f(d, **kw):
-    for k in d: d[k.replace('_', '-')] = d.pop(k)
-    return bib1(environ['APA_CSL_PATH'], d,
-        apa_tweaks = True, **kw)
+def f(ds, multi = False, **kw):
+    if not multi: ds = [ds]
+    for d in ds:
+        for k in d: d[k.replace('_', '-')] = d.pop(k)
+    bibl = bib(environ['APA_CSL_PATH'], ds, apa_tweaks = True, **kw)
+    return bibl if multi else bibl[0]
 
 def merge_dicts(d1, d2):
     return dict(list(d1.items()) + list(d2.items()))
 
-def j(o = None, **field_kws):
-    fields = merge_dicts(
+def jf(**field_kws):
+    return merge_dicts(
         dict(type = 'article-journal',
             author =
                 [name('Joesph', 'Bloggs'),
@@ -27,8 +29,10 @@ def j(o = None, **field_kws):
             page = '293–315',
             DOI = '10.zzz/zzzzzz'),
         field_kws)
+
+def j(o = None, **field_kws):
     if o is None: o = {}
-    return f(fields, **o)
+    return f(jf(**field_kws), **o)
 
 def test_journal_article():
     assert j() == 'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz'
@@ -99,10 +103,23 @@ def test_journal_article():
         'Bloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times</i>. Advance online publication. doi:10.zzz/zzzzzz')
       # Advance online publication
 
+def test_sorting():
+    d = jf()
+    l = [d, d,
+       jf(title = 'Quails'),
+       jf(issued = {'date-parts': [[1984]]}),
+       jf(author = [name('Joesph', 'Aloggs'), name('J. Random', 'Hacker')]),
+       d]
+    assert f(l, multi = True) == [
+        'Aloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Bloggs, J., & Hacker, J. R. (1983a). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Bloggs, J., & Hacker, J. R. (1983b). Quails. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Bloggs, J., & Hacker, J. R. (1984). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz']
+
 def test_report():
 # Technical report
     def r(publisher_website):
-        return f(publisher_website = publisher_website, d = dict(
+        return f(publisher_website = publisher_website, ds = dict(
             type = 'report',
             author =
                [name('Anna', 'Dreber'),

@@ -1,6 +1,8 @@
 from sys import stdin, stdout, argv
+from string import ascii_lowercase
 from re import sub, DOTALL
 from io import StringIO
+from collections import defaultdict
 from copy import deepcopy
 from random import random
 import json
@@ -49,6 +51,20 @@ def bib(style_path,
         include_isbn, url_after_doi, abbreviate_given_names)
 
     ds = deepcopy(ds)
+    if apa_tweaks:
+    # Distinguish entries that would have identical authors and years
+    # by adding suffixes to the years.
+        # Group works by author and year.
+        ay = defaultdict(list)
+        for d in ds:
+            k = repr(d.get('author') or d.get('editor'))  + '/' + str(d['issued']['date-parts'][0][0])
+            if not any(d is v for v in ay[k]):
+                ay[k].append(d)
+        # If any group has more than one element, add suffixes.
+        for v in ay.values():
+            if len(v) > 1:
+                for i, d in enumerate(sorted(v, key = title_sort_key)):
+                   d['year_suffix'] = ascii_lowercase[i]
     for d in ds:
         if 'id' not in d:
             d['id'] = str(random())
@@ -60,7 +76,7 @@ def bib(style_path,
             if not always_include_issue and d['type'] == 'article-journal':
                 delf(d, 'issue')
             # Use the weird "Retrieved from Dewey, Cheatem, &
-            # Howe website: http://example.com" format perscribed
+            # Howe website: http://example.com" format prescribed
             # for reports.
             if publisher_website and d['type'] == 'report' and 'publisher' in d and 'URL' in d:
                 d['URL'] = '{} website: {}'.format(
@@ -99,7 +115,19 @@ def bib(style_path,
         formatter)
     cites = [ Citation([CitationItem(d['id'])]) for d in ds ]
     for c in cites: bibliography.register(c)
-    if len(ds) > 1: bibliography.sort()
+    def sort_key_f(item):
+        ref = item.reference
+        names = [(name['family'], name['given'][0] if 'given' in name else '')
+            for name in ref.get('author') or ref.get('editor')
+            if name.family != '⣥<ellipsis>⣥']
+        return (names, ref['issued']['year'],
+            title_sort_key(ref),
+            ref['page']['first'] if 'page' in ref else '')
+    if len(ds) > 1:
+        # Sort the bibliography
+        # bibliography.sort()   # Doesn't appear to handle leading "the"s correctly.
+        bibliography.items = sorted(bibliography.items, key = sort_key_f)
+        bibliography.keys = [item.key for item in bibliography.items]
     bibl = bibliography.bibliography()
 
     for i, s in enumerate(bibl):
@@ -136,6 +164,10 @@ def delf(x, i):
 
 def sub1(*p, **kw):
     return sub(*p, count = 1, **kw)
+
+def title_sort_key(d):
+    s = d.get('title') or d.get('container-title')
+    return sub1(r'^a\s+|^the\s+', '', s.lower())
 
 class chocolate(object):
     "A formatter that isn't quite plain."
