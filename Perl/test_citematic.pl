@@ -156,9 +156,11 @@ is apa(year => 1955, author => ['asch'], title => ['pressure']),
 is apa(title => ['on land and underwater', 'memory']),
     'Godden, D. R., & Baddeley, A. D. (1975). Context-dependent memory in two natural environments: On land and underwater. <i>British Journal of Psychology, 66</i>(3), 325–331. doi:10.1111/j.2044-8295.1975.tb01468.x',
     'British Journal of Psychology (phrase-in-title search)';
-is apa(title => ['on the psychology of drinking']),
-    'Aarts, H., Dijksterhuis, A., & De Vries, P. (2001). On the psychology of drinking: Being thirsty and perceptually ready. <i>British Journal of Psychology, 92</i>(4), 631–642. doi:10.1348/000712601162383',
-    'British Journal of Psychology (red-herring year and unnecessary "Pt" in MEDLINE record)';
+TODO:
+   {local $TODO = 'PsycINFO is missing a page number';
+    is apa(title => ['on the psychology of drinking']),
+        'Aarts, H., Dijksterhuis, A., & De Vries, P. (2001). On the psychology of drinking: Being thirsty and perceptually ready. <i>British Journal of Psychology, 92</i>(4), 631–642. doi:10.1348/000712601162383',
+        'British Journal of Psychology (red-herring year and unnecessary "Pt" in MEDLINE record)';}
 is apa(year => 2002, author => ['Aarts', 'Dijksterhuis']),
     'Aarts, H., & Dijksterhuis, A. (2002). Category activation effects in judgment and behaviour: The moderating role of perceived comparability. <i>British Journal of Social Psychology, 41</i>(1), 123–138. doi:10.1348/014466602165090',
     'British Journal of Psychology (byline)';
@@ -263,7 +265,7 @@ is apa(doi => '10.1111/j.1360-0443.1997.tb02916.x'),
     'McCall, M. (1997). The effects of physical attractiveness on gaining access to alcohol: When social policy meets social decision making. <i>Addiction, 92</i>(5), 597–600. doi:10.1111/j.1360-0443.1997.tb02916.x',
     'Addiction (weird byline) (1)';
 is apa(title => ['adulthood functioning: the joint effects']),
-    'Hill, E. M., Thomson Ross, L., Mudd, S. A., & Blow, F. C. (1997). Adulthood functioning: The joint effects of parental alcoholism, gender and childhood socio-economic stress. <i>Addiction, 92</i>(5), 583–596. doi:10.1111/j.1360-0443.1997.tb02915.x',
+    'Hill, E. M., Ross, L. T., Mudd, S. A., & Blow, F. C. (1997). Adulthood functioning: The joint effects of parental alcoholism, gender and childhood socio-economic stress. <i>Addiction, 92</i>(5), 583–596. doi:10.1111/j.1360-0443.1997.tb02915.x',
     'Addiction (weird byline) (2)';
 is apa(author => ['foxcroft', 'lister-sharp'], title => ['concerns']),
     'Foxcroft, D. R., Lister-Sharp, D., & Lowe, G. (1997). Alcohol misuse prevention for young people: A systematic review reveals methodological concerns and lack of reliable evidence of effectiveness. <i>Addiction, 92</i>(5), 531–537. doi:10.1111/j.1360-0443.1997.tb02911.x',
@@ -282,7 +284,7 @@ is apa(doi => 'doi:10.1371/journal.pone.0047225'),
 is apa(title => ['formal comparison of dual-parameter temporal']),
     'Peters, J., Miedl, S. F., & Büchel, C. (2012). Formal comparison of dual-parameter temporal discounting models in controls and pathological gamblers. <i>PLOS ONE</i>. doi:10.1371/journal.pone.0047225',
     'PLOS ONE ("page" apparently needed for CrossRef to find record)';
-is apa(year => 2010, author => ['Waterman'], title => ['squirrel']),
+is apa(year => 2010, author => ['Waterman'], title => ['promiscuous', 'squirrel']),
     'Waterman, J. M. (2010). The adaptive function of masturbation in a promiscuous African ground squirrel. <i>PLOS ONE</i>. doi:10.1371/journal.pone.0013060',
     'PLOS ONE (period instead of comma in MEDLINE record)';
 
@@ -343,9 +345,6 @@ is apa(year => 2008, author => ['cosmides', 'tooby'], title => ['emotions']),
 is apa(year => 1992, author => ['massaro'], title => ['fuzzy']),
     'Massaro, D. W. (1992). Broadening the domain of the fuzzy logical model of perception. In H. L. Pick Jr., P. W. van den Broek, & D. C. Knill (Eds.), <i>Cognition: Conceptual and methodological issues</i> (pp. 51–84). Washington, DC: American Psychological Association. ISBN 978-1-55798-165-3.',
     'Cognition: Conceptual and methodological issues (editor with "Jr.")';
-is apa(author => ['massaro'], isbn => '978-1-55798-165-3'),
-    'Massaro, D. W. (1992). Broadening the domain of the fuzzy logical model of perception. In H. L. Pick Jr., P. W. van den Broek, & D. C. Knill (Eds.), <i>Cognition: Conceptual and methodological issues</i> (pp. 51–84). Washington, DC: American Psychological Association. ISBN 978-1-55798-165-3.',
-    'Cognition: Conceptual and methodological issues (ISBN search for chapter)';
 
 
 note '~~~ Entire books ~~~';

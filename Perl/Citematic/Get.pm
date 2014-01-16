@@ -417,15 +417,6 @@ sub digest_crossref_contributors
 # EBSCOhost
 # ------------------------------------------------------------
 
-sub ebsco_worse_db
-# Given two database names, returns true if the first is
-# considered worse than the second.
-   {my ($db1, $db2) = @_;
-    # Use the ranking: PsycINFO == PsycARTICLES > everything else.
-    $_ = $_ eq 'PsycINFO' || $_ eq 'PsycARTICLES'
-        foreach $db1, $db2;
-    $db1 < $db2;}
-
 sub ebsco
 # Allowed %terms:
 #   author (array ref)
@@ -446,7 +437,8 @@ sub ebsco
               # have special meaning but I can't figure out how
               # to escape them properly.
             $terms{isbn}
-              ? 'IB ' . Business::ISBN->new($terms{isbn})->as_isbn10->as_string([])
+              ? sprintf('IB %s NOT PZ Chapter',
+                    Business::ISBN->new($terms{isbn})->as_isbn10->as_string([]))
               : ()),
         $terms{year}
           ? ('common_DT1_FromYear' => "$terms{year}", 'common_DT1_ToYear' => "$terms{year}")
@@ -512,6 +504,7 @@ sub ebsco
                 $agent->current_form->value('__sid'));}
 
         my $page = $agent->content;
+        ($sid) = $page =~ /"sid":"([^"]+)"/;
         $page =~ /class="smart-text-ran-warning"><span>Note: Your initial search query did not yield any results/
             || $page =~ /<span class="std-warning-text">No results were found/
             || $agent->title eq 'EBSCOhost'
@@ -520,15 +513,15 @@ sub ebsco
 
         RESULTS: {if ($agent->title =~ /\AResult List: /)
            # We're looking at search results. Choose a record.
-           {$page =~ /Result_1/ or die;
+           {$page = $agent->content;
+            my $results_uri = $agent->uri;
+            my ($vid) = $page =~ /"vid":(\d+)/;
+            $page =~ /Result_1/ or die;
 
-            $page =~ /var ep = (\{.+?\})\n/ or die;
-            my @hover = (undef,
-                map
-                   {$_->{basic_title} = lc join '', $_->{Title} =~ /([[:alpha:]]+)/g;
-                    $_->{DV} = delete $_->{DisplayValues};
-                    $_}
-                α from_json($1)->{clientData}{hoverPreviewJsonData});
+            my %dbs =
+                map {my $j = from_json decode_entities $_;
+                     $j->{sourceCode} => $j}
+                $page =~ /\bdata-eisSourceAgrs=\s*"([^"]+)"/g;
 
             for (my $i = 1 ; $page =~ /Result_$i/ ; ++$i)
                {# Avoid corrections. (I would just use "NOT PZ
@@ -538,14 +531,34 @@ sub ebsco
                 # excluded.)
                 $page =~ m!Result_$i.+\[Erratum/Correction\]!
                     and next;
-                # If the article we're looking at now has an apparent
-                # duplicate in the next position, but the duplicate
-                # is from a better database, use that.
-                $hover[$i + 1]
-                    and $hover[$i]{basic_title} eq $hover[$i + 1]{basic_title}
-                    and $hover[$i]{DV}{Date} eq $hover[$i + 1]{DV}{Date}
-                    and ebsco_worse_db($hover[$i]{DV}{Database}, $hover[$i + 1]{DV}{Database})
-                    and next;
+                # If the record we're looking at now is from
+                # MEDLINE, and there are PsycINFO records available,
+                # switch to only PsycINFO. (PsycINFO records are
+                # generally better.)
+                my $db = do
+                   {$page =~ /\bdata-hoverPreviewJson="([^"]+)" id="hoverPreview$i"/ or die;
+                    from_json(decode_entities $1)->{db}};
+                if ($db eq 'mnh' and
+                        $dbs{psyh} and $dbs{psyh}{resultsRetrieved})
+                   {progress 'Asking for PsycINFO records only';
+                    # How EBSCO handles database-switching is a
+                    # little kooky. We have to send a POST to say
+                    # we want to change databases, then refresh
+                    # the page to get the new results. We're faking
+                    # Ajax.
+                    $agent->post(
+                        query_url(
+                            sprintf('http://%s//ehost/IntegratedSearch/Update',
+                                  $agent->uri->host),
+                            sid => $sid,
+                            vid => $vid),
+                        'Content-Type' => 'application/json; charset=utf-8',
+                        Content => '[{"hdnSourceCode":"psyh","chkbSelectSource":"psyh","hdnSourceSelected":true,"hdnHasBeenSearched":true}]');
+                    $agent->content eq '{"redirectCommand":"results"}'
+                        or die 'Bad reply from /IntegratedSearch/Update';
+                    progress 'Getting new results page';
+                    $agent->get($results_uri);
+                    redo RESULTS;}
                 # Okay, use this article.
                 progress 'Fetching record';
                 $agent->follow_link(name => "Result_$i");
@@ -597,7 +610,7 @@ sub ebsco
 
     my $authors = σ
         map {digest_author $_}
-        $record{'-by'} && $record{Database} ne 'PsycINFO' &&
+        $record{'-by'} && $record{Abstract} !~ /\bPsycINFO\b/ &&
               $record{'-by'} !~ /addressed to/ &&
               $record{'Source'} !~ /\AJournal of Sex Research/i
           ? $record{'-by'} =~ /[[:upper:]]{6}/
@@ -607,7 +620,7 @@ sub ebsco
             : $record{'-by'} =~ / and .+?,.+?,/
               ? map {/(.+?),/; $1} split / and /, $record{'-by'}
               : split qr[(?:,|;| and| &) ], $record{'-by'}
-          : split qr[\s*;\s*|<br />], $record{Authors};
+          : map {apply {s/;.+//g}} split qr!<br />!, $record{Authors};
 
     defined $record{'Digital Object Identifier'}
         and $record{'Digital Object Identifier'} =~ s/(?:\x{0d}|\x{0a}|<br).*//s;
@@ -690,7 +703,7 @@ sub ebsco
               # Dunno if *that's* right, but it seems the most
               # reasonable alternative.
         my ($journal, $fpage, $lpage);
-        if ($record{Source} =~ s! \[ (PL[oO]S [^\]]+?) \] !!x)
+        if ($record{Source} =~ s! \[? (PL[oO]S \s \w+) !!x)
            {$journal = digest_journal_title $1;
             $volume = undef;
             $issue = undef;}
