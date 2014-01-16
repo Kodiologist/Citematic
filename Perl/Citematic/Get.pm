@@ -417,6 +417,15 @@ sub digest_crossref_contributors
 # EBSCOhost
 # ------------------------------------------------------------
 
+sub show_hash;
+sub show_hash
+   {my $x = shift;
+    ref $x
+      ? sprintf '{%s}', join ', ',
+            map {"$_: " . show_hash $x->{$_}}
+            sort keys %$x
+      : apply {s/"/'/g} $x}
+
 sub ebsco
 # Allowed %terms:
 #   author (array ref)
@@ -441,14 +450,15 @@ sub ebsco
                     Business::ISBN->new($terms{isbn})->as_isbn10->as_string([]))
               : ()),
         $terms{year}
-          ? ('common_DT1_FromYear' => "$terms{year}", 'common_DT1_ToYear' => "$terms{year}")
+          ? ('common_DT1_FromYear' => $terms{year}, 'common_DT1_ToYear' => $terms{year})
           : (),
         $terms{ebsco_record} && %{$terms{ebsco_record}}
           ? (RECORD => $terms{ebsco_record})
           : ());
 
-    my $cache_key = to_json
-        \%search_fields, {utf8 => 1, canonical => 1};
+    my $cache_key = show_hash \%search_fields;
+    $cache_key =~ s/\A\{//;
+    $cache_key =~ s/\}\z//;
     $bypass_ebsco_cache
         and delete $global_cache->{ebsco}{$cache_key};
     my %record = η($global_cache->{ebsco}{$cache_key} ||= runsub
