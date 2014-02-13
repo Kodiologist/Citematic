@@ -548,7 +548,7 @@ sub ebsco
                 my $db = do
                    {$page =~ /\bdata-hoverPreviewJson="([^"]+)" id="hoverPreview$i"/ or die;
                     from_json(decode_entities $1)->{db}};
-                if ($db eq 'mnh' and
+                if ($db eq 'mnh' || $db eq 'sih' and
                         $dbs{psyh} and $dbs{psyh}{resultsRetrieved})
                    {progress 'Asking for PsycINFO records only';
                     # How EBSCO handles database-switching is a

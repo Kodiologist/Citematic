@@ -15,4 +15,5 @@ $_->post(
         'psyh',    # PsycINFO
         'pdh',     # PsycARTICLES
         'mnh',     # MEDLINE
-        'f5h'});   # MasterFILE Premier
+        'f5h',     # MasterFILE Premier
+        'sih'});   # SocINDEX

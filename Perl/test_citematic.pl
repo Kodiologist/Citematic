@@ -150,6 +150,9 @@ is apa(year => 1997, author => ['bettman', 'payne']),
 is apa(year => 1955, author => ['Walter'], title => ['autokinetic']),
     'Walter, N. (1955). A study of the effects of conflicting suggestions upon judgments in the autokinetic situation. <i>Sociometry, 18</i>(2), 138–146. doi:10.2307/2786000',
     'Sociometry (article from 1955)';
+is apa(doi => '10.1891/1942-0617.2.1.66'),
+    'Frankel, M., & Rachlin, H. (2010). Shaping the coherent self: A moral achievement. <i>Beliefs and Values, 2</i>(1), 66–79. doi:10.1891/1942-0617.2.1.66',
+    'Beliefs and Values';
 is apa(year => 1955, author => ['asch'], title => ['pressure']),
     'Asch, S. E. (1955). Opinions and social pressure. <i>Scientific American, 193</i>(5), 31–35. doi:10.1038/scientificamerican1155-31',
     'Scientific American';
@@ -358,7 +361,7 @@ is apa(doi => '10.1037/10030-000'),
 is apa(title => ['gender issues across the life cycle']),
     'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
     'Gender issues across the life cycle (one editor)';
-is apa(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['consequences']),
+is apa(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['growing up poor']),
     'Duncan, G. J., & Brooks-Gunn, J. (Eds.). (1997). <i>Consequences of growing up poor</i>. New York, NY: Russell Sage Foundation. ISBN 978-0-87154-143-7.',
     'Consequences of growing up poor (two editors)';
 is apa(author => ['Gilovich', 'Griffin', 'Kahneman']),
