@@ -484,7 +484,7 @@ sub ebsco
         my $query = sub
            {my ($base_url, $sid) = @_;
             if (exists $search_fields{RECORD})
-               {$base_url =~ s/\w+(\.ebscohost\.)/search$1/ or die;
+               {$base_url =~ s/[a-z.]+(\.ebscohost\.)/search$1/ or die;
                 $agent->get(query_url "$base_url/login.aspx",
                     direct => 'true',
                     db => $search_fields{RECORD}{db},
@@ -863,7 +863,7 @@ sub congress
         $page =~ s!<table \s class="briefRecord"> (.+?) </table>!!xs or die;
         my $table = $1;
         my %f = map {decode_entities $_}
-           ($table =~ m!<th>([^<]+)</th>.+?="subfieldData">\s*([^<]+[^< ])!sg,
+           ($table =~ m!<th class="fieldLabel">([^<]+)</th>.+?="subfieldData">\s*([^<]+[^< ])!sg,
             $page =~ m!<h2>([^<]+)</h2>.+?="subfieldData">\s*([^<]+[^< ])!sg);
         $f{'Related names'} = $page =~ m!<h2>Related names</h2>\s*<ul>(.+?)</ul>!s
           ? [map {decode_entities $_} $1 =~ /="subfieldData">\s*([^<]+)/g]
