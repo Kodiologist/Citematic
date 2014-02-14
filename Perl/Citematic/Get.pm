@@ -542,9 +542,9 @@ sub ebsco
                 $page =~ m!Result_$i.+\[Erratum/Correction\]!
                     and next;
                 # If the record we're looking at now is from
-                # MEDLINE, and there are PsycINFO records available,
-                # switch to only PsycINFO. (PsycINFO records are
-                # generally better.)
+                # MEDLINE or SocINDEX, and there are PsycINFO
+                # records available, switch to only PsycINFO.
+                # (PsycINFO records are generally better.)
                 my $db = do
                    {$page =~ /\bdata-hoverPreviewJson="([^"]+)" id="hoverPreview$i"/ or die;
                     from_json(decode_entities $1)->{db}};
@@ -558,7 +558,7 @@ sub ebsco
                     # Ajax.
                     $agent->post(
                         query_url(
-                            sprintf('http://%s//ehost/IntegratedSearch/Update',
+                            sprintf('http://%s/ehost/IntegratedSearch/Update',
                                   $agent->uri->host),
                             sid => $sid,
                             vid => $vid),
