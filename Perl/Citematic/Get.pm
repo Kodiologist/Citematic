@@ -29,7 +29,7 @@ binmode STDERR, ':utf8';
 sub tail {@_[1..$#_]}
 
 # ------------------------------------------------------------
-# Get configuration
+# * Get configuration
 # ------------------------------------------------------------
 
 -e CONFIG_PATH or die 'No configuration file found at ', CONFIG_PATH;
@@ -57,7 +57,7 @@ my $ebsco_login = eval sprintf
 $@ and die "Error evaluating ebsco_login: $@";
 
 # ------------------------------------------------------------
-# General
+# * General
 # ------------------------------------------------------------
 
 our $verbose;
@@ -350,7 +350,7 @@ sub whole_book
         ISBN => format_isbn($isbn);}
 
 # ------------------------------------------------------------
-# CrossRef
+# * CrossRef
 # ------------------------------------------------------------
 
 sub query_crossref
@@ -414,7 +414,7 @@ sub digest_crossref_contributors
     @{shift()}}
 
 # ------------------------------------------------------------
-# EBSCOhost
+# * EBSCOhost
 # ------------------------------------------------------------
 
 sub show_hash;
@@ -805,7 +805,7 @@ sub ebsco
        {die qq(Can't handle document type "$record{'Document Type'}");}}
 
 # ------------------------------------------------------------
-# Library of Congress
+# * Library of Congress
 # ------------------------------------------------------------
 
 sub congress
@@ -902,7 +902,7 @@ sub congress
         $edition, $place, $publisher, undef, $isbn;}
 
 # ------------------------------------------------------------
-# IDEAS
+# * IDEAS
 # ------------------------------------------------------------
 
 my %ideas_categories =
@@ -982,7 +982,7 @@ sub ideas
         $fpage, $lpage, $doi, undef;}
 
 # ------------------------------------------------------------
-# Society for Judgment and Decision-Making
+# * Society for Judgment and Decision-Making
 # ------------------------------------------------------------
 
 sub sjdm_url_from_title
@@ -1004,7 +1004,7 @@ sub sjdm_url_from_title
       : err 'No results.';}
 
 # ------------------------------------------------------------
-# Evolutionary Psychology
+# * Evolutionary Psychology
 # ------------------------------------------------------------
 
 sub evpsych_url_from_title
@@ -1014,7 +1014,7 @@ sub evpsych_url_from_title
         URI::Escape::uri_escape_utf8(lc join '-', $title =~ /((?:’|\w)+)/g);}
 
 # ------------------------------------------------------------
-# Public interface
+# * Public interface
 # ------------------------------------------------------------
 
 sub get
