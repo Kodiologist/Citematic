@@ -117,7 +117,7 @@ def bib(style_path,
     for c in cites: bibliography.register(c)
     def sort_key_f(item):
         ref = item.reference
-        names = [(name['family'], name['given'][0] if 'given' in name else '')
+        names = [(name['family'].lower(), name['given'][0].lower() if 'given' in name else '')
             for name in ref.get('author') or ref.get('editor')
             if name.family != '⣥<ellipsis>⣥']
         return (names, ref['issued']['year'],

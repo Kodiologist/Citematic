@@ -107,11 +107,13 @@ def test_sorting():
     d = jf()
     l = [d, d,
        jf(title = 'Quails'),
+       jf(author = [name('Bell', 'azerty')]),
        jf(issued = {'date-parts': [[1984]]}),
        jf(author = [name('Joesph', 'Aloggs'), name('J. Random', 'Hacker')]),
        d]
     assert f(l, multi = True) == [
         'Aloggs, J., & Hacker, J. R. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'azerty, B. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
         'Bloggs, J., & Hacker, J. R. (1983a). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
         'Bloggs, J., & Hacker, J. R. (1983b). Quails. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
         'Bloggs, J., & Hacker, J. R. (1984). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz']
