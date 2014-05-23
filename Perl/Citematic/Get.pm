@@ -1057,6 +1057,9 @@ sub get
 sub digest_ris
    {my $ris = Citematic::RIS->new(shift);
 
+    $ris->ris_type eq 'JOUR'
+        or die sprintf q(Can't handle RIS type "%s"), $ris->ris_type;
+
     my $authors = σ map {digest_author $_}
         (ref $ris->authors ? α $ris->authors : $ris->authors);
     my ($year) = ($ris->PY || $ris->Y1) =~ /\A(\d+)/;
@@ -1084,11 +1087,10 @@ sub digest_ris
        {undef $doi;
         $url = $ris->UR;}
 
-    if ($ris->ris_type eq 'JOUR')
-       {journal_article
-            $authors, $year, $title, $journal,
-            $volume, $issue,
-            $fpage, $lpage,
-            $doi, $url;}}
+    journal_article
+        $authors, $year, $title, $journal,
+        $volume, $issue,
+        $fpage, $lpage,
+        $doi, $url;}
 
 1;
