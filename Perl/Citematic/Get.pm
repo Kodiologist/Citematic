@@ -5,6 +5,8 @@ use utf8;
 use warnings;
 use strict;
 
+use Citematic::RIS;
+
 use Encode;
 use List::Util 'first';
 use LWP::Simple ();
@@ -19,7 +21,7 @@ use File::Slurp qw(slurp write_file);
 use XML::Simple 'XMLin';
 
 use parent 'Exporter';
-our @EXPORT_OK = 'get';
+our @EXPORT_OK = qw(get digest_ris);
 
 use constant CONFIG_PATH => "$ENV{HOME}/.citematic";
 
@@ -200,8 +202,12 @@ sub digest_journal_title
         and return 'The Journals of Gerontology, Series B: Psychological Sciences and Social Sciences';
     $j =~ /IEEE Transactions on Systems/i
         and return 'IEEE Transactions on Systems, Man, and Cybernetics';
+    $j =~ s/, IEEE Transactions on//
+        and return "IEEE Transactions on $j";
     $j eq 'American Statistician'
         and return 'The American Statistician';
+    $j =~ /ANNALS of the American Academy of Political and Social Science/i
+       and return 'The ANNALS of the American Academy of Political and Social Science';
     $j =~ /\AJournal of Psychology:/i
         and return 'The Journal of Psychology: Interdisciplinary and Applied';
     $j =~ /PLOS ONE/i
@@ -1047,5 +1053,42 @@ sub get
         keywords => [@{$terms{author}}, @{$terms{title}}],
         year => $terms{year},
         doi => $terms{doi};}
+
+sub digest_ris
+   {my $ris = Citematic::RIS->new(shift);
+
+    my $authors = σ map {digest_author $_}
+        (ref $ris->authors ? α $ris->authors : $ris->authors);
+    my ($year) = ($ris->PY || $ris->Y1) =~ /\A(\d+)/;
+    my $title = $ris->TI || $ris->T1;
+    my $journal = digest_journal_title($ris->JO || $ris->JF || $ris->T2);
+    my ($fpage, $lpage) =
+        $ris->starting_page =~ /[-–]/
+      ? split /[-–]/, $ris->starting_page
+      : ($ris->starting_page, $ris->ending_page);
+    my $volume = $ris->volume;
+    my $issue = $ris->issue;
+    defined and s/\s+\z//
+        foreach $volume, $issue, $fpage, $lpage;
+
+    my $doi = $ris->doi;
+    if (!$doi and $ris->M3
+            and $ris->M3 =~ /\A10\./ || $ris->M3 =~ /\bdoi\b/)
+       {$doi = $ris->M3;}
+    $doi
+        and ($doi) = $doi =~ /\b(10\.\S+)/;
+    my $url;
+    if ($doi and $doi =~ m!\A10\.2307!)
+      # This is a JSTOR record, which may have a fake DOI.
+      # https://forums.zotero.org/discussion/6812/jstor-and-false-doi-numbers/
+       {undef $doi;
+        $url = $ris->UR;}
+
+    if ($ris->ris_type eq 'JOUR')
+       {journal_article
+            $authors, $year, $title, $journal,
+            $volume, $issue,
+            $fpage, $lpage,
+            $doi, $url;}}
 
 1;

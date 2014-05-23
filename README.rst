@@ -1,6 +1,6 @@
 Citematic::Get uses EBSCOhost_, the `Library of Congress`_, IDEAS_ (i.e., RePEc_), and CrossRef_ to get bibliographic data for search terms. In the case of EBSCOhost, it also tries to get full-text URLs. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with the web interfaces.
 
-The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, the Python module "citematic_coins" has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
+The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, Citematic::Get also has a function ``digest_ris`` for parsing `RIS`_, and the Python module "citematic_coins" has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
 
 .. __: https://github.com/citation-style-language/schema/blob/master/csl-data.json
 .. __: http://zotero.org/styles
@@ -56,7 +56,7 @@ Running the tests
 
 For quickbib, enter the Python directory and say ``py.test``. This requires `pytest`_.
 
-For Citematic::Get, say ``perl test_citematic.pl``. This requires Test::More.
+For Citematic::Get, say ``perl test_citematic.pl`` and ``perl test_ris_input.pl``. This requires Test::More.
 
 citematic_coins has no real test suite, but see ``coins_demo.py``.
 
@@ -89,7 +89,7 @@ It's pronounced "CITE-uh", you numskull.
 Licenses
 ============================================================
 
-Citematic (specifically, quickbib) contains some code, in modified form, from citeproc-py, to which the below two-clause BSD-style license applies. Citematic itself is licensed under the GPL.
+Citematic contains some code in modified form to which the below copyrights and licenses apply. Citematic itself is licensed under the GPL ≥3.
 
 License for citeproc-py
 ----------------------------------------
@@ -106,6 +106,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 The views and conclusions contained in the software and documentation are those of the authors and should not be interpreted as representing official policies, either expressed or implied, of the copyright holder.
 
+License for Connotea Code
+----------------------------------------
+
+Copyright 2005-2007 Nature Publishing Group.
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the `GNU General Public License`_ for more details.
+
 License for Citematic
 ----------------------------------------
 
@@ -120,6 +129,7 @@ Citematic is distributed in the hope that it will be useful, but WITHOUT ANY WAR
 .. _IDEAS: http://ideas.repec.org/
 .. _RePEc: http://repec.org
 .. _`Citation Style Language`: http://citationstyles.org/downloads/specification.html
+.. _RIS: https://en.wikipedia.org/wiki/RIS_%28file_format%29
 .. _`ContextObjects in Spans`: http://ocoins.info/
 .. _`apa.csl`: https://github.com/citation-style-language/styles/blob/master/apa.csl
 .. _`mla.csl`: https://github.com/citation-style-language/styles/blob/master/mla.csl
