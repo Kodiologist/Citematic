@@ -638,19 +638,17 @@ sub ebsco
               : split qr[(?:,|;| and| &) ], $record{'-by'}
           : map {apply {s/;.+//g}} split qr!<br />!, $record{Authors};
 
+    my $rdoi;
     defined $record{'Digital Object Identifier'}
-        and $record{'Digital Object Identifier'} =~ s/(?:\x{0d}|\x{0a}|<br).*//s;
+        and $record{'Digital Object Identifier'} =~ m!\b(10\.\d+[^<"]+)!
+        and $rdoi = decode_entities $1;
 
     if (!$record{'Document Type'} and
         $record{'Publication Type'} =~ /\ABook;/)
-       {$record{Source} =~ /\A
-                \s*
-                (?<place> [^:]+)
-                : \s
-                (?<publisher> [^0-9]+)
-                , \s
-                (?<year> \d\d\d\d)
-                \.
+       {$record{Source} =~ /\A \s*
+                (?<place> [^:]+) : \s
+                (?<publisher> [^0-9]+) ; \s
+                (?<year> \d\d\d\d) \.
                 /x
             or die "Book source: $record{Source}";
         my ($year, $place, $publisher) = @+{qw(year place publisher)};
@@ -664,7 +662,7 @@ sub ebsco
         whole_book
             $authors, $year, $title, $editors, undef,
             undef, $place, $publisher,
-            $terms{doi} || $record{'Digital Object Identifier'},
+            $terms{doi} || $rdoi,
               # We don't try hard to obtain a DOI, since most
               # books don't have DOIs, anyway.
             $isbn;}
@@ -677,17 +675,16 @@ sub ebsco
 
        {if ($record{Source} =~ /\A[^0-9,;]+,(?: \w\w\w)? \d+, \d\d\d\d\.(?: pp?\. (\d+)-?(\d*)\.)?\z/
             || $record{Authors} =~ /\bet al\./i
-               and $record{'Digital Object Identifier'})
+               and $rdoi)
            # This record is impoverished. Let's try CrossRef.
-           {my %d = (first_page => $1, last_page => $2,
-                from_doi $record{'Digital Object Identifier'});
+           {my %d = (first_page => $1, last_page => $2, from_doi $rdoi);
             return journal_article
                 +($record{Authors} =~ /\bet al\./i
                   ? digest_crossref_contributors($d{contributors})
                   : $authors),
                 $d{year}, $title, $d{journal_title},
                 $d{volume}, $d{issue}, $d{first_page}, $d{last_page},
-                $record{'Digital Object Identifier'}, undef;}
+                $rdoi, undef;}
         my $year;
         if ($record{Source} =~ s{,?\s+\d{1,2}/\d{1,2}/(\d{4})}{})
            {$year = $1;}
@@ -739,16 +736,15 @@ sub ebsco
             $record{Source} =~ /(?<!: )((?:1[6789]|20)\d\d)/
           ? $1
           : die 'y';
-        my $doi = $record{'Digital Object Identifier'} ||
-            $terms{doi} ||
-            get_doi
-                $year, $journal, $title,
-                $authors->[0]{family}, $volume,
-                $fpage ||
-                    ($record{Source} =~ /\bpp\. (e\d+)\./ ? $1 : undef);
-                  # In this last case, we aren't providing a real
-                  # page number, but CrossRef benefits from it,
-                  # anyway.
+        my $doi;
+        $doi ||= $rdoi || $terms{doi} || get_doi
+            $year, $journal, $title,
+            $authors->[0]{family}, $volume,
+            $fpage ||
+                ($record{Source} =~ /\bpp\. (e\d+)\./ ? $1 : undef);
+              # In this last case, we aren't providing a real
+              # page number, but CrossRef benefits from it,
+              # anyway.
         my $url;
         lc($journal) eq 'judgment and decision making'
           # This is an open-access journal, but it doesn't have
@@ -770,24 +766,20 @@ sub ebsco
             (?: (?<volume> \d+)
                 (?: \. | : \s [^.]+ \.)
             \s)?
-            (?<editors> .+?) \s \(Ed\.\); \s
-            pp\. \s (?<fpage> \d+) - (?<lpage> \d+) \. \s
-            (?<place> [^,:]+, \s [^,:]+), \s [^,:]+: \s
-            (?<publisher> [^,]+) , \s
-            (?: [^,]+ , \s)?
-            (?<year> \d\d\d\d) \.}x or die 'chapter';
+            (?<editors> .+?) \s \(Ed\) ; \s
+            (?<place> [^,:]+, \s [^,:]+), \s [^,:]+ : \s
+            (?<publisher> [^;]+) ; \s
+            (?<year> \d\d\d\d) \.
+            \s (?<fpage> \d+) - (?<lpage> \d+) }x or die 'chapter';
         my %src = %+;
 
         if (exists $record{'Parent Book Series'}
                 and $record{'Parent Book Series'} =~ /\A(Annals of The New York Academy of Sciences), Vol\. (\d+)/i)
           # Annals of the NYAS is actually a journal.
            {my ($journal, $volume) = ($1, $2);
-            my $doi =
-                $record{'Digital Object Identifier'} ||
-                $terms{doi} ||
-                get_doi
-                    $src{year}, $journal, $title,
-                    $authors->[0]{family}, $volume, $src{fpage};
+            my $doi = $rdoi || $terms{doi} || get_doi
+                $src{year}, $journal, $title,
+                $authors->[0]{family}, $volume, $src{fpage};
             return journal_article $authors, $src{year}, $title,
                 'Annals of the New York Academy of Sciences',
                 $volume, undef, $src{fpage}, $src{lpage}, $doi, undef;}
@@ -796,7 +788,7 @@ sub ebsco
         $src{volume} and $book =~ s/, Vol\z//;
         my $editors = σ
            map {digest_author $_}
-           split / \(Ed\.\); /, $src{editors}; # /
+           split qr/ \(Ed\); /, $src{editors};
 
         my $isbn;
         exists $record{ISBN} and ($isbn) =

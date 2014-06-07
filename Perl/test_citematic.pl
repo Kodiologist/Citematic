@@ -56,11 +56,9 @@ is get(year => 1983, author => ['Tversky', 'Kahneman'])->{author}[1]{given},
 is get(year => 1983, author => ['Tversky', 'Kahneman'])->{title},
     'Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment',
     '…trailing period not left in title (1)';
-TODO:
-   {local $TODO = 'MasterFILE has the wrong author order';
-    is apa(author => ['Regenwetter', 'Dana', 'Davis-Stober'], title => ['transitivity']),
-        'Regenwetter, M., Dana, J., & Davis-Stober, C. P. (2011). Transitivity of preferences. <i>Psychological Review, 118</i>(1), 42–56. doi:10.1037/a0021150',
-        'Psychological Review (confusing period in MasterFILE record)';}
+is apa(author => ['Regenwetter', 'Dana', 'Davis-Stober'], title => ['transitivity']),
+    'Regenwetter, M., Dana, J., & Davis-Stober, C. P. (2011). Transitivity of preferences. <i>Psychological Review, 118</i>(1), 42–56. doi:10.1037/a0021150',
+    'Psychological Review (confusing period in MasterFILE record)';
 is apa(year => 2010, author => ['trope', 'liberman'], title => ['construal-level theory']),
     'Trope, Y., & Liberman, N. (2010). Construal-level theory of psychological distance. <i>Psychological Review, 117</i>(2), 440–463. doi:10.1037/a0018963',
     'Psychological Review (article for which a correction exists)';
@@ -88,11 +86,9 @@ is apa(title => ['heart and mind in conflict']),
 is apa(year => 2011, author => [qw(Dunn Greenhill Levinson Gray)]),
     'Dunn, M., Greenhill, S. J., Levinson, S. C., & Gray, R. D. (2011). Evolved structure of language shows lineage-specific trends in word-order universals. <i>Nature, 473</i>(7345), 79–82. doi:10.1038/nature09923',
     'Nature';
-TODO:
-   {local $TODO = 'The ending page number in PsycINFO is currently 1225 rather than the correct 1226';
-    is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
-        'Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. <i>Science, 323</i>(5918), 1222–1226. doi:10.1126/science.1165565',
-        'Science';}
+is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
+    'Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. <i>Science, 323</i>(5918), 1222–1226. doi:10.1126/science.1165565',
+    'Science';
 is apa(author => ['lee', 'schwarz'], title => ['washing']),
     'Lee, S. W., & Schwarz, N. (2010). Washing away postdecisional dissonance. <i>Science, 328</i>(5979), 709. doi:10.1126/science.1186799',
     'Science (one-page article, author-title search)';
@@ -312,11 +308,9 @@ is apa(year => 1979, author => ['simon'], title => ['business organizations']),
 is get(year => 1979, author => ['simon'], title => ['business organizations'])->{title},
     'Rational decision making in business organizations',
     '…trailing period not left in title (2)';
-TODO:
-   {local $TODO = 'Server-side text-encoding issues';
-    is apa(year => 2002, author => ['Bosch-Domènech', 'Montalvo']),
-        'Bosch-Domènech, A., Montalvo, J. G., Nagel, R., & Satorra, A. (2002). One, two, (three), infinity, …: Newspaper and lab beauty-contest experiments. <i>American Economic Review, 92</i>(5), 1687–1701. doi:10.1257/000282802762024737',
-        'American Economic Review (surname with a diacritic and title with parentheses)';}
+is apa(year => 2002, author => ['Bosch-Domènech', 'Montalvo']),
+    'Bosch-Domènech, A., Montalvo, J. G., Nagel, R., & Satorra, A. (2002). One, two, (three), infinity, …: Newspaper and lab beauty-contest experiments. <i>American Economic Review, 92</i>(5), 1687–1701. doi:10.1257/000282802762024737',
+    'American Economic Review (surname with a diacritic and title with parentheses)';
 is apa(year => 1997, author => ['weber', 'milliman']),
     'Weber, E. U., & Milliman, R. A. (1997). Perceived risk attitudes: Relating risk perception to risky choice. <i>Management Science, 43</i>(2), 123–144. doi:10.1287/mnsc.43.2.123',
     'Management Science';
@@ -358,9 +352,9 @@ is apa(year => 1956, title => ['when prophecy fails'], author => ['festinger']),
 is apa(doi => '10.1037/10030-000'),
     'Festinger, L., Riecken, H. W., & Schachter, S. (1956). <i>When prophecy fails</i>. Minneapolis, MN: University of Minnesota Press. doi:10.1037/10030-000',
     'When prophecy fails (DOI search)';
-is apa(title => ['gender issues across the life cycle']),
-    'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
-    'Gender issues across the life cycle (one editor)';
+is apa(title => ['The dialogical alternative: Towards a theory of language and mind']),
+    'Wold, A. H. (Ed.). (1992). <i>The dialogical alternative: Towards a theory of language and mind</i>. Oslo, Norway: Scandinavian University Press. ISBN 978-82-00-21651-3.',
+    'The dialogical alternative (one editor)';
 is apa(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['growing up poor']),
     'Duncan, G. J., & Brooks-Gunn, J. (Eds.). (1997). <i>Consequences of growing up poor</i>. New York, NY: Russell Sage Foundation. ISBN 978-0-87154-143-7.',
     'Consequences of growing up poor (two editors)';
@@ -385,6 +379,9 @@ is apa(year => 2010, author => ['thorndike-christ'], title => ['measurement']),
 is apa(year => 2010, author => ['aronson', 'wilson', 'akert']),
     'Aronson, E., Wilson, T. D., & Akert, R. M. (2010). <i>Social psychology</i> (7th ed.). Upper Saddle River, NJ: Prentice Hall. ISBN 978-0-13-814478-4.',
     'Social psychology';
+is apa(title => ['nudge'], author => ['thaler', 'sunstein']),
+    'Thaler, R. H., & Sunstein, C. R. (2008). <i>Nudge: Improving decisions about health, wealth, and happiness</i>. New Haven, CT: Yale University Press. ISBN 978-0-300-12223-7.',
+    'Nudge';
 is apa(year => 2009, author => ['hastie', 'friedman']),
     'Hastie, T., Tibshirani, R., & Friedman, J. H. (2009). <i>The elements of statistical learning: Data mining, inference, and prediction</i> (2nd ed.). New York, NY: Springer. ISBN 978-0-387-84857-0.',
     'The elements of statistical learning';
@@ -400,18 +397,18 @@ is apa(isbn => '978-0-521-49749-7'),
 is apa(year => 2005, title => [q(student's introduction to english)]),
     q(Huddleston, R. D., & Pullum, G. K. (2005). <i>A student's introduction to English grammar</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-84837-4.),
     q[A student's introduction to English grammar (title search with single quote)];
-is apa(isbn => '0826176801'),
-    'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
-    'Gender issues across the life cycle (search by ISBN-10, pre-2007)';
-is apa(isbn => '978-0-8261-7680-6'),
-    'Wainrib, B. R. (Ed.). (1992). <i>Gender issues across the life cycle</i>. New York, NY: Springer. ISBN 978-0-8261-7680-6.',
-    'Gender issues across the life cycle (search by ISBN-13, pre-2007)';
+is apa(isbn => '8200216519'),
+    'Wold, A. H. (Ed.). (1992). <i>The dialogical alternative: Towards a theory of language and mind</i>. Oslo, Norway: Scandinavian University Press. ISBN 978-82-00-21651-3.',
+    'The dialogical alternative (search by ISBN-10, pre-2007)';
+is apa(isbn => '978-82-00-21651-3'),
+    'Wold, A. H. (Ed.). (1992). <i>The dialogical alternative: Towards a theory of language and mind</i>. Oslo, Norway: Scandinavian University Press. ISBN 978-82-00-21651-3.',
+    'The dialogical alternative (search by ISBN-13, pre-2007)';
 is apa(isbn => '978-1-4338-0407-6'),
     'Wenzel, A., Brown, G. K., & Beck, A. T. (2009). <i>Cognitive therapy for suicidal patients: Scientific and clinical applications</i>. Washington, DC: American Psychological Association. ISBN 978-1-4338-0407-6. doi:10.1037/11862-000',
     'Cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
 is apa(isbn => '1433804077'),
     'Wenzel, A., Brown, G. K., & Beck, A. T. (2009). <i>Cognitive therapy for suicidal patients: Scientific and clinical applications</i>. Washington, DC: American Psychological Association. ISBN 978-1-4338-0407-6. doi:10.1037/11862-000',
-    'Cognitive therapy for suicidal patients (search by ISBN-13, post-2007)';
+    'Cognitive therapy for suicidal patients (search by ISBN-10, post-2007)';
 
 
 done_testing;
