@@ -379,6 +379,9 @@ is apa(year => 2010, author => ['thorndike-christ'], title => ['measurement']),
 is apa(year => 1988, title => ['Statistical Power Analysis for the Behavioral']),
     'Cohen, J. (1988). <i>Statistical power analysis for the behavioral sciences</i> (2nd ed.). Hillsdale, NJ: L. Erlbaum. ISBN 978-0-8058-0283-2.',
     'Statistical power analysis for the behavioral sciences';
+is get(year => 1988, title => ['Statistical Power Analysis for the Behavioral'])->{edition},
+    '2nd',
+    q{…edition doesn't have "ed." or spaces};
 is apa(year => 2010, author => ['aronson', 'wilson', 'akert']),
     'Aronson, E., Wilson, T. D., & Akert, R. M. (2010). <i>Social psychology</i> (7th ed.). Upper Saddle River, NJ: Prentice Hall. ISBN 978-0-13-814478-4.',
     'Social psychology';
