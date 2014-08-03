@@ -285,7 +285,8 @@ sub format_place
    {my $s = shift;
     $s =~ s/\s*;.+//;
     $s =~ s/ \s* \[ ([^\]]+) \] \z/, $1/x;
-    $s =~ s/\bU\.K\./UK/;
+    $s =~ s{ \b ( (?: [[:upper:]] \.){2,} ) }
+        {join '', $1 =~ /[[:upper:]]/g}ex;
     $s =~ s/\A[^,]+,[^,]+\K,.+//;
     $s eq 'New York' ? 'New York, NY'
       : $s eq 'Boston' ? 'Boston, MA'
