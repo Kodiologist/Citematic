@@ -818,7 +818,7 @@ sub congress
 
     progress 'Trying the Library of Congress';
 
-    my $url = query_url 'http://catalog2.loc.gov/vwebv/search',
+    my $url = query_url 'http://catalog.loc.gov/vwebv/search',
         do
            {my ($i, @a) = 0;
             my $add = sub
