@@ -251,3 +251,13 @@ def test_video():
             issued = {'date-parts': [[2011, 9, 9]]},
             genre = 'video')) ==
         'Apsolon, M. (2011, September 9). <i>Real ghost girl caught on Video Tape 14</i> [Video file]. Retrieved from http://www.youtube.com/watch?v=6nyGCbxD848')
+
+def test_software():
+  # No standard CSL type fits, so we use the nonstandard type "software".
+    assert (f(dict(type = 'software',
+            author = [dict(family = 'Stan Development Team')],
+            issued = {'date-parts': [[2014]]},
+            title = 'Stan: A C++ library for probability and sampling',
+            version = '2.4.0',
+            URL = 'http://mc-stan.org')) ==
+        'Stan Development Team. (2014). Stan: A C++ library for probability and sampling (Version 2.4.0) [Software]. Retrieved from http://mc-stan.org')

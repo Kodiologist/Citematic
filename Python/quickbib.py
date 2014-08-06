@@ -226,7 +226,15 @@ def get_style(style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_gi
                   <text variable="medium"/>
               </group>
             </if>
+            <else-if type="software">
+              <text value=" [Software]"/>
+            </else-if>
             <else-if \2</else-if>''', text, flags = DOTALL)
+          # Include "[Video file]" and "[Software]".
+        text = sub1(r'(<else-if type=")(.+?" match="any">\s+<!--.+?-->\s+<choose>\s+<if variable="version">)',
+           r'\1software \2',
+           text)
+          # Include "(Version ...)" for our nonstandard "software" type.
         if not abbreviate_given_names:
             text = sub(r'\s+initialize-with="[^"]+"', '', text)
         if include_isbn:
