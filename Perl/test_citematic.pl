@@ -62,6 +62,12 @@ is apa(author => ['Regenwetter', 'Dana', 'Davis-Stober'], title => ['transitivit
 is apa(year => 2010, author => ['trope', 'liberman'], title => ['construal-level theory']),
     'Trope, Y., & Liberman, N. (2010). Construal-level theory of psychological distance. <i>Psychological Review, 117</i>(2), 440–463. doi:10.1037/a0018963',
     'Psychological Review (article for which a correction exists)';
+is apa(title => ['telling more than we can know'], year_max => 1980),
+    'Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. <i>Psychological Review, 84</i>(3), 231–259. doi:10.1037/0033-295X.84.3.231',
+    'Psychological Review (upper year bound)';
+is apa(title => ['pac-man'], year_min => 1990, year_max => 1999),
+    'Emes, C. E. (1997). Is Mr Pac Man eating our children? A review of the effect of video games on children. <i>Canadian Journal of Psychiatry, 42</i>(4), 409–414.',
+    'Canadian Journal of Psychiatry (double year bounds)';
 is apa(year => 1994, title => ['earth is round']),
     'Cohen, J. (1994). The earth is round (p < .05). <i>American Psychologist, 49</i>(12), 997–1003. doi:10.1037/0003-066X.49.12.997',
     'American Psychologist ("<" in article title)';
@@ -403,6 +409,9 @@ is apa(isbn => '978-0-521-49749-7'),
 is apa(year => 2005, title => [q(student's introduction to english)]),
     q(Huddleston, R. D., & Pullum, G. K. (2005). <i>A student's introduction to English grammar</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-84837-4.),
     q[A student's introduction to English grammar (title search with single quote)];
+is apa(year_min => 2000, year_max => 2003, author => ['Schechter'], title => ['functional', 'principles']),
+    'Schechter, M. (2002). <i>Principles of functional analysis</i> (2nd ed.). Providence, RI: American Mathematical Society. ISBN 978-0-8218-2895-3.',
+    'Principles of functional analysis (double year bounds)';
 is apa(isbn => '8200216519'),
     'Wold, A. H. (Ed.). (1992). <i>The dialogical alternative: Towards a theory of language and mind</i>. Oslo, Norway: Scandinavian University Press. ISBN 978-82-00-21651-3.',
     'The dialogical alternative (search by ISBN-10, pre-2007)';

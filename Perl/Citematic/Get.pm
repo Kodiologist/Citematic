@@ -437,11 +437,15 @@ sub ebsco
 # Allowed %terms:
 #   author (array ref)
 #   year (scalar)
+#   year_min (scalar)
+#   year_max (scalar)
 #   title (array ref)
 #   isbn (scalar)
 #   doi (scalar) [not used for searching, but included in citation]
 #   ebsco_record (hash ref with keys "db" and "AN")
    {my %terms = @_;
+    $terms{year} and
+       $terms{year_min} = $terms{year_max} = $terms{year};
 
     progress 'Trying EBSCOhost';
 
@@ -456,8 +460,11 @@ sub ebsco
               ? sprintf('IB %s NOT PZ Chapter',
                     Business::ISBN->new($terms{isbn})->as_isbn10->as_string([]))
               : ()),
-        $terms{year}
-          ? ('common_DT1_FromYear' => $terms{year}, 'common_DT1_ToYear' => $terms{year})
+        $terms{year_min}
+          ? ('common_DT1_FromYear' => $terms{year_min})
+          : (),
+        $terms{year_max}
+          ? ('common_DT1_ToYear' => $terms{year_max})
           : (),
         $terms{ebsco_record} && %{$terms{ebsco_record}}
           ? (RECORD => $terms{ebsco_record})
@@ -813,9 +820,13 @@ sub congress
 #     [Actually matches editors, too, which is useful for edited
 #     collections of papers.]
 #   year (scalar)
+#   year_min (scalar)
+#   year_max (scalar)
 #   title (array ref)
 #   isbn (scalar)
    {my %terms = @_;
+    $terms{year} and
+       $terms{year_min} = $terms{year_max} = $terms{year};
 
     progress 'Trying the Library of Congress';
 
@@ -840,9 +851,10 @@ sub congress
                {$add->('KNUM', Business::ISBN->new($terms{isbn})
                     ->as_isbn13->as_string([]));}
             @a},
-        $terms{year}
+        $terms{year_min} || $terms{year_max}
           ? (yearOption => 'range',
-                fromYear => $terms{year}, toYear => $terms{year})
+                fromYear => $terms{year_min} || '',
+                toYear => $terms{year_max} || '')
           : (),
         type => 'a?', # Textual items only (to exclude, e.g., movies)
         searchType => 2;
@@ -913,8 +925,12 @@ sub ideas
 # Allowed %terms:
 #   keywords (array ref)
 #   year (scalar)
+#   year_min (scalar)
+#   year_max (scalar)
 #   doi (scalar) [not used for searching, but included in citation]
    {my %terms = @_;
+    $terms{year} and
+       $terms{year_min} = $terms{year_max} = $terms{year};
 
     progress 'Trying IDEAS';
 
@@ -925,10 +941,10 @@ sub ideas
         ul => "%/$ideas_categories{articles}/%",
         ul => "%/$ideas_categories{chapters}/%",
         ul => "%/$ideas_categories{books}/%",
-        !$terms{year} ? () :
+        !($terms{year_min} || $terms{year_max}) ? () :
            (dt => 'range',
-            db => "01/01/$terms{year}",
-            de => "31/12/$terms{year}");
+            db => $terms{year_min} ? "01/01/$terms{year_min}" : '',
+            de => $terms{year_max} ? "31/12/$terms{year_max}" : '');
 
     my %record = η($global_cache->{ideas}{$url} ||= do
      {my $results = LWP::Simple::get($url);
@@ -1020,6 +1036,8 @@ sub get
 # Allowed %terms:
 #   author (array ref)
 #   year (scalar)
+#   year_min (scalar)
+#   year_max (scalar)
 #   title (array ref)
 #   isbn (scalar)
 #   doi (scalar)
@@ -1044,7 +1062,7 @@ sub get
         $terms{doi} = $d{doi};}
     ebsco %terms or congress %terms or ideas
         keywords => [@{$terms{author}}, @{$terms{title}}],
-        year => $terms{year},
+        year => $terms{year}, year_min => $terms{year_min}, year_max => $terms{year_max},
         doi => $terms{doi};}
 
 sub digest_ris
