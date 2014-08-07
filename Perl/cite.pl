@@ -49,11 +49,14 @@ my $a = $opt->input
         # URLs, or formatted citations appropriately. Interpret the
         # remainder as author keywords.
 
-        my ($year, $isbn, $doi, %ebsco_record, @author_words);
+        my ($year, $year_min, $year_max, $isbn, $doi, %ebsco_record, @author_words);
 
         push @author_words, map {normalize $_} grep {runsub
-           {if (/\A\d{4}\z/)
-               {$year = $_;}
+           {if (/\A(\.\. *)?(\d{4})\z/)
+               {($1 ? $year_max : $year) = $2;}
+            elsif (/\A(\d{4}) *\.\.( *(\d{4}))?\z/)
+               {$year_min = $1;
+                $year_max = $3;}
             elsif (/\bebscohost\.com\b/ and
                     m![#&]db=([a-zA-Z0-9]{3,6}).+?\bAN=([^=&#/]+)!)
                {%ebsco_record = (db => $1, AN => uri_unescape($2));}
@@ -73,6 +76,8 @@ my $a = $opt->input
         Citematic::Get::get
            (author => \@author_words,
             year => $year,
+            year_min => $year_min,
+            year_max => $year_max,
             title => \@title_words,
             isbn => $isbn,
             doi => $doi,

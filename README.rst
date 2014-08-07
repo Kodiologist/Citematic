@@ -32,6 +32,12 @@ Examples
 
     Huddleston, R. D., & Pullum, G. K. (2002). <i>The Cambridge grammar of the English language</i>. Cambridge, UK: Cambridge University Press.
 
+You can put bounds on the year, rather than searching for an exact year, by using syntax like this:
+
+- ``1990..`` — Items published in 1990 or later
+- ``..2000`` — Items published in 2000 or earlier
+- ``1990..2000`` — Items published between 1990 and 2000 inclusive
+
 See ``cite --help`` for a description of command-line options. See ``Perl/test_citematic.pm`` for more examples of what Citematic::Get can find and ``Python/test_apa.py`` for more examples of what quickbib can format.
 
 Installation
