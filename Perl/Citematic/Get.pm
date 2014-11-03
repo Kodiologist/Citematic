@@ -592,7 +592,7 @@ sub ebsco
             die "all results are errata?";}}
 
         # Now we should be on a single record's page.
-        $page =~ m!<a name="citation"><span>(.+?)\s*</span></a></dd>.*?<dt>(.+?)</div>!s
+        $page =~ m!<a name="citation"[^>]*><span>(.+?)\s*</span></a></dd>.*?(<dt .+?)</div>!s
             or die;
         my ($title, $rows) = (decode_entities($1), $2);
 
@@ -602,6 +602,7 @@ sub ebsco
            {note 'Full text (HTML): ', $agent->uri;}
         if ($page =~ /PDF Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
            {my $a = $agent->clone;
+            progress 'Getting full-text URL (PDF)';
             $a->submit_form(fields => {'__EVENTTARGET' => $1});
             note 'Full text (PDF): ', $a->uri;}
         if ($page =~ m!OpenIlsLink\?.+?su=http%3A(.+?)%26sid%3D!)
@@ -610,20 +611,32 @@ sub ebsco
                 ':<>';}
         if ($page =~ /Linked Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
            {my $a = $agent->clone;
+            progress 'Getting full-text URL (linked)';
             $a->submit_form(fields => {'__EVENTTARGET' => $1});
-            note 'Linked full text: ', $a->uri;}
+            note 'Full text (linked): ', $a->uri;}
 
         $page =~ /var ep = (\{.+?\})\n/ or die;
         my %clientdata = η from_json($1)->{clientData};
         return χ
             '-title' => $title,
             '-record' => $clientdata{plink},
-            ($page =~ m!<p>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
+            ($page =~ m!<p[^>]*>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
               ? ('-by' => decode_entities($1))
               : ()),
-            map {decode_entities $_}
-                map {s/:\s*\z//; s/\s+\z//; $_}
-                split /(?:<\/?d[tdl]>)+/, $rows;});
+            map {s/:\s*\z//; s/\s+\z//; $_} do
+               {my %h;
+                foreach (1..100)
+                  # This loop is finite just for safety's sake.
+                   {$rows =~ m!\G.*?<dt data-auto="citation_field_label">(.+?):?</dt>!g
+                        or last;
+                    my $k = decode_entities $1;
+                    $rows =~ m!\G.*?<dd data-auto="citation_field_value">(.+?)</dd>!g
+                        or die "Missing citation_field_value for $k";
+                    my $v = decode_entities $1;
+                    $k =~ /\S/
+                        or next;
+                    $h{$k} = $v;}
+                %h};});
 
     %record or return err 'No results.';
     debug "EBSCO record: $record{'-record'}";
