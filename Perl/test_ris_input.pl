@@ -162,4 +162,23 @@ is apa(
     'Palmer, C. (1989). Is rape a cultural universal? A re-examination of the ethnographic data. <i>Ethnology, 28</i>(1), 1–16. Retrieved from http://www.jstor.org/stable/3773639',
     'JSTOR: Ethnography';
 
+# Cambridge
+# http://journals.cambridge.org/action/displayAbstract?aid=6734712
+is apa(
+       "TY  - JOUR
+        AU  - Buss,David M.
+        PY  - 1989
+        TI  - Sex differences in human mate preferences: Evolutionary hypotheses tested in 37 cultures
+        JF  - Behavioral and Brain Sciences
+        KW  - assortative mating, cultural differences, evolution, mate preferences, reproductive strategy, sex differences, sexual selection, sociobiology
+        SP  - 1
+        EP  - 14
+        VL  - 12
+        IS  - 01
+        M3  - 10.1017/S0140525X00023992
+        ER  - \n"),
+    'Buss, D. M. (1989). Sex differences in human mate preferences: Evolutionary hypotheses tested in 37 cultures. <i>Behavioral and Brain Sciences, 12</i>(1), 1–14. doi:10.1017/S0140525X00023992',
+    'Cambridge: BBS';
+
+
 done_testing;

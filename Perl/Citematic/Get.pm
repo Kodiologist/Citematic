@@ -156,7 +156,7 @@ sub digest_author
         my @suffix;
         $str =~ s/,?\s+($suffix_re)//i
             and @suffix = (suffix => format_suffix $1);
-        $str =~ / \A (.+?), \s+ (.+?) (?: < | , | \z) /x;
+        $str =~ / \A (.+?), \s* (.+?) (?: < | , | \z) /x or die;
         my ($surn, $rest) = ($1, $2);
         $surn =~ /[[:lower:]]/
             or $surn = fix_allcaps_name $surn;
@@ -1095,8 +1095,11 @@ sub digest_ris
       : ($ris->starting_page, $ris->ending_page);
     my $volume = $ris->volume;
     my $issue = $ris->issue;
-    defined and s/\s+\z//
-        foreach $volume, $issue, $fpage, $lpage;
+    $issue =~ s/\A0+([1-9][0-9]*)\z/$1/;
+    foreach ($volume, $issue, $fpage, $lpage)
+       {defined or next;
+        s/\s+\z//;
+        s/\A0+([1-9][0-9]*)\z/$1/;}
 
     my $doi = $ris->doi;
     if (!$doi and $ris->M3
