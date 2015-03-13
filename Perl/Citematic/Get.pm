@@ -1088,13 +1088,14 @@ sub digest_ris
         (ref $ris->authors ? α $ris->authors : $ris->authors);
     my ($year) = ($ris->PY || $ris->Y1) =~ /\A(\d+)/;
     my $title = $ris->TI || $ris->T1;
-    my $journal = digest_journal_title($ris->JO || $ris->JF || $ris->T2);
+    my $journal = digest_journal_title(
+        $ris->JO || $ris->JF || $ris->T2 || $ris->J2);
     my ($fpage, $lpage) =
         $ris->starting_page =~ /[-–]/
       ? split /[-–]/, $ris->starting_page
       : ($ris->starting_page, $ris->ending_page);
-    my $volume = $ris->volume;
-    my $issue = $ris->issue;
+    my $volume = $ris->volume || $ris->VN;
+    my $issue = $ris->issue || $ris->M1;
     $issue =~ s/\A0+([1-9][0-9]*)\z/$1/;
     foreach ($volume, $issue, $fpage, $lpage)
        {defined or next;
@@ -1113,6 +1114,10 @@ sub digest_ris
       # https://forums.zotero.org/discussion/6812/jstor-and-false-doi-numbers/
        {undef $doi;
         $url = $ris->UR;}
+    elsif ($ris->UR and $ris->UR =~ m!\Ahttp://projecteuclid.org/!)
+      # Keep Project Euclid URLs. Most of its journals are
+      # open-access, so the URLs are convenient.
+       {$url = $ris->UR;}
 
     journal_article
         $authors, $year, $title, $journal,

@@ -50,7 +50,7 @@ our %TYPES = (ABST  => 'Abstract',
 
 __PACKAGE__->mk_accessors(qw/TY ID T1 TI CT BT T2 BT T3 A1 AU A2 ED A3 Y1 PY Y2 N1 AB N2 KW RP JF JO JA J1 J2
 			  VL IS SP EP CP CY PB SN AD AV M1 M2 M3 U1 U2 U3 U4 U5 UR L1 L2 L3 L4 ER
-                          DO
+                          DO VN
 			  has_data inceq/);
 
 sub new {

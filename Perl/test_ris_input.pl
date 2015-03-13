@@ -9,15 +9,19 @@ use Test::More;
 
 my $qb = new Citematic::QuickBib;
 
-sub apa ($_)
-   {(my $ris = $_[0]) =~ s/^ +//mg;
+sub apa
+   {my $ris = @_ == 2
+      ? do {local $_ = $_[1]; $_[0]->(); $_}
+      : $_[0];
+    $ris =~ s/^ +//mg;
     my $x = digest_ris($ris);
     defined $x or return undef;
     $qb->bib1($x,
         style_path => $ENV{APA_CSL_PATH} ||
             die('The environment variable APA_CSL_PATH is not set'),
         apa_tweaks => 1,
-        always_include_issue => 1, include_isbn => 1)}
+        always_include_issue => 1, include_isbn => 1,
+        url_after_doi => 1)}
 
 # Elsevier
 # http://www.sciencedirect.com/science/article/pii/S0143622801000091
@@ -179,6 +183,49 @@ is apa(
         ER  - \n"),
     'Buss, D. M. (1989). Sex differences in human mate preferences: Evolutionary hypotheses tested in 37 cultures. <i>Behavioral and Brain Sciences, 12</i>(1), 1–14. doi:10.1017/S0140525X00023992',
     'Cambridge: BBS';
+
+# Project Euclid
+# http://projecteuclid.org/euclid.ss/1294167961
+is apa(sub {s/Statist\. Sci\./Statistical Science/},
+       "TY  - JOUR
+        AB  - Statistical modeling is a powerful tool for developing and testing 
+              theories by way of causal explanation, prediction, and description. In
+              many disciplines there is near-exclusive use of statistical modeling 
+              for causal explanation and the assumption that models with high 
+              explanatory power are inherently of high predictive power. Conflation 
+              between explanation and prediction is common, yet the distinction must
+              be understood for progressing scientific knowledge. While this 
+              distinction has been recognized in the philosophy of science, the 
+              statistical literature lacks a thorough discussion of the many 
+              differences that arise in the process of modeling for an explanatory 
+              versus a predictive goal. The purpose of this article is to clarify 
+              the distinction between explanatory and predictive modeling, to 
+              discuss its sources, and to reveal the practical implications of the 
+              distinction to each step in the modeling process. 
+        AU  - Shmueli, Galit
+        DA  - 2010/08
+        DO  - 10.1214/10-STS330
+        EP  - 310
+        J2  - Statist. Sci.
+        KW  - Explanatory modeling
+        KW  - causality
+        KW  - predictive modeling
+        KW  - predictive power
+        KW  - statistical strategy
+        KW  - data mining
+        KW  - scientific research
+        LA  - en
+        M1  - 3
+        PB  - The Institute of Mathematical Statistics
+        PY  - 2010
+        SN  - 0883-4237
+        SP  - 289
+        TI  - To Explain or to Predict?
+        UR  - http://projecteuclid.org/euclid.ss/1294167961
+        VN  - 25
+        ER  - \n\n"),
+    'Shmueli, G. (2010). To explain or to predict? <i>Statistical Science, 25</i>(3), 289–310. doi:10.1214/10-STS330. Retrieved from http://projecteuclid.org/euclid.ss/1294167961',
+    'Project Euclid: Statistical Science';
 
 
 done_testing;
