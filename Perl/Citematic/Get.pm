@@ -523,6 +523,9 @@ sub ebsco
           # We'll need to log in first.
            {progress 'Logging in';
             $ebsco_login->($agent);
+            if ($agent->content =~ /onload="GoToPage\(&#39;(http:.+?)&#39;\)/)
+               {progress 'Following redirect';
+                $agent->get(decode_entities $1);}
             progress 'Querying';
             $query->("http://" . $agent->uri->host,
                 $agent->current_form->value('__sid'));}
