@@ -72,6 +72,8 @@ my $suffix_re = qr/(?:Jr\.?|Sr\.?|III\b|IV\b|VI{0,3}\b(?!\.)|I?X\b(?!\.))/;
 
 my $speller = new Text::Aspell;
 
+$LWP::Simple::ua->agent('Citematic');
+
 sub note
    {$verbose and print STDERR @_, "\n";}
 
@@ -355,6 +357,15 @@ sub whole_book
         publisher => format_publisher($publisher),
         DOI => $doi,
         ISBN => format_isbn($isbn);}
+
+sub manuscript
+   {my ($authors, $year, $title, $url) = @_;
+    citation
+        type => 'manuscript',
+        author => $authors,
+        issued => {'date-parts' => [[$year]]},
+        title => format_nonjournal_title($title),
+        URL => $url;}
 
 # ------------------------------------------------------------
 # * CrossRef
@@ -1013,6 +1024,35 @@ sub ideas
         $fpage, $lpage, $doi, undef;}
 
 # ------------------------------------------------------------
+# * arXiv
+# ------------------------------------------------------------
+
+sub arxiv_from_id
+   {my $id = shift;
+
+    my $url = "http://arxiv.org/abs/$id";
+
+    progress 'Trying the arXiv';
+    my %record = η($global_cache->{arxiv}{$id} ||= runsub
+       {my $page = LWP::Simple::get($url) || return {};
+        write_file '/tmp/out.html', $page;
+        my %meta =
+            map {decode_entities $_}
+            $page =~ /<meta name="citation_([^"]+)" content="([^"]+)"/g;
+        $meta{author} = σ
+            map {decode_entities $_}
+            $page =~ /<meta name="citation_author" content="([^"]+)"/g;
+        \%meta});
+
+    keys %record or return err 'No results.';
+
+    my $authors = σ map {digest_author $_} α $record{author};
+    $record{date} =~ m!(\d\d\d\d)/\d\d/\d\d! or die 'y';
+    my $year = $1;
+
+    manuscript $authors, $year, $record{title}, $url;}
+
+# ------------------------------------------------------------
 # * Society for Judgment and Decision-Making
 # ------------------------------------------------------------
 
@@ -1058,12 +1098,16 @@ sub get
 #   isbn (scalar)
 #   doi (scalar)
 #   ebsco_record (hash ref with keys "db" and "AN")
+#   arxiv_id (scalar)
 # Returns a hashref of CSL input data or undef.
    {my %terms = @_;
     first {$_ and !ref || (ref eq 'ARRAY' and @$_) || (ref eq 'HASH' and %$_)} values %terms
         or return err 'No search terms.';
     $terms{author} ||= [];
     $terms{title} ||= [];
+
+    $terms{arxiv_id}
+        and return arxiv_from_id($terms{arxiv_id});
 
     if ($terms{doi})
       # When we're starting with a DOI, we use CrossRef only to

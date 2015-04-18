@@ -428,4 +428,10 @@ is apa(isbn => '1433804077'),
     'Cognitive therapy for suicidal patients (search by ISBN-10, post-2007)';
 
 
+note '~~~ arXiv manuscripts ~~~';
+is apa(arxiv_id => '1504.00641'),
+    'Patel, A. B., Nguyen, T., & Baraniuk, R. G. (2015). <i>A probabilistic theory of deep learning</i>. Retrieved from http://arxiv.org/abs/1504.00641',
+    'A probabilistic theory of deep learning';
+
+
 done_testing;

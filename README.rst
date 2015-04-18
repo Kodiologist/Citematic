@@ -32,6 +32,10 @@ Examples
 
     Huddleston, R. D., & Pullum, G. K. (2002). <i>The Cambridge grammar of the English language</i>. Cambridge, UK: Cambridge University Press.
 
+* ``$ cite arxiv:1504.00641``
+
+    Patel, A. B., Nguyen, T., & Baraniuk, R. G. (2015). <i>A probabilistic theory of deep learning</i>. Retrieved from http://arxiv.org/abs/1504.00641
+
 You can put bounds on the year, rather than searching for an exact year, by using syntax like this:
 
 - ``1990..`` — Items published in 1990 or later

@@ -46,10 +46,10 @@ my $a = $opt->input
        {my @title_words = map {normalize $_} @{$opt->title || []};
 
         # Interpret arguments that look like years, ISBNs, DOIs, EBSCO
-        # URLs, or formatted citations appropriately. Interpret the
-        # remainder as author keywords.
+        # URLs, arXiv IDs, or formatted citations appropriately.
+        # Interpret the remainder as author keywords.
 
-        my ($year, $year_min, $year_max, $isbn, $doi, %ebsco_record, @author_words);
+        my ($year, $year_min, $year_max, $isbn, $doi, %ebsco_record, $arxiv_id, @author_words);
 
         push @author_words, map {normalize $_} grep {runsub
            {if (/\A(\.\. *)?(\d{4})\z/)
@@ -60,6 +60,8 @@ my $a = $opt->input
             elsif (/\bebscohost\.com\b/ and
                     m![#&]db=([a-zA-Z0-9]{3,6}).+?\bAN=([^=&#/]+)!)
                {%ebsco_record = (db => $1, AN => uri_unescape($2));}
+            elsif (m!\barxiv(?:\.org/\w+/|:)([-/.\w]+)!)
+               {$arxiv_id = $1;}
             elsif (m!\A[-0-9xX]+\z!)
                {$isbn = $_;}
             elsif (m!\A(?:doi:)?\d+\.\d+/!)
@@ -81,7 +83,8 @@ my $a = $opt->input
             title => \@title_words,
             isbn => $isbn,
             doi => $doi,
-            ebsco_record => \%ebsco_record);};
+            ebsco_record => \%ebsco_record,
+            arxiv_id => $arxiv_id);};
 
 if ($a)
    {!$opt->quiet and $a->{DOI}
