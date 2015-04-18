@@ -138,13 +138,19 @@ def test_report():
         'Dreber, A., Gerdes, C., & Gränsmark, P. (2010). <i>Beauty queens and battling knights: Risk taking and attractiveness in chess</i> (Discussion Paper No. 5314). Institute for the Study of Labor. Retrieved from http://ftp.iza.org/dp5314.pdf')
 
 def test_informal():
+# Informally published paper.
     assert (f(dict(type = 'manuscript',
             author = [name('S. D.', 'Mitchell')],
             issued = {'date-parts': [[2000]]},
             title = 'The import of uncertainty',
             URL = 'http://philsci-archive.pitt.edu/archive/00000162/')) ==
         'Mitchell, S. D. (2000). <i>The import of uncertainty</i>. Retrieved from http://philsci-archive.pitt.edu/archive/00000162/')
-      # Informally published paper
+    assert (f(dict(type = 'manuscript',
+            author = [name('B.', 'Bunny')],
+            issued = {'date-parts': [[2000]]},
+            title = "What's up, Doc?",
+            URL = 'http://example.com')) ==
+        "Bunny, B. (2000). <i>What's up, Doc?</i> Retrieved from http://example.com")
 
 def b(o = None, **field_kws):
     return j(o, **merge_dicts(
@@ -159,6 +165,8 @@ def b(o = None, **field_kws):
 def test_book():
     assert b() == 'Bloggs, J., & Hacker, J. R. (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
       # Whole book
+    assert b(title = 'Did I do that?') == 'Bloggs, J., & Hacker, J. R. (1983). <i>Did I do that?</i> Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
+      # With a question mark in the title.
     assert b(o = {'include_isbn': True}) == 'Bloggs, J., & Hacker, J. R. (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. ISBN 0123456789. doi:10.zzz/zzzzzz'
       # Including ISBN
     assert (b(o = {'include_isbn': True}, DOI = None) ==

@@ -142,6 +142,10 @@ def bib(style_path,
                 # Italicize the stuff between a journal name and a volume
                 # number.
                 s = sub(r'</i>, <i>(\d)', r', \1', s)
+                # Remove redundant periods that are separated
+                # from the first end-of-sentence mark by an </i>
+                # tag.
+                s = sub(r'([.!?…]</i>)\.', r'\1', s)
             # Make "p." into "pp." when more than one page is cited.
             s = sub(r'(\W)p\. (\S+[,–])', r'\1pp. \2', s)
             # Replace the ellipsis placeholder.
