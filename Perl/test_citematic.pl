@@ -35,7 +35,7 @@ is apa(year => 1967, author => ['valins', 'ray']),
 is apa(year => 1966, author => ['lerner', 'simmons']),
     q{Lerner, M. J., & Simmons, C. H. (1966). Observer's reaction to the "innocent victim": Compassion or rejection? <i>Journal of Personality and Social Psychology, 4</i>(2), 203–210. doi:10.1037/h0023562},
     'JPSP (single quotes in given form of title)';
-is apa(year => 2005, author => [qw(Bechara Damasio Tranel)]),
+is apa(year => 2005, author => [qw(Bechara Damasio Tranel)], title => ['answers']),
     'Bechara, A., Damasio, H., Tranel, D., & Damasio, A. R. (2005). The Iowa Gambling Task and the somatic marker hypothesis: Some questions and answers. <i>Trends in Cognitive Sciences, 9</i>(4), 159–162. doi:10.1016/j.tics.2005.02.002',
     'Trends in Cognitive Sciences';
 is apa(year => 2004, author => ['maia', 'McClelland']),
