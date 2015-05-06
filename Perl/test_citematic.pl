@@ -92,9 +92,11 @@ is apa(title => ['heart and mind in conflict']),
 is apa(year => 2011, author => [qw(Dunn Greenhill Levinson Gray)]),
     'Dunn, M., Greenhill, S. J., Levinson, S. C., & Gray, R. D. (2011). Evolved structure of language shows lineage-specific trends in word-order universals. <i>Nature, 473</i>(7345), 79–82. doi:10.1038/nature09923',
     'Nature';
-is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
-    'Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. <i>Science, 323</i>(5918), 1222–1226. doi:10.1126/science.1165565',
-    'Science';
+TODO:
+   {local $TODO = 'The ending page number in PsycINFO is currently 1225 rather than the correct 1226';
+    is apa(year => 2009, author => [qw(Chapman Kim Susskind Anderson)]),
+        'Chapman, H. A., Kim, D. A., Susskind, J. M., & Anderson, A. K. (2009). In bad taste: Evidence for the oral origins of moral disgust. <i>Science, 323</i>(5918), 1222–1226. doi:10.1126/science.1165565',
+        'Science';}
 is apa(author => ['lee', 'schwarz'], title => ['washing']),
     'Lee, S. W., & Schwarz, N. (2010). Washing away postdecisional dissonance. <i>Science, 328</i>(5979), 709. doi:10.1126/science.1186799',
     'Science (one-page article, author-title search)';
