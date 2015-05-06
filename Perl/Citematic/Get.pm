@@ -553,7 +553,8 @@ sub ebsco
            # We're looking at search results. Choose a record.
            {$page = $agent->content;
             my $results_uri = $agent->uri;
-            my ($vid) = $page =~ /"vid":(\d+)/;
+            $page =~ /"vid":"(\d+)"/ or die;
+            my $vid = $1;
             $page =~ /Result_1/ or die;
 
             my %dbs =
@@ -646,7 +647,9 @@ sub ebsco
                     my $k = decode_entities $1;
                     $rows =~ m!\G.*?<dd data-auto="citation_field_value">(.+?)</dd>!g
                         or die "Missing citation_field_value for $k";
-                    my $v = decode_entities $1;
+                    my $v = $k eq 'Digital Object Identifier'
+                      ? $1
+                      : decode_entities $1;
                     $k =~ /\S/
                         or next;
                     $h{$k} = $v;}
@@ -794,18 +797,20 @@ sub ebsco
 
     elsif ($record{'Document Type'} eq 'Chapter')
 
-       {$record{Source} =~ m{
-            \A (?<book> [^.(]+?)
+       {$record{Source} =~ m{ \A
+            (?<book> [^.(]+?)
             (?: \s \( (?<edition> [^)]+) \) )?
             (?: \. | , \s vol\. ) \s
             (?: (?<volume> \d+)
                 (?: \. | : \s [^.]+ \.)
             \s)?
-            (?<editors> .+?) \s \(Ed\) ; \s
+            (?<editors> .+?) \s \(Ed\) ; \s\s
+            pp \. \s (?<fpage> \d+) - (?<lpage> \d+) ;
             (?<place> [^,:]+, \s [^,:]+), \s [^,:]+ : \s
             (?<publisher> [^;]+) ; \s
-            (?<year> \d\d\d\d) \.
-            \s (?<fpage> \d+) - (?<lpage> \d+) }x or die 'chapter';
+            (?<year> \d\d\d\d) \. \s
+            [a-z]+ , \s \d+ \s pp \.
+            \z }x or die 'chapter';
         my %src = %+;
 
         if (exists $record{'Parent Book Series'}
@@ -823,7 +828,7 @@ sub ebsco
         $src{volume} and $book =~ s/, Vol\z//;
         my $editors = σ
            map {digest_author $_}
-           split qr/ \(Ed\); /, $src{editors};
+           split qr/ \(Ed\);  /, $src{editors};
 
         my $isbn;
         exists $record{ISBN} and ($isbn) =
