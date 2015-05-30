@@ -185,8 +185,10 @@ def test_mononyms():
       # A mononym at the end of the author list.
     assert b(author = [name('John', 'Doe'), dict(family = 'Jimbo'), name('Richard', 'Roe')]) == 'Doe, J., Jimbo, & Roe, R. (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
       # A mononym in the middle.
-    # I haven't tested a mononym as the first item of a two-author
-    # list, because who's to say if it should end with a comma?
+    assert b(author = [dict(family = 'Jimbo'), name('John', 'Doe')]) == 'Jimbo & Doe, J. (1983). <i>The main title</i>. Tuscon, AZ: Ric-Rac Press. doi:10.zzz/zzzzzz'
+      # A mononym as the first of two authors. The good book
+      # says nothing about this, but one would expect that the
+      # comma is omitted.
 
 def e(o = None, **field_kws):
     return b(o, **merge_dicts(

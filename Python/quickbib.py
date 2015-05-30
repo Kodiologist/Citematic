@@ -146,6 +146,9 @@ def bib(style_path,
                 # from the first end-of-sentence mark by an </i>
                 # tag.
                 s = sub(r'([.!?…]</i>)\.', r'\1', s)
+            # If there are two authors and the first is a mononym,
+            # remove the comma after it.
+            s = sub('^([^.,]+), &', r'\1 &', s)
             # Make "p." into "pp." when more than one page is cited.
             s = sub(r'(\W)p\. (\S+[,–])', r'\1pp. \2', s)
             # Replace the ellipsis placeholder.
