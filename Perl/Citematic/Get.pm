@@ -968,7 +968,7 @@ sub ideas
 
     # Query.
 
-    my $url = query_url 'http://ideas.repec.org/cgi-bin/htsearch',
+    my $url = query_url 'https://ideas.repec.org/cgi-bin/htsearch',
         'q' => join(' ', sort @{$terms{keywords}}),
         ul => "%/$ideas_categories{articles}/%",
         ul => "%/$ideas_categories{chapters}/%",
