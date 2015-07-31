@@ -762,11 +762,11 @@ sub ebsco
            {$record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | \.?,✠ ) !!x or die 's2';
             $journal = digest_journal_title $1;
             ($fpage, $lpage) =
-                $record{Source} =~ s!p(?:p\. )?([A-Z]?\d+)-([A-Z]?\d+)!!
+                $record{Source} =~ s!p(?:p\. )?([A-Za-z]?\d+)-([A-Za-z]?\d+)!!
               ? ($1, $2)
-              : $record{Source} =~ s!p(?:p\. )?([A-Z]?)(\d+).+?(\d+)p\b!!
+              : $record{Source} =~ s!p(?:p\. )?([A-Za-z]?)(\d+).+?(\d+)p\b!!
               ? ("$1$2", $1 . ($2 + $3 - 1))
-              : $record{Source} =~ s!p(?:p\. )?([A-Z]?\d+)!!
+              : $record{Source} =~ s!p(?:p\. )?([A-Za-z]?\d+)!!
               ? ($1, undef)
               : die 'p';
             $lpage = expand_last_page_number $fpage, $lpage;}

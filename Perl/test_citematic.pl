@@ -103,6 +103,9 @@ is apa(author => ['lee', 'schwarz'], title => ['washing']),
 is apa(year => 1965, author => ['zajonc'], title => ['facilitation']),
     'Zajonc, R. B. (1965). Social facilitation. <i>Science, 149</i>(3681), 269–274. doi:10.1126/science.149.3681.269',
     'Science (funny "Source" format)';
+is apa(year => 2011, author => ['McPheeters', 'Bruzek']),
+    'McPheeters, M. L., Warren, Z., Sathe, N., Bruzek, J. L., Krishnaswami, S., Jerome, R. N., & Veenstra-VanderWeele, J. (2011). A systematic review of medical treatments for children with autism spectrum disorders. <i>Pediatrics, 127</i>(5), e1312–e1321. doi:10.1542/peds.2011-0427',
+    'Pediatrics (article with "e" page numbers)';
 is apa(year => 2002, author => ['Fantino', 'Esfandiari']),
     'Fantino, E., & Esfandiari, A. (2002). Probability matching: Encouraging optimal responding in humans. <i>Canadian Journal of Experimental Psychology, 56</i>(1), 58–63. doi:10.1037/h0087385',
     'Canadian Journal of Experimental Psychology (journal with foreign-language name)';
