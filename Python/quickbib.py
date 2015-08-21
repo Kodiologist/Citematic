@@ -55,9 +55,17 @@ def bib(style_path,
     # Distinguish entries that would have identical authors and years
     # by adding suffixes to the years.
         # Group works by author and year.
+        #
+        # (Actually, we use only an initial subset of authors,
+        # the same number that would be included in an inline citation
+        # after the first inline citation. This is 2 for 2 authors
+        # and 1 otherwise.)
         ay = defaultdict(list)
         for d in ds:
-            k = repr(d.get('author') or d.get('editor'))  + '/' + str(d['issued']['date-parts'][0][0])
+            names = d.get('author') or d.get('editor')
+            if len(names) != 2:
+                names = [names[0]]
+            k = repr(names)  + '/' + str(d['issued']['date-parts'][0][0])
             if not any(d is v for v in ay[k]):
                 ay[k].append(d)
         # If any group has more than one element, add suffixes.

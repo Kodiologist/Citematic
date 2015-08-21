@@ -118,6 +118,23 @@ def test_sorting():
         'Bloggs, J., & Hacker, J. R. (1983b). Quails. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
         'Bloggs, J., & Hacker, J. R. (1984). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz']
 
+def test_duplicate_tracking():
+    l = [
+       jf(author = [name('Aaa', 'Alfa')]),
+       jf(author = [name('Aaa', 'Alfa'), name('Bbb', 'Bravo')]),
+       jf(author = [name('Aaa', 'Alfa'), name('Bbb', 'Bravo')], title = 'Another title'),
+       jf(author = [name('Aaa', 'Alfa'), name('Bbb', 'Bravo'), name('Ccc', 'Charlie')]),
+       jf(author = [name('Aaa', 'Alfa'), name('Bbb', 'Bravo'), name('Ccc', 'Charlie'), name('Ddd', 'Delta')])]
+    assert f(l, multi = True) == [
+        'Alfa, A. (1983a). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Alfa, A., & Bravo, B. (1983a). Another title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Alfa, A., & Bravo, B. (1983b). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Alfa, A., Bravo, B., & Charlie, C. (1983b). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Alfa, A., Bravo, B., Charlie, C., & Delta, D. (1983c). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz']
+      # The two-author papers have their own series of letter
+      # suffixes because they would be cited inline with both
+      # authors, instead of just Alfa as the others would be.
+
 def test_report():
 # Technical report
     def r(publisher_website):
