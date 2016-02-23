@@ -11,6 +11,10 @@ use Encode;
 use List::Util 'first';
 use LWP::Simple ();
 use WWW::Mechanize;
+use HTTP::Message 6.11;
+  # We don't use this directly, but it's a dependency of
+  # WWW::Mechanize. With earlier versions, there may be encoding
+  # bugs in Mech output.
 use HTTP::Cookies;
 use URI::Escape;
 use HTML::Entities 'decode_entities';
@@ -115,12 +119,17 @@ sub apply (&;$)
   $block->();
   return $_;}
 
+sub _spaces_to_plus
+   {my $s = $_[0];
+    $s =~ s/%20/+/g;
+    $s;}
+
 sub query_url
    {my $prefix = shift;
     my @a;
     push @a, sprintf '%s=%s',
-            URI::Escape::uri_escape_utf8(shift),
-            URI::Escape::uri_escape_utf8(shift)
+            _spaces_to_plus(URI::Escape::uri_escape_utf8(shift)),
+            _spaces_to_plus(URI::Escape::uri_escape_utf8(shift))
         while @_;
     $prefix . '?' . join '&', @a;}
 
@@ -610,6 +619,12 @@ sub ebsco
         $page =~ m!<a name="citation"[^>]*><span>(.+?)\s*</span></a></dd>.*?(<dt .+?)</div>!s
             or die;
         my ($title, $rows) = (decode_entities($1), $2);
+        if ($title =~ /&/)
+          # Looks like the title was mistakenly double-encoded.
+          # It may have some other HTML tags, so get rid of those,
+          # then decode again.
+          {$title =~ s/<[^>]+>//g;
+           $title = decode_entities $title;}
 
         # Before returning the results, print full-text URLs
         # to STDERR.
@@ -642,10 +657,10 @@ sub ebsco
                {my %h;
                 foreach (1..100)
                   # This loop is finite just for safety's sake.
-                   {$rows =~ m!\G.*?<dt data-auto="citation_field_label">(.+?):?</dt>!g
+                   {$rows =~ m!\G.*?<dt data-auto="citation_field_label"[^>]*>(.+?):?</dt>!g
                         or last;
                     my $k = decode_entities $1;
-                    $rows =~ m!\G.*?<dd data-auto="citation_field_value">(.+?)</dd>!g
+                    $rows =~ m!\G.*?<dd data-auto="citation_field_value"[^>]*>(.+?)</dd>!g
                         or die "Missing citation_field_value for $k";
                     my $v = $k eq 'Digital Object Identifier'
                       ? $1
@@ -788,9 +803,6 @@ sub ebsco
           # This is an open-access journal, but it doesn't have
           # DOIs, so get a URL.
             and $url = sjdm_url_from_title($title);
-        lc($journal) eq 'evolutionary psychology'
-          # Same deal.
-            and $url = evpsych_url_from_title($title);
 
         return journal_article $authors, $year, $title,
             $journal, $volume, $issue, $fpage, $lpage, $doi, $url;}
@@ -805,16 +817,17 @@ sub ebsco
                 (?: \. | : \s [^.]+ \.)
             \s)?
             (?<editors> .+?) \s \(Ed\) ; \s\s
-            pp \. \s (?<fpage> \d+) - (?<lpage> \d+) ;
+            pp \. \s (?<fpage> \d+) - (?<lpage> \d+) ; \s
             (?<place> [^,:]+, \s [^,:]+), \s [^,:]+ : \s
             (?<publisher> [^;]+) ; \s
+            (?: \s Vol \s \d+ ; \s  )?
             (?<year> \d\d\d\d) \. \s
             [a-z]+ , \s \d+ \s pp \.
             \z }x or die 'chapter';
         my %src = %+;
 
         if (exists $record{'Parent Book Series'}
-                and $record{'Parent Book Series'} =~ /\A(Annals of The New York Academy of Sciences), Vol\. (\d+)/i)
+                and $record{'Parent Book Series'} =~ /\A(Annals of The New York Academy of Sciences); Vol (\d+)/i)
           # Annals of the NYAS is actually a journal.
            {my ($journal, $volume) = ($1, $2);
             my $doi = $rdoi || $terms{doi} || get_doi
@@ -986,11 +999,12 @@ sub ideas
         else
           # Use the first result.
            {$results =~ /<DT>1\.\s+<a href="(.+?)"/ or die;
+            my $record_url = $1;
             progress 'Fetching record';
-            my $page = LWP::Simple::get($1);
-            my %meta =
+            my $page = LWP::Simple::get($record_url);
+            my %meta = ('-record' => $record_url,
                 map {decode_entities $_}
-                $page =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g;
+                $page =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g);
             # Sometimes we can get middle initials in the
             # registered-authors list that aren't in the meta tags.
             if ($page =~ m{Registered</A> author\(s\): <UL[^>]+>(.+?)</UL>}s)
@@ -1006,6 +1020,7 @@ sub ideas
             \%meta;}});
 
     keys %record or return err 'No results.';
+    debug 'IDEAS record: ', $record{'-record'};
 
     # Parse the record.
 
@@ -1072,22 +1087,10 @@ sub sjdm_url_from_title
             query => "{$title}");
           # In Namazu, curly braces signify an exact match.
           # http://www.namazu.org/doc/manual.html#query-phrase
-        $page =~ m!<dd><a href="/home/baron/public_html/journal/(.+?)">!
+        $page =~ m!<dt>1. <strong><a href="([^"]+)!
           ? $1
           : undef};
-    defined $v
-      ? "http://journal.sjdm.org/$v"
-      : err 'No results.';}
-
-# ------------------------------------------------------------
-# * Evolutionary Psychology
-# ------------------------------------------------------------
-
-sub evpsych_url_from_title
-   {my $title = shift;
-    $title =~ s/'/’/;
-    'http://www.epjournal.net/articles/' .
-        URI::Escape::uri_escape_utf8(lc join '-', $title =~ /((?:’|\w)+)/g);}
+   defined $v ? $v : err 'No results.';}
 
 # ------------------------------------------------------------
 # * Public interface

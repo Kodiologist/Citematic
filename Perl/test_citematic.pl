@@ -139,7 +139,7 @@ is apa(title => ['money', 'kisses', 'shocks']),
 is apa(doi => '10.1177/1745691610393980'),
     q(Buhrmester, M., Kwang, T., & Gosling, S. D. (2011). Amazon's Mechanical Turk: A new source of inexpensive, yet high-quality, data? <i>Perspectives on Psychological Science, 6</i>(1), 3–5. doi:10.1177/1745691610393980),
     'Perspectives on Psychological Science (DOI search, two years in CrossRef record)';
-is apa(title => ['yet high-quality, data?']),
+is apa(year => 2011, title => ['yet high-quality, data?']),
     q(Buhrmester, M., Kwang, T., & Gosling, S. D. (2011). Amazon's Mechanical Turk: A new source of inexpensive, yet high-quality, data? <i>Perspectives on Psychological Science, 6</i>(1), 3–5. doi:10.1177/1745691610393980),
     'Perspectives on Psychological Science (title search containing question mark)';
 is apa(year => 2009, author => ['Bruggeman', 'pick']),
@@ -180,7 +180,7 @@ is apa(year => 1983, author => ['zakin'], title => ['athletic']),
       # I don't know what to make of this.
     'J Psychol: Interdisciplinary and Applied';
 is apa(year => 2010, author => ['bradley', 'byrd-craven']),
-    q(Vaughn, J. E., Bradley, K. I., Byrd-Craven, J., & Kennison, S. M. (2010). The effect of mortality salience on women's judgments of male faces. <i>Evolutionary Psychology, 8</i>(3), 477–491. Retrieved from http://www.epjournal.net/articles/the-effect-of-mortality-salience-on-women%E2%80%99s-judgments-of-male-faces),
+    q(Vaughn, J. E., Bradley, K. I., Byrd-Craven, J., & Kennison, S. M. (2010). The effect of mortality salience on women's judgments of male faces. <i>Evolutionary Psychology, 8</i>(3), 477–491. doi:10.1177/147470491000800313),
     'Evolutionary Psychology';
 is apa(title => ['pretty women inspire']),
     'Wilson, M., & Daly, M. (2004). Do pretty women inspire men to discount the future? <i>Proceedings of the Royal Society B, 271</i>(Suppl. 4), S177–S179. doi:10.1098/rsbl.2003.0134',
@@ -196,7 +196,7 @@ is apa(year => 2003, author => ['oppenheimer'], title => ['not so fast']),
     'Oppenheimer, D. M. (2003). Not so fast! (and not so frugal!): Rethinking the recognition heuristic. <i>Cognition, 90</i>(1), B1–B9. doi:10.1016/S0010-0277(03)00141-0',
     'Cognition (article with "B" page numbers)';
 is apa(year => 1987, author => ['Grassia', 'Pearson']),
-    'Hammond, K. R., Hamm, R. M., Grassia, J., & Pearson, T. (1987). Direct comparison of the efficacy of intuitive and analytical cognition in expert judgment. <i>IEEE Transactions on Systems, Man, and Cybernetics, 17</i>(5), 753–770.',
+    'Hammond, K. R., Hamm, R. M., Grassia, J., & Pearson, T. (1987). Direct comparison of the efficacy of intuitive and analytical cognition in expert judgment. <i>IEEE Transactions on Systems, Man, and Cybernetics, 17</i>(5), 753–770. doi:10.1109/TSMC.1987.6499282',
     'IEEE Transactions on Systems, Man, and Cybernetics';
 is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['mirror']),
     'Keysers, C., & Gazzola, V. (2009). Expanding the mirror: Vicarious activity for actions, emotions, and sensations. <i>Current Opinion in Neurobiology, 19</i>(6), 666–671. doi:10.1016/j.conb.2009.10.006',
@@ -330,7 +330,7 @@ is apa(year => 1997, author => ['weber', 'milliman']),
     'Weber, E. U., & Milliman, R. A. (1997). Perceived risk attitudes: Relating risk perception to risky choice. <i>Management Science, 43</i>(2), 123–144. doi:10.1287/mnsc.43.2.123',
     'Management Science';
 is apa(author => ['bertrand', 'shafir'], title => ['advertising content']),
-    'Bertrand, M., Karlan, D. S., Mullainathan, S., Shafir, E., & Zinman, J. (2010). What\'s advertising content worth? Evidence from a consumer credit marketing field experiment. <i>Quarterly Journal of Economics, 125</i>(1), 263–305. doi:10.1162/qjec.2010.125.1.263',
+    'Bertrand, M., Karlan, D., Mullainathan, S., Shafir, E., & Zinman, J. (2010). What\'s advertising content worth? Evidence from a consumer credit marketing field experiment. <i>Quarterly Journal of Economics, 125</i>(1), 263–306. doi:10.1162/qjec.2010.125.1.263',
     'Quarterly Journal of Economics';
 is apa(year => 2010, author => ['meier', 'sprenger'], title => ['credit']),
     'Meier, S., & Sprenger, C. (2010). Present-biased preferences and credit card borrowing. <i>American Economic Journal: Applied Economics, 2</i>(1), 193–210. doi:10.1257/app.2.1.193',
@@ -374,7 +374,7 @@ is apa(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['growing up 
     'Duncan, G. J., & Brooks-Gunn, J. (Eds.). (1997). <i>Consequences of growing up poor</i>. New York, NY: Russell Sage Foundation. ISBN 978-0-87154-143-7.',
     'Consequences of growing up poor (two editors)';
 is apa(author => ['Gilovich', 'Griffin', 'Kahneman']),
-    'Gilovich, T., Griffin, D., & Kahneman, D. (Eds.). (2002). <i>Heuristics and biases: The psychology of intuitive judgment</i>. New York, NY: Cambridge University Press. ISBN 978-0-521-79260-8.',
+    'Gilovich, T., Griffin, D., & Kahneman, D. (Eds.). (2002). <i>Heuristics and biases: The psychology of intuitive judgment</i>. New York, NY: Cambridge University Press. ISBN 978-0-521-79260-8. doi:10.1017/CBO9780511808098',
     'Heuristics and biases (three editors)';
 is apa(year => 1953, title => ['Essays in positive economics']),
     'Friedman, M. (1953). <i>Essays in positive economics</i>. Chicago: University of Chicago Press.',
