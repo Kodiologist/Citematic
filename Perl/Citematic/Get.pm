@@ -522,7 +522,9 @@ sub ebsco
                 $agent->get(query_url "$base_url/login.aspx",
                     direct => 'true',
                     db => $search_fields{RECORD}{db},
-                    AN => $search_fields{RECORD}{AN});}
+                    AN => $search_fields{RECORD}{AN});
+                if ($agent->content =~ /window\.location\.replace\('([^']+)'/)
+                   {$agent->get($1);}}
             else
                {$agent->get(query_url "$base_url/ehost/Search/PerformSearch",
                     sid => $sid,

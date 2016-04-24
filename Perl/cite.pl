@@ -52,14 +52,16 @@ my $a = $opt->input
         my ($year, $year_min, $year_max, $isbn, $doi, %ebsco_record, $arxiv_id, @author_words);
 
         push @author_words, map {normalize $_} grep {runsub
-           {if (/\A(\.\. *)?(\d{4})\z/)
+           {my ($db, $an);
+            if (/\A(\.\. *)?(\d{4})\z/)
                {($1 ? $year_max : $year) = $2;}
             elsif (/\A(\d{4}) *\.\.( *(\d{4}))?\z/)
                {$year_min = $1;
                 $year_max = $3;}
             elsif (/\bebscohost\.com\b/ and
-                    m![#&]db=([a-zA-Z0-9]{3,6}).+?\bAN=([^=&#/]+)!)
-               {%ebsco_record = (db => $1, AN => uri_unescape($2));}
+                    m![#&]db=([a-zA-Z0-9]{3,6})! and $db = $1 and
+                    m![#&]AN=([^=&#/]+)! and $an = $1)
+               {%ebsco_record = (db => $db, AN => uri_unescape($an));}
             elsif (m!\barxiv(?:\.org/\w+/|:)([-/.\w]+)!)
                {$arxiv_id = $1;}
             elsif (m!\A[-0-9xX]+\z!)
