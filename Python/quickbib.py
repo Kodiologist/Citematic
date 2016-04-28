@@ -224,6 +224,11 @@ def get_style(style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_gi
       # lxml doesn't like encoding declarations.
 
     if apa_tweaks:
+        text = sub1(r'(<macro name="container-title">.+?) text-case="title"',
+            r'\1', text, flags = DOTALL)
+          # Prevent automatic case changes of the container
+          # title, in case it has internal capitalization (e.g.,
+          # "NeuroReport").
         text = sub1(r'(<macro name="secondary-contributors">\s+<choose>\s+<if type=")',
             r'\1book ', text)
           # Prevent an edited book from having its editors
