@@ -107,13 +107,6 @@ def bib(style_path,
                                ("" if mo.group(1).islower() else "-") +
                                mo.group(1),
                            a['given'])
-            # Abbreviate a long list of authors with an ellipsis
-            # and the final author.
-            if 'author' in d and len(d['author']) > 7:
-                d['author'] = (
-                    d['author'][0:6] +
-                    [{'given': '', 'family': '⣥<ellipsis>⣥'}] +
-                    d['author'][-1:])
 
     bibliography = CitationStylesBibliography(
         style,
@@ -124,8 +117,7 @@ def bib(style_path,
     def sort_key_f(item):
         ref = item.reference
         names = [(name['family'].lower(), name['given'][0].lower() if 'given' in name else '')
-            for name in ref.get('author') or ref.get('editor')
-            if name.family != '⣥<ellipsis>⣥']
+            for name in ref.get('author') or ref.get('editor')]
         return (names, ref['issued']['year'],
             title_sort_key(ref),
             ref['page']['first'] if 'page' in ref else '')
@@ -155,10 +147,6 @@ def bib(style_path,
             # If there are two authors and the first is a mononym,
             # remove the comma after it.
             s = sub('^([^.,]+), &', r'\1 &', s)
-            # Make "p." into "pp." when more than one page is cited.
-            s = sub(r'(\W)p\. (\S+[,–])', r'\1pp. \2', s)
-            # Replace the ellipsis placeholder.
-            s = s.replace('⣥<ellipsis>⣥, ., &', '…')
         bibl[i] = s
 
     if return_cites_and_keys:
@@ -231,12 +219,6 @@ def get_style(style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_gi
             r'\1book ', text)
           # Prevent an edited book from having its editors
           # mentioned twice.
-        text = sub1(
-             '(<bibliography.+?) et-al-min="8" et-al-use-first="7"',
-             r'\1', text)
-          # We'll use our own hacky way to abbreviate the author
-          # list, in order to get the ellipsis-followed-by-final-
-          # author style required by APA.
         text = sub1(r'(<macro name="locators">\s+<choose>\s+)<if (.+?)</if>',
             r'''\1
             <if type="speech">
