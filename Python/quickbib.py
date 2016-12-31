@@ -29,10 +29,6 @@ def bib(style_path,
         ds,
         return_cites_and_keys = False,
         formatter = "chocolate",
-        dumb_quotes = True,
-          # Turning this off won't educate any straight quotes in
-          # the data, but leaving it on will stupefy all the
-          # smart quotes in the output.
         apa_tweaks = True,
         # The below options are ignored unless apa_tweaks is on.
         always_include_issue = False,
@@ -133,8 +129,6 @@ def bib(style_path,
         # Fix spacing and punctuation issues.
         s = s.replace('  ', ' ')
         s = sub(r'([.!?…])\.', r'\1', s)
-        if dumb_quotes:
-            s = s.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
         if apa_tweaks:
             if formatter is citeproc.formatter.html or formatter is chocolate:
                 # Italicize the stuff between a journal name and a volume
