@@ -22,11 +22,11 @@ def j(o = None, **field_kws):
             title = 'Resonance light scattering: A new technique for studying chromophore aggregation',
             container_title = 'Science',
             volume = '269',
-            page = '935–9',
+            page = '935–939',
             DOI = '10.1126/science.7638615'),
         field_kws)
     if o is None: o = {}
     return f(fields, **o)
 
 def test_journal_article():
-    assert j() == 'Pasternack, Robert F., and Peter J. Collins. "Resonance Light Scattering: A New Technique for Studying Chromophore Aggregation". <i>Science</i> 269 (1995): 935–9. Web.'
+    assert j() == 'Pasternack, Robert F., and Peter J. Collins. "Resonance Light Scattering: A New Technique for Studying Chromophore Aggregation". <i>Science</i> 269 (1995): 935–939. Web.'

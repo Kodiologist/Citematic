@@ -55,7 +55,7 @@ Installation
 
 #. Install ``Get.pm``, ``QuickBib.pm``, and ``COinS.pm`` themselves, as by putting them in ``/etc/perl/Citematic``.
 
-#. Ensure you have Python 3, then get and install (as by putting it in ``/usr/lib/python3/dist-packages``) citeproc-py_ and its own dependencies, as well as the files ``quickbib.py`` and ``citematic_coins.py`` provided by Citematic. The version of citeproc-py with which this version of Citematic has been tested is commit cabe7a6e509a9bdd8ff781e4b5b8306e4b84821f (dated 21 Dec 2013).
+#. Ensure you have Python 3, then get and install (as by putting it in ``/usr/lib/python3/dist-packages``) citeproc-py_ and its own dependencies, as well as the files ``quickbib.py`` and ``citematic_coins.py`` provided by Citematic. The version of citeproc-py with which this version of Citematic has been tested is 0.3.0.
 
 #. Download `apa.csl`_ (and, if you'll be running quickbib's one test for it, `mla.csl`_) and set the environment variable ``APA_CSL_PATH`` to where you put it (ditto ``MLA_CSL_PATH``).
 
@@ -104,7 +104,7 @@ Citematic contains some code in modified form to which the below copyrights and 
 License for citeproc-py
 ----------------------------------------
 
-Copyright 2011-2012 Brecht Machiels. All rights reserved.
+Copyright 2011-2013 Brecht Machiels. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

@@ -8,10 +8,8 @@ from random import random
 import json
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography
-from citeproc import NAMES, DATES
-from citeproc.source import Reference, Name, Date, DateRange, Pages
 from citeproc.source import Citation, CitationItem
-from citeproc.string import String
+from citeproc.source.json import CiteProcJSON
 import citeproc.formatter.plain
 import citeproc.formatter.html
 
@@ -119,7 +117,7 @@ def bib(style_path,
 
     bibliography = CitationStylesBibliography(
         style,
-        {ref.key: ref for ref in parse_references(ds)},
+        CiteProcJSON(ds),
         formatter)
     cites = [ Citation([CitationItem(d['id'])]) for d in ds ]
     for c in cites: bibliography.register(c)
@@ -182,7 +180,7 @@ def sub1(*p, **kw):
 
 def title_sort_key(d):
     s = d.get('title') or d.get('container-title')
-    return sub1(r'^a\s+|^the\s+', '', s.lower())
+    return sub1(r'^a\s+|^the\s+', '', str(s).lower())
 
 class chocolate(object):
     "A formatter that isn't quite plain."
@@ -271,57 +269,6 @@ def get_style(style_path, apa_tweaks, include_isbn, url_after_doi, abbreviate_gi
       # including apa.csl, appear not to be valid.
     style_cache[idx] = style
     return style
-
-def parse_references(refs):
-    def f(ref_):
-        ref = deepcopy(ref_)
-        ref_data = {}
-        ref_key = ref.pop('id').lower()
-          # We need a lower() here because of the one
-          # in the constructor of CitationItem.
-        ref_type = ref.pop('type')
-        for key, value in ref.items():
-            python_key = key.replace('-', '_')
-            if python_key in NAMES:
-                value = [Name(**name_data) for name_data in value]
-            elif python_key in DATES:
-                value = parse_date(value)
-            elif python_key == 'shortTitle':
-                python_key = 'title_short'
-            elif python_key == 'page':
-                value.replace('–', '-')
-                if '-' in value:
-                    first, last = value.split('-')
-                    value = Pages(first = first, last = last)
-                else:
-                    value = Pages(first = value)
-            else:
-                value = String(value)
-            ref_data[python_key] = value
-        return Reference(ref_key, ref_type, **ref_data)
-    return list(map(f, refs))
-
-def parse_date(data):
-    def parse_single_date(date):
-        date_data = {}
-        try:
-            for i, part in enumerate(('year', 'month', 'day')):
-                date_data[part] = date[i]
-        except IndexError:
-            pass
-        return date_data
-
-    dates = list(map(parse_single_date, data['date-parts']))
-
-    circa = data.get('circa', 0) != 0
-
-    if len(dates) > 1:
-        return DateRange(
-            begin = Date(**dates[0]),
-            end = Date(**dates[1]),
-            circa = circa)
-    else:
-        return Date(circa = circa, **dates[0])
 
 # ------------------------------------------------------------
 # Mainline code
