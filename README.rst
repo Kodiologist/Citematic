@@ -1,6 +1,6 @@
-Citematic::Get uses EBSCOhost_, the `Library of Congress`_, IDEAS_ (i.e., RePEc_), and CrossRef_ to get bibliographic data for search terms. In the case of EBSCOhost, it also tries to get full-text URLs. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with the web interfaces.
+Citematic::Get uses Google Scholar, the Library of Congress's online catalog, CrossRef_, and a variety of other websites (including PubMed, APA PsycNET, JSTOR, and ERIC) to get bibliographic data for search terms, completely avoiding paywalls. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with web interfaces. It does elaborate work to get exactly correct APA style (by both cleaning the input bibliographic data and tweaking the output references-section entries), and has test cases for over 100 items, including journal articles, book chapters, and entire books.
 
-The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, Citematic::Get also has a function ``digest_ris`` for parsing `RIS`_, and the Python module "citematic_coins" has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
+The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style, because neither CSL nor citeproc-py can get it 100% right with only their built-in features). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, Citematic::Get also has a function ``digest_ris`` for parsing `RIS`_, and the Python module "citematic_coins" has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
 
 .. __: https://github.com/citation-style-language/schema/blob/master/csl-data.json
 .. __: http://zotero.org/styles
@@ -16,7 +16,7 @@ Examples
 
     Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. <i>Psychological Review, 84</i>, 231–259. doi:10.1037/0033-295X.84.3.231
 
-* ``$ cite 10.1080/00224545.1979.9933632``
+* ``$ cite 10.1080/00224545.1979.9933632`` (a DOI)
 
     Zak, I. (1979). Modal personality of young Jews and Arabs in Israel. <i>Journal of Social Psychology, 109</i>, 3–10. doi:10.1080/00224545.1979.9933632
 
@@ -24,19 +24,23 @@ Examples
 
     Yates, J. F., Veinott, E. S., & Patalano, A. L. (2003). Hard decisions, bad decisions: On decision quality and decision aiding. In S. L. Schneider & J. Shanteau (Eds.), <i>Emerging perspectives on judgment and decision research</i> (pp. 1–63). New York, NY: Cambridge University Press.
 
-* ``$ cite 2000 -t 'programming perl'``
+* ``$ cite 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2937254'``
+
+    Swihart, B. J., Caffo, B., James, B. D., Strand, M., Schwartz, B. S., & Punjabi, N. M. (2010). Lasagna plots: A saucy alternative to spaghetti plots. <i>Epidemiology, 21</i>, 621–625. doi:10.1097/EDE.0b013e3181e5b06a
+
+* ``$ cite --book 2000 -t 'programming perl'``
 
     Wall, L., Christiansen, T., & Orwant, J. (2000). <i>Programming Perl</i> (3rd ed.). Beijing, PRC: O'Reilly.
 
-* ``$ cite 9780521431460``
+* ``$ cite 0394720245`` (an ISBN; implies ``--book``)
 
-    Huddleston, R. D., & Pullum, G. K. (2002). <i>The Cambridge grammar of the English language</i>. Cambridge, UK: Cambridge University Press.
+    Caro, R. A. (1974). <i>The power broker: Robert Moses and the fall of New York</i>. New York, NY: Vintage Books.
 
 * ``$ cite arxiv:1504.00641``
 
     Patel, A. B., Nguyen, T., & Baraniuk, R. G. (2015). <i>A probabilistic theory of deep learning</i>. Retrieved from http://arxiv.org/abs/1504.00641
 
-You can put bounds on the year, rather than searching for an exact year, by using syntax like this:
+You can put bounds on the year, rather than searching for an exact year, by using syntax like this (not supported for Library of Congress searches):
 
 - ``1990..`` — Items published in 1990 or later
 - ``..2000`` — Items published in 2000 or earlier
@@ -49,9 +53,11 @@ Installation
 
 #. Ensure you have the following Perl modules. You can install modules with ``sudo cpan install WWW::Mechanize`` or ``sudo cpanm WWW::Mechanize`` (using cpanminus_) or your package manager.
 
-   * Citematic::Get requires: Business::ISBN File::Slurp HTML::Entities HTTP::Cookies JSON LWP::Simple List::Util Text::Aspell URI::Escape WWW::Mechanize XML::Simple parent
-   * Citematic::QuickBib requires: IPC::Run JSON 
+   * Citematic::Get requires: Business::ISBN File::Slurp HTML::Entities HTTP::Cookies::Mozilla HTTP::Request::Common JSON List::Util LWP::Simple Text::Aspell URI URI::Escape XML::Simple parent
+   * Citematic::QuickBib requires: IPC::Run JSON
    * ``cite`` requires: File::Slurp Getopt::Long::Descriptive
+
+#. You'll also need Firefox or another Mozilla browser, because Citematic uses Mozilla cookies to pass robot checks.
 
 #. Install ``Get.pm``, ``QuickBib.pm``, and ``COinS.pm`` themselves, as by putting them in ``/etc/perl/Citematic``.
 
@@ -59,7 +65,7 @@ Installation
 
 #. Download `apa.csl`_ (and, if you'll be running quickbib's one test for it, `mla.csl`_) and set the environment variable ``APA_CSL_PATH`` to where you put it (ditto ``MLA_CSL_PATH``).
 
-#. Copy the example configuration file to ``$HOME/.citematic`` and edit it. `Registering for CrossRef`_ is easy. Getting access to EBSCOhost is harder. There's a good chance that your school (if you're using Citematic, you must be a student or an academic, right? right?) or your local library has an institutional subscription that you can use from home. You may be able to log in with a single HTTP ``POST`` (the Firefox extension `Tamper Data`_ is helpful for figuring out how), in which case editing ``ebsco_login`` will be particularly easy. And if your IP address is already authenticated, then you don't need to log in at all, and you can set ``ebsco_login`` to a no-op like ``1``. (Perl programmers note that ``$_`` refers to a WWW::Mechanize object in this context.)
+#. Copy the example configuration file to ``$HOME/.citematic`` and edit it. You'll need to `register for CrossRef`_ before you can use your email address for ``crossref_email``.
 
 Running the tests
 ============================================================
@@ -73,23 +79,9 @@ citematic_coins has no real test suite, but see ``coins_demo.py``.
 Caveats
 ============================================================
 
-If you look at the code of Citematic::Get, you'll see that a great many cases need to be covered in order to parse all the idiosyncratic record formats. You'd hope that all that data would be systematically structured, huh? It isn't really, hence regexes. I've done a pretty good job (if I do say so myself) of covering psychology articles (particularly those represented in PsycINFO and PsycARTICLES), but more regexes will no doubt be needed if you plunge further into the depths of, say, MEDLINE. And while I implemented support for IDEAS so I can get economics articles, fields like mathematics and chemistry will probably require more databases. In short, I wrote this program for my own use, so I took pains to support the sort of articles I read (in experimental social psychology and JDM), as well as books (the Library of Congress covers pretty much every book), but the further your interests are from mine, the more work you'd have to do to make Citematic::Get useful. Patches are more than welcome; I would love for Citematic to be as well-rounded in scraping as it is in formatting.
+The bibliographic data that exists is imperfect and only so much can be done automatically. For example, when the title of an article is provided in title case, we need to convert it to sentence case for APA style, but it's hard to tell whether some words should capitalized or uncapitalized (e.g., "China" is the word for the country but "china" is a synonym for "ceramic"). And in writing the test suite, I've found that bibliographic data contains a non insignificant number of outright errors. I've implemented some corrections for specific databases and specific journals, but not specific articles.
 
-Another thing: every query is cached, but the cache never times out. You'll need to delete the cache file or edit it by hand (or in the case of EBSCO, use the ``-b`` option to ``cite``) in order to see any updates to the databases.
-
-Will I get in trouble for using this program?
-============================================================
-
-So far as I can tell from `EBSCOhost's terms of use`_, `St. Louis Fed's legal-notices page`_, and `CrossRef's terms and conditions`_, no. You will notice that Citematic::Get does not use Google Scholar or Scirus, which forbid automated queries.
-
-There may be some restrictions on what you can do with the data you get, which apply just the same as if you'd used the web interface (e.g., EBSCO's terms say something about "non-commercial use"), but given that fair-use laws apply, I doubt you'll have any problems.
-
-And, of course, since this is mostly done with web scraping, server-side changes could suddenly render Citematic::Get inoperable.
-
-Why didn't you use Z39.50?
-============================================================
-
-I couldn't get it to work.
+Every query is cached, but the cache never times out. You'll need to delete the cache file or edit it by hand in order to see any updates to the databases.
 
 Why did you call it "Sittymatic"?
 ============================================================
@@ -128,28 +120,20 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 License for Citematic
 ----------------------------------------
 
-Citematic is copyright 2011–2016 Kodi Arfer.
+Citematic is copyright 2011–2017 Kodi Arfer.
 
 Citematic is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 Citematic is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the `GNU General Public License`_ for more details.
 
-.. _EBSCOhost: http://ebscohost.com/
-.. _`Library of Congress`: http://catalog2.loc.gov/
-.. _IDEAS: http://ideas.repec.org/
-.. _RePEc: http://repec.org
 .. _`Citation Style Language`: http://citationstyles.org/downloads/specification.html
 .. _RIS: https://en.wikipedia.org/wiki/RIS_%28file_format%29
 .. _`ContextObjects in Spans`: http://ocoins.info/
 .. _`apa.csl`: https://github.com/citation-style-language/styles/blob/master/apa.csl
 .. _`mla.csl`: https://github.com/citation-style-language/styles/blob/master/mla.csl
 .. _CrossRef: http://crossref.org/
-.. _`registering for CrossRef`: http://www.crossref.org/requestaccount/
+.. _`register for CrossRef`: http://www.crossref.org/requestaccount/
 .. _`pytest`: http://pytest.org/
-.. _`EBSCOhost's terms of use`: http://support.epnet.com/ehost/terms.html
-.. _`St. Louis Fed's legal-notices page`: http://research.stlouisfed.org/legal.html
-.. _`CrossRef's terms and conditions`: http://www.crossref.org/requestaccount/termsandconditions.html
 .. _cpanminus: https://github.com/miyagawa/cpanminus
-.. _`Tamper Data`: https://addons.mozilla.org/en-US/firefox/addon/tamper-data/
 .. _citeproc-py: https://github.com/brechtm/citeproc-py
 .. _`GNU General Public License`: http://www.gnu.org/licenses/

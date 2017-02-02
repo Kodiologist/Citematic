@@ -8,16 +8,13 @@ use strict;
 use Citematic::RIS;
 
 use Encode;
-use List::Util 'first';
-use LWP::Simple ();
-use WWW::Mechanize;
-use HTTP::Message 6.11;
-  # We don't use this directly, but it's a dependency of
-  # WWW::Mechanize. With earlier versions, there may be encoding
-  # bugs in Mech output.
-use HTTP::Cookies;
+use List::Util 'first', 'min';
+use HTTP::Request::Common;
+use URI;
 use URI::Escape;
 use HTML::Entities 'decode_entities';
+use LWP::Simple ();
+use HTTP::Cookies::Mozilla;
 use Business::ISBN;
 use Text::Aspell;
 use JSON qw(from_json to_json);
@@ -40,43 +37,43 @@ sub tail {@_[1..$#_]}
 
 -e CONFIG_PATH or die 'No configuration file found at ', CONFIG_PATH;
 
-our %config =
-    tail split /(?:\A|\n{2,})\[(.+?)\]\n/, slurp CONFIG_PATH;
+our %config = %{from_json slurp CONFIG_PATH};
 
 -e $config{storage_dir} or mkdir $config{storage_dir} or die "Couldn't create $config{storage_dir}: $!";
 $config{storage_dir} =~ s!/\z!!;
 
-my $ebsco_cookie_jar_path = "$config{storage_dir}/ebsco-cookies";
 my $cache_path = "$config{storage_dir}/cache.json";
 
+my $orig_cache_text;
 my $global_cache;
-   {my $t = -e $cache_path && slurp $cache_path;
-    $global_cache = from_json($t || '{}', {utf8 => 1});
+   {$orig_cache_text = -e $cache_path && slurp $cache_path;
+    $global_cache = from_json($orig_cache_text || '{}', {utf8 => 1});
     END
-       {my $new_t = to_json $global_cache,
-            {utf8 => 1, pretty => 1, canonical => 1};
-        $t and $new_t eq $t or
-           write_file $cache_path, $new_t;}}
+       {write_cache();}}
 
-my $ebsco_login = eval sprintf
-    'sub { $_ = $_[0]; %s %s }', $config{ebsco_login}, "\n";
-$@ and die "Error evaluating ebsco_login: $@";
+sub write_cache
+   {my $new_t = to_json $global_cache,
+        {utf8 => 1, pretty => 1, canonical => 1};
+    $orig_cache_text and $new_t eq $orig_cache_text or
+        write_file $cache_path, $new_t;}
 
 # ------------------------------------------------------------
 # * General
 # ------------------------------------------------------------
 
+$LWP::Simple::ua->agent('Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:49.0)');
+$LWP::Simple::ua->cookie_jar(HTTP::Cookies::Mozilla->new(
+    file => $config{mozilla_cookies_path},
+    autosave => 1));
+
 our $verbose;
 our $debug;
-our $bypass_ebsco_cache;
 
-my $ms_re = qr/(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Spring|Summer|Fall|Autumn|Winter)/;
-  # A month or season
-my $suffix_re = qr/(?:Jr\.?|Sr\.?|III\b|IV\b|VI{0,3}\b(?!\.)|I?X\b(?!\.))/;
+my $suffix_re = qr/(?:Jr\.?|Sr\.?|III\b|IV\b)/;
+  # I don't try to capture Roman numerals of V or higher because
+  # otherwise, an initial of V is likely to be mistaken for a suffix.
 
 my $speller = new Text::Aspell;
-
-$LWP::Simple::ua->agent('Citematic');
 
 sub note
    {$verbose and print STDERR @_, "\n";}
@@ -133,6 +130,32 @@ sub query_url
         while @_;
     $prefix . '?' . join '&', @a;}
 
+
+my %last_got;
+sub lwp_get
+   {my $url = shift;
+    my $domain = URI->new($url)->host;
+    my $to_wait = 3 + rand();
+    if (time() - ($last_got{$domain} || 0) <= $to_wait)
+      # Don't hit the same domain too rapidly.
+       {progress 'Sleeping';
+        sleep(time() - $last_got{$domain} + $to_wait);}
+    progress "Getting $url ";
+    my $result = $domain =~ /scholar\.google\.com/
+      ? do
+            # LWP doesn't seem to choose the right cookies to send.
+            # So we have to do it manually. (You can imagine how much
+            # fun I had hunting down this bug.)
+           {my $request = HTTP::Request::Common::GET($url);
+            $LWP::Simple::ua->prepare_request($request);
+            $request->header('Cookie', get_gscholar_cookie());
+            $LWP::Simple::ua->send_request($request)->decoded_content}
+      : LWP::Simple::get($url);
+    $last_got{$domain} = time;
+    defined $result
+      ? $result
+      : die "lwp_get failed: $url"}
+
 sub fix_allcaps_word
    {my $all_low = lc shift;
     if ($speller->check($all_low))
@@ -153,7 +176,11 @@ sub fix_allcaps_name
 sub format_suffix
    {my $str = shift;
     $str =~ s/\A([SJ]r)\.?/$1./;
-    $str}
+    return
+        $str eq '1st' ? 'I'
+      : $str eq '2nd' ? 'II'
+      : $str eq '3rd' ? 'III'
+      : $str}
 
 sub digest_author
    {my $str = shift;
@@ -169,7 +196,7 @@ sub digest_author
             and @suffix = (suffix => format_suffix $1);
         $str =~ / \A (.+?), \s* (.+?) (?: < | , | \z) /x or die;
         my ($surn, $rest) = ($1, $2);
-        $surn =~ /[[:lower:]]/
+        do {(my $surn_no_mc = $surn) =~ s/\Ama?c//i; $surn_no_mc =~ /[[:lower:]]/}
             or $surn = fix_allcaps_name $surn;
         # Add periods after initials, if necessary.
         $rest =~ /\A[[:upper:]](?: [[:upper:]])*\z/
@@ -191,10 +218,15 @@ sub digest_author
                 split /\s/, $str;
         my ($rest, $surn) = runsub
            {my @ws = split /\s+/, $str;
+            # Try to split the name into a given name and surname
+            # by ending the given name once the current word has
+            # a period and the next doesn't.
             foreach my $i (0 .. $#ws - 1)
                {if ($ws[$i] =~ /\.\z/ and $ws[$i + 1] !~ /\.\z/)
                    {return [@ws[0 .. $i]], [@ws[$i + 1 .. $#ws]];}}
-            return [$ws[0]], [@ws[1 .. $#ws]];};
+            # Otherwise, treat the last word as the surname and
+            # the rest as given.
+            return [@ws[0 .. $#ws - 1]], [$ws[$#ws]];};
         #$str =~ /\A (\S) \S+ ((?: \s \S\.)*) \s+ (\S+) \z/x;
         $_ = join ' ', @$_ foreach $surn, $rest;
         χ family => $surn, given => $rest;}}
@@ -202,6 +234,8 @@ sub digest_author
 sub digest_journal_title
    {my $j = shift;
     $j =~ s/\AThe //;
+    $j =~ s/\s*\([^)]+\)\s*\z//;
+    $j =~ s/ = .+//;
 
     $j =~ /Proceedings of the National Academy of Sciences of the United States of America/i
         and return 'Proceedings of the National Academy of Sciences';
@@ -219,7 +253,7 @@ sub digest_journal_title
         and return 'The American Statistician';
     $j =~ /ANNALS of the American Academy of Political and Social Science/i
        and return 'The ANNALS of the American Academy of Political and Social Science';
-    $j =~ /\AJournal of Psychology:/i
+    $j =~ /\AJournal of Psychology(?:\z|:)/i
         and return 'The Journal of Psychology: Interdisciplinary and Applied';
     $j =~ /PLOS ONE/i
         and return 'PLOS ONE';
@@ -229,12 +263,13 @@ sub digest_journal_title
        {$j =~ s/and/&/;}
     else
        {$j =~ s/&/and/;}
+    $j =~ s/(\A| )(\w)/$1\u$2/g;
     $j =~ s/\b(An|And|As|At|But|By|Down|For|From|In|Into|Nor|Of|On|Onto|Or|Over|So|The|Till|To|Up|Via|With|Yet)\b/\l$1/g;
     if ($j =~ /\AJournal of Experimental Psychology/i or
         $j =~ /\AAmerican Economic Journal/i)
-       {$j =~ s/\./:/}
+       {$j =~ s/\./:/;}
     else
-       {$j =~ s![/:.].+!!}
+       {$j =~ s!\s*[/:.].+!!;}
     $j;}
 
 sub expand_last_page_number
@@ -251,6 +286,8 @@ sub digest_pages
 
 sub format_nonjournal_title
    {my $s = shift;
+    # Change nonbreaking spaces to regular spaces.
+    $s =~ s/\x{A0}/ /g;
     if ($s =~ / / and
         matches(qr/\b[[:upper:]]/, $s) /
         matches(qr/\b[[:alpha:]]/, $s) > 1/2)
@@ -264,11 +301,15 @@ sub format_nonjournal_title
                    {$lower;}
                 else
                    {my $sug = ($speller->suggest($lower))[0];
-                    lc($sug) eq lc($lower) ? $sug : $lower;}}eg;}
+                    lc($sug) eq lc($lower) ? $sug : $lower;}}eg;
+            # Make sure the first letter of the title is capitalized.
+            $s =~ s{([[:alpha:]])} {uc $1}e;}
         else
           # THE TITLE IS IN ALL CAPS.
            {$s =~ s {([^- .?!]+)} {fix_allcaps_word $1}eg;
-            $s = ucfirst $s;}}
+            $s = ucfirst $s;}
+        # Capitalize Roman numerals.
+        $s =~ s/\b(i{1,3}|iv|v|vi{1,3}|ix)\b/uc($1)/ige;}
     # Insert a space and capitalize after (but remove spaces
     # before) colons and question marks.
     $s =~ s/\s*([:?])\W+(\w)/$1 . ' ' . uc $2/ge;
@@ -281,6 +322,8 @@ sub format_nonjournal_title
     # Space ellipses correctly.
     $s =~ s/(\w)\s*…/$1…/g;
     $s =~ s/…(\w)/… $1/g;
+    # Remove any trailing periods.
+    $s =~ s/\.+\z//;
     $s;}
 
 sub format_publisher
@@ -299,12 +342,16 @@ sub format_place
     $s =~ s{ \b ( (?: [[:upper:]] \.){2,} ) }
         {join '', $1 =~ /[[:upper:]]/g}ex;
     $s =~ s/\A[^,]+,[^,]+\K,.+//;
+    $s =~ s/\.//g;
+    $s =~ s/Calif/CA/g;
     $s eq 'New York' ? 'New York, NY'
       : $s eq 'Boston' ? 'Boston, MA'
       : $s eq 'Minneapolis' ? 'Minneapolis, MN'
+      : $s eq 'New Haven' ? 'New Haven, CT'
       : $s eq 'London' ? 'London, UK'
       : $s eq 'Berlin' ? 'Berlin, Germany'
       : $s eq 'Beijing' ? 'Beijing, PRC'
+      : $s eq 'Oslo' ? 'Oslo, Norway'
       : $s}
 
 sub format_isbn
@@ -315,18 +362,38 @@ sub format_isbn
 
 sub citation
    {my %h = @_;
-    defined $h{$_} or delete $h{$_}
-        foreach keys %h;
+    foreach (keys %h)
+       {if (defined $h{$_})
+           {if (ref $h{$_})
+              {}
+            else
+              {$h{$_} =~ tr/‘’“”/''""/;}}
+        else
+           {delete $h{$_};}}
     \%h;}
 
 sub journal_article
    {my ($authors, $year, $article_title, $journal, $volume, $issue,
         $first_page, $last_page, $doi, $url) = @_;
+
+    $article_title = format_nonjournal_title $article_title;
+    $issue =~ s/Suppl\.?/Suppl./;
+    $issue =~ /\A(\d+)-(\d+)\z/ and $2 == $1 + 1
+        and $issue = "$1, $2";
+    $issue =~ s/p\d.*//;
+    $journal =~ /\AThe Journals of Gerontology/
+        and $volume =~ s/[A-Z]\z//;
+    $journal eq 'PLOS ONE'
+      # We don't need all this stuff for a purely electronic journal.
+        and do {undef $volume; undef $issue; undef $first_page; undef $last_page;};
+    !$url and $journal eq 'Judgment and Decision Making'
+        and $url = sjdm_url_from_title($article_title);
+
     citation
         type => 'article-journal',
         author => $authors,
         issued => {'date-parts' => [[$year]]},
-        title => format_nonjournal_title($article_title),
+        title => $article_title,
         'container-title' => $journal,
         volume => $volume,
         issue => $issue,
@@ -343,7 +410,7 @@ sub book_chapter
         issued => {'date-parts' => [[$year]]},
         title => format_nonjournal_title($chapter_title),
         editor => $editors,
-        'container-title' => $book,
+        'container-title' => format_nonjournal_title($book),
         volume => $volume,
         edition => $edition,
         page => digest_pages($first_page, $last_page),
@@ -382,13 +449,15 @@ sub manuscript
 
 sub query_crossref
    {my %p = @_;
+    $p{id}
+        and $p{id} =~ s/^doi://;
     my $url = query_url 'http://www.crossref.org/openurl/',
         pid => $config{crossref_email},
         noredirect => 'true',
-        map {$_ => $p{$_}} sort keys %p;
+        map {$_ => lc($p{$_})} sort keys %p;
     progress 'Trying CrossRef';
     my $x = $global_cache->{crossref}{$url} ||= XMLin
-        LWP::Simple::get($url),
+        lwp_get($url),
         ForceArray => ['contributor', 'year'],
         GroupTags => {contributors => 'contributor'};
     $x = $x->{query_result}{body}{query};
@@ -411,7 +480,7 @@ sub query_crossref
 sub from_doi
    {η query_crossref id => $_[0];}
 
-sub get_doi
+sub get_doi_for_journal_article
    {my ($year, $journal, $article_title, $first_author_surname, $volume, $first_page) = @_;
 
     my %record = η
@@ -430,6 +499,18 @@ sub get_doi
 
     return $record{doi};}
 
+sub get_doi_for_book
+   {my ($year, $book_title, $first_surname) = @_;
+
+    my %record = η
+       (query_crossref
+           (aulast => $first_surname,
+            date => $year,
+            title => $book_title)
+        || return undef);
+
+    return $record{doi};}
+
 sub digest_crossref_contributors
    {σ
     map
@@ -440,9 +521,164 @@ sub digest_crossref_contributors
             family => $_->{surname}}
     @{shift()}}
 
+sub crossref_journal_article
+   {my $doi = shift;
+    my %d = from_doi($doi);
+    journal_article
+        digest_crossref_contributors($d{contributors}),
+        $d{year}, $d{article_title}, digest_journal_title($d{journal_title}),
+        $d{volume}, $d{issue}, $d{first_page}, $d{last_page},
+        $doi, undef;}
+
 # ------------------------------------------------------------
-# * EBSCOhost
+# * RIS
 # ------------------------------------------------------------
+
+sub digest_ris
+   {my $ris = Citematic::RIS->new(shift);
+
+    $ris->ris_type eq 'JOUR'
+        or die sprintf q(Can't handle RIS type "%s"), $ris->ris_type;
+
+    my $authors = σ map {digest_author $_}
+        (ref $ris->authors ? α $ris->authors : $ris->authors);
+    my ($year) = ($ris->Y1 || $ris->PY) =~ /(\d\d\d\d)/;
+    my $title = $ris->TI || $ris->T1;
+    my $journal = digest_journal_title(
+        $ris->JO || $ris->JF || $ris->T2 || $ris->J2);
+    my ($fpage, $lpage) =
+        $ris->starting_page =~ /[-–]/
+      ? split /[-–]/, $ris->starting_page
+      : ($ris->starting_page, $ris->ending_page);
+    my $volume = $ris->volume || $ris->VN;
+    my $issue = $ris->issue || $ris->M1;
+    foreach ($volume, $issue, $fpage, $lpage)
+       {defined or next;
+        s/\s+\z//;
+        s/\A0+([1-9][0-9]*)\z/$1/;}
+
+    my $doi = $ris->doi;
+    if (!$doi and $ris->M3
+            and $ris->M3 =~ /\A10\./ || $ris->M3 =~ /\bdoi\b/)
+       {$doi = $ris->M3;}
+    $doi
+        and ($doi) = $doi =~ /\b(10\.\S+)/;
+    $doi ||= get_doi_for_journal_article(
+        $year, $journal, $title,
+        $authors->[0]{family},
+        $volume, $fpage);
+
+    my $url;
+    if ($ris->UR and $ris->UR =~ m!\Ahttp://projecteuclid.org/!)
+      # Keep Project Euclid URLs. Most of its journals are
+      # open-access, so the URLs are convenient.
+       {$url = $ris->UR;}
+
+    journal_article
+        $authors, $year, $title, $journal,
+        $volume, $issue,
+        $fpage, $lpage,
+        $doi, $url;}
+
+# ------------------------------------------------------------
+# * HTML meta tags
+# ------------------------------------------------------------
+
+sub get_html_meta_tags
+   {my $url = shift;
+    my $page = lwp_get($url);
+    my %h = map {decode_entities $_}
+        $page =~ m!<meta\s+(?:name|property)="([^"]+)"\s*content="(.+?)"\s*/?\s*>!g;
+    $h{citation_title}
+        or die 'Bad get_html_meta_tags page';
+    foreach (keys %h)
+       {$h{s/^og:/og_/r} = delete $h{$_};}
+    $h{citation_author} = σ map {decode_entities $_}
+        $page =~ /<meta\s+(?:name|property)="citation_authors?"\s*content="([^"]+)/g;
+    if ($page =~ /<title>PsycNET/)
+       {$page =~ /<div id="rdcSource">\s+(.+?)\s+</s or die;
+        $h{psycnet_source} = decode_entities $1;}
+    \%h;}
+
+sub digest_html_meta_tags
+   {my %h = %{$_[0]};
+
+    my $authors = σ
+        map {digest_author $_}
+        map {/\|/ ? split /\|/ : split qr/;\s+/}
+        α $h{citation_author};
+    ($h{citation_publication_date} || $h{citation_date}) =~ /(\d{4})/ or die;
+    my $year = $1;
+
+    if (!$h{og_type} or $h{og_type} eq 'Journal Article' or $h{og_type} eq 'Comment/Reply')
+       {my ($volume, $issue, $first_page, $last_page) =
+            @h{qw(citation_volume citation_issue citation_firstpage citation_lastpage)};
+        if (!$volume or !$issue or !$first_page or !$last_page)
+           {my @a = $h{psycnet_source}
+              ? $h{psycnet_source} =~ /Vol (\d+)\((\d+(?:-\d+)?)[^)]*\), [^,]+, (\d+)-(\d+)/
+              : $h{'journal citation'} =~ /\A(\d+), (\d+), (\d+)(?:-(\d+))?,/;
+            @a or die;
+            $volume ||= $a[0];
+            $issue ||= $a[1];
+            $first_page ||= $a[2];
+            $last_page ||= $a[3];}
+        $last_page =~ s/;.+//;
+        $last_page = expand_last_page_number $first_page, $last_page;
+        my $journal_title = digest_journal_title(
+            $h{citation_journal_title} ||
+            do {$h{psycnet_source} =~ /(.+),\s+Vol/ or die; $1});
+        my $doi = $h{citation_doi} || get_doi_for_journal_article
+            $year, $journal_title, $h{citation_title},
+            $authors->[0]{family},
+            $volume, $first_page;
+        return journal_article
+            $authors, $year, $h{citation_title},
+            $journal_title, $volume, $issue,
+            $first_page, $last_page, $doi, undef;}
+
+    elsif ($h{og_type} eq 'Chapter')
+       {my ($isbn) = ($h{citation_isbn} =~ /(\S+)/);
+        $h{psycnet_source} =~ m{ \A
+            (?<editors> .+?) \s+
+            \( \d{4} \) \. \s+
+            (?<book_title> .+?)
+            (?: , \s (?<edition> \d+ [a-z]{2}) \s ed\. ,)?
+            (?:
+                , \s+ Vol\. \s+ (?<volume> \d+)
+                (?: : \s [^.]+ )?
+                \.)?
+            \s* , \s+
+            \( pp\. \s+
+                (?<first_page> \d+) - (?<last_page> \d+) \) \. \s+
+            (?<place> .+?) : \s+
+            (?<publisher> [^,]+) }x or die 'chapter source';
+        my %src = %+;
+        my $editors = σ map {digest_author $_}
+            $src{editors} =~ /([[:alpha:]].+?)\s+\(Ed\)/g;
+        return book_chapter
+            $authors, $year, $h{citation_title},
+            $editors, $src{book_title}, $src{volume},
+            $src{edition}, $src{first_page}, $src{last_page},
+            $src{place}, $src{publisher}, $isbn;}
+
+    else
+       {die "Bad og:type $h{og_type}"}}
+
+# ------------------------------------------------------------
+# * Google Scholar
+# ------------------------------------------------------------
+
+sub get_gscholar_cookie
+  {my ($nid, $gsp);
+   $LWP::Simple::ua->cookie_jar->scan(sub
+      {my ($version, $key, $val, $path, $domain, $port, $path_spec, $secure, $expires, $discard, $hash) = @_;
+       if ($domain eq '.google.com' and $key eq 'NID')
+          {$nid = $val;}
+       elsif ($domain eq '.scholar.google.com' and $key eq 'GSP')
+          {$gsp = $val;}});
+   join '; ',
+     (defined $nid ? ("NID=$nid") : ()),
+     (defined $gsp ? ("GSP=$gsp") : ());}
 
 sub show_hash;
 sub show_hash
@@ -453,409 +689,254 @@ sub show_hash
             sort keys %$x
       : apply {s/"/'/g} $x}
 
-sub ebsco
+sub gscholar
 # Allowed %terms:
 #   author (array ref)
 #   year (scalar)
 #   year_min (scalar)
 #   year_max (scalar)
 #   title (array ref)
-#   isbn (scalar)
 #   doi (scalar) [not used for searching, but included in citation]
-#   ebsco_record (hash ref with keys "db" and "AN")
    {my %terms = @_;
     $terms{year} and
        $terms{year_min} = $terms{year_max} = $terms{year};
 
-    progress 'Trying EBSCOhost';
+    progress 'Trying Google Scholar';
 
-    my %search_fields =
-       (SearchTerm => join(' AND ',
-            $terms{author} ? map {qq(AU "$_")} sort(@{$terms{author}}) : (),
-            $terms{title} ? map {my $t = $_; $t =~ s/[?"“”]//g; qq(TI "$t")} sort(@{$terms{title}}) : (),
-              # We remove question marks because they seem to
-              # have special meaning but I can't figure out how
-              # to escape them properly.
-            $terms{isbn}
-              ? sprintf('IB %s NOT PZ Chapter',
-                    Business::ISBN->new($terms{isbn})->as_isbn10->as_string([]))
-              : ()),
-        $terms{year_min}
-          ? ('common_DT1_FromYear' => $terms{year_min})
-          : (),
-        $terms{year_max}
-          ? ('common_DT1_ToYear' => $terms{year_max})
-          : (),
-        $terms{ebsco_record} && %{$terms{ebsco_record}}
-          ? (RECORD => $terms{ebsco_record})
-          : ());
+    my %search_fields = map {lc $_}
+       (as_q => (!$terms{title} ? '' :
+            join(' ', map {qq("$_")} α $terms{title})),
+        !$terms{author} ? () :
+            (as_sauthors => join(' ', map {qq("$_")} α $terms{author})),
+        !defined $terms{year_min} ? () :
+            (as_ylo => $terms{year_min}),
+        !defined $terms{year_max} ? () :
+            (as_yhi => $terms{year_max}));
 
     my $cache_key = show_hash \%search_fields;
     $cache_key =~ s/\A\{//;
     $cache_key =~ s/\}\z//;
-    $bypass_ebsco_cache
-        and delete $global_cache->{ebsco}{$cache_key};
-    my %record = η($global_cache->{ebsco}{$cache_key} ||= runsub
-       {my $agent = new WWW::Mechanize
-           (agent => 'Mozilla/5.0 (Windows NT 5.1; U; rv:5.0) Gecko/20100101 Firefox/5.0',
-            cookie_jar => new HTTP::Cookies
-               (file => $ebsco_cookie_jar_path,
-                autosave => 1,
-                ignore_discard => 1));
-
-        # Get a session ID from the cookie jar, if it has one.
-        my ($sid, $ebsco_domain, @ebsco_cookie);
-        $agent->cookie_jar->scan(sub
-           {defined $sid and return;
-            my ($domain, $key, $val) = @_[4, 1, 2];
-            $domain =~ m!\.ebscohost\.com\b! and $key eq 'EHost2'
-                or return;
-            $val =~ /(?:&|\A)sid=([^&]+)/ or die;
-            $sid = uri_unescape $1;
-            $ebsco_domain = $domain;
-            @ebsco_cookie = @_;});
-
-        my $query = sub
-           {my ($base_url, $sid) = @_;
-            if (exists $search_fields{RECORD})
-               {$base_url =~ s/[a-z.]+(\.ebscohost\.)/search$1/ or die;
-                $agent->get(query_url "$base_url/login.aspx",
-                    direct => 'true',
-                    db => $search_fields{RECORD}{db},
-                    AN => $search_fields{RECORD}{AN});
-                if ($agent->content =~ /window\.location\.replace\('([^']+)'/)
-                   {$agent->get($1);}}
+    my $url = query_url 'https://scholar.google.com/scholar',
+        %search_fields,
+        as_occt => 'title',
+        btnG => '';
+    my $got = ($global_cache->{gscholar_first}{$cache_key} ||= runsub
+       {my $page = lwp_get($url);
+        unless ($page =~ m!<div class="gs_ri">(.+?)Fewer</a></div>!si)
+           {if ($page =~ /id="gs_captcha_f"><h1>Please show/)
+               {die "Hit Google Scholar CAPTCHA. Visit the page with Mozilla, solve the CAPTCHA, quit Mozilla, and try again.\n";}
+            elsif ($page =~ /\bdid not match any articles\b/)
+               {return [];}
             else
-               {$agent->get(query_url "$base_url/ehost/Search/PerformSearch",
-                    sid => $sid,
-                    PerformSearchSettingValue => 3,
-                      # This seems to be necessary for EBSCO to
-                      # pay attention to fields like the year.
-                    %search_fields);}};
-        if ($sid)
-          # Try to just query.
-           {$query->("http://$ebsco_domain", $sid);
-            if ($agent->title !~ /: EBSCOhost\z/)
-              # Rats, didn't work. Delete the cookie we used; it's
-              # no good.
-               {$sid = '';
-                $ebsco_cookie[8] = 0;
-                $agent->cookie_jar->set_cookie(@ebsco_cookie);}}
-        if (!$sid)
-          # We'll need to log in first.
-           {progress 'Logging in';
-            $ebsco_login->($agent);
-            if ($agent->content =~ /onload="GoToPage\(&#39;(http:.+?)&#39;\)/)
-               {progress 'Following redirect';
-                $agent->get(decode_entities $1);}
-            progress 'Querying';
-            $query->("http://" . $agent->uri->host,
-                $agent->current_form->value('__sid'));}
+               {die 'Unknown weirdness';}}
+        my $chunk = $1;
+        $chunk =~ /<a\s+href="([^"]+)/ or die 2;
+        my $result_url = decode_entities($1);
+        $result_url =~ m!\A/scholar?!
+          # This just a citation Google Scholar scraped from
+          # elsewhere, not a link to any bibliographic data.
+          # So basically, we've got nothing.
+            and return [];
+        my $cluster_id;
+        $chunk =~ m!/scholar\?cluster=(\d+)!
+            and $cluster_id = $1;
+        [$cluster_id, $result_url]});
 
-        my $page = $agent->content;
-        ($sid) = $page =~ /"sid":"([^"]+)"/;
-        $page =~ /class="smart-text-ran-warning"><span>Note: Your initial search query did not yield any results/
-            || $page =~ /<span class="std-warning-text">No results were found/
-            || $agent->title eq 'EBSCOhost'
-            # No results.
-            and return {};
+    @$got
+        or return err 'No results.';
+    my ($cluster_id, $result_url) = @$got;
+    my $r = get_from_url($result_url, $terms{doi});
 
-        RESULTS: {if ($agent->title =~ /\AResult List: /)
-           # We're looking at search results. Choose a record.
-           {$page = $agent->content;
-            my $results_uri = $agent->uri;
-            $page =~ /"vid":"(\d+)"/ or die;
-            my $vid = $1;
-            $page =~ /Result_1/ or die;
+    unless (defined $r)
+       {my $urls = [];
+        $cluster_id and $urls = ($global_cache->{gscholar_rest}{$cluster_id} ||= runsub
+           {my $cluster_page = lwp_get(
+                "https://scholar.google.com/scholar?cluster=$cluster_id");
+            my @versions;
+            for (;;)
+               {push @versions, grep {$_ ne '#'} map
+                    {/<a\s+href="([^"]+)/ or die;
+                        decode_entities($1)}
+                    $cluster_page =~ m!<div class="gs_ri">(.+?)Fewer</a></div>!sig;
+                $cluster_page =~ m!<a href="(/scholar?[^"]+)"><span class="gs_ico gs_ico_nav_next"!
+                    or last;
+                $cluster_page = lwp_get('https://scholar.google.com' . decode_entities($1));}
+            \@versions});
+        foreach (@$urls)
+           {$r = get_from_url($_, $terms{doi});
+            defined $r and last;}
+        unless (defined $r)
+           {return err "No good URL"}}
 
-            my %dbs =
-                map {my $j = from_json decode_entities $_;
-                     $j->{sourceCode} => $j}
-                $page =~ /\bdata-eisSourceAgrs=\s*"([^"]+)"/g;
+    $r;}
 
-            for (my $i = 1 ; $page =~ /Result_$i/ ; ++$i)
-               {# Avoid corrections. (I would just use "NOT PZ
-                # Erratum/Correction" in the search string, but then
-                # records with no "Document Type" field at all,
-                # including some journal articles, would also be
-                # excluded.)
-                $page =~ m!Result_$i.+\[Erratum/Correction\]!
-                    and next;
-                # If the record we're looking at now is from
-                # MEDLINE or SocINDEX, and there are PsycINFO
-                # records available, switch to only PsycINFO.
-                # (PsycINFO records are generally better.)
-                my $db = do
-                   {$page =~ /\bdata-hoverPreviewJson="([^"]+)" id="hoverPreview$i"/ or die;
-                    from_json(decode_entities $1)->{db}};
-                if ($db eq 'mnh' || $db eq 'sih' and
-                        $dbs{psyh} and $dbs{psyh}{resultsRetrieved})
-                   {progress 'Asking for PsycINFO records only';
-                    # How EBSCO handles database-switching is a
-                    # little kooky. We have to send a POST to say
-                    # we want to change databases, then refresh
-                    # the page to get the new results. We're faking
-                    # Ajax.
-                    $agent->post(
-                        query_url(
-                            sprintf('http://%s/ehost/IntegratedSearch/Update',
-                                  $agent->uri->host),
-                            sid => $sid,
-                            vid => $vid),
-                        'Content-Type' => 'application/json; charset=utf-8',
-                        Content => '[{"hdnSourceCode":"psyh","chkbSelectSource":"psyh","hdnSourceSelected":true,"hdnHasBeenSearched":true}]');
-                    $agent->content eq '{"redirectCommand":"results"}'
-                        or die 'Bad reply from /IntegratedSearch/Update';
-                    progress 'Getting new results page';
-                    $agent->get($results_uri);
-                    redo RESULTS;}
-                # Okay, use this article.
-                progress 'Fetching record';
-                $agent->follow_link(name => "Result_$i");
-                $page = $agent->content;
-                last RESULTS;}
+# ------------------------------------------------------------
+# * get_from_url
+# ------------------------------------------------------------
 
-            die "all results are errata?";}}
+sub get_from_url
+# Called primarily from gscholar, but uses a variety of websites,
+# none of which are Google Scholar.
+   {my ($url, $doi) = @_;
+    my $domain = URI->new($url)->host;
 
-        # Now we should be on a single record's page.
-        $page =~ m!<a name="citation"[^>]*><span>(.+?)\s*</span></a></dd>.*?(<dt .+?)</div>!s
-            or die;
-        my ($title, $rows) = (decode_entities($1), $2);
-        if ($title =~ /&/)
-          # Looks like the title was mistakenly double-encoded.
-          # It may have some other HTML tags, so get rid of those,
-          # then decode again.
-          {$title =~ s/<[^>]+>//g;
-           $title = decode_entities $title;}
+# ** Cases that can use HTML meta tags
 
-        # Before returning the results, print full-text URLs
-        # to STDERR.
-        if ($page =~ /HTML Full Text/)
-           {note 'Full text (HTML): ', $agent->uri;}
-        if ($page =~ /PDF Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
-           {my $a = $agent->clone;
-            progress 'Getting full-text URL (PDF)';
-            $a->submit_form(fields => {'__EVENTTARGET' => $1});
-            note 'Full text (PDF): ', $a->uri;}
-        if ($page =~ m!OpenIlsLink\?.+?su=http%3A(.+?)%26sid%3D!)
-           {note 'OpenURL: http:', uri_escape
-                uri_unescape($1),
-                ':<>';}
-        if ($page =~ /Linked Full Text.+?__doPostBack\(&#39;(.+?)&#39;/)
-           {my $a = $agent->clone;
-            progress 'Getting full-text URL (linked)';
-            $a->submit_form(fields => {'__EVENTTARGET' => $1});
-            note 'Full text (linked): ', $a->uri;}
+    if ($domain eq 'psycnet.apa.org' || $domain eq 'doi.apa.org')
+       {progress 'Trying PsycNET';
+        $url =~ s/\.pdf\z//;
+        digest_html_meta_tags $global_cache->{psycnet}{$url} ||=
+            get_html_meta_tags $url;}
 
-        $page =~ /var ep = (\{.+?\})\n/ or die;
-        my %clientdata = η from_json($1)->{clientData};
-        return χ
-            '-title' => $title,
-            '-record' => $clientdata{plink},
-            ($page =~ m!<p[^>]*>~~~~~~~~</p><p[^>]*>By (.+?)\s*</p>!
-              ? ('-by' => decode_entities($1))
-              : ()),
-            map {s/:\s*\z//; s/\s+\z//; $_} do
-               {my %h;
-                foreach (1..100)
-                  # This loop is finite just for safety's sake.
-                   {$rows =~ m!\G.*?<dt data-auto="citation_field_label"[^>]*>(.+?):?</dt>!g
-                        or last;
-                    my $k = decode_entities $1;
-                    $rows =~ m!\G.*?<dd data-auto="citation_field_value"[^>]*>(.+?)</dd>!g
-                        or die "Missing citation_field_value for $k";
-                    my $v = $k eq 'Digital Object Identifier'
-                      ? $1
-                      : decode_entities $1;
-                    $k =~ /\S/
-                        or next;
-                    $h{$k} = $v;}
-                %h};});
+    elsif ($domain eq 'eric.ed.gov')
+       {progress 'Using ERIC';
+        return digest_html_meta_tags $global_cache->{eric}{$url} ||=
+            get_html_meta_tags $url;}
 
-    %record or return err 'No results.';
-    debug "EBSCO record: $record{'-record'}";
+# ** Cases that can use RIS
 
-    # Parse the record.
+    elsif ($url =~ m!\Ahttps?://www.ncbi.nlm.nih.gov/pmc/articles/PMC(\d+)/?\z!i
+            or $url =~ m!https?://europepmc.org/articles/PMC(\d+)\z!i)
+       {my $id = $1;
+        progress 'Using PMC';
+        $url = query_url 'http://www.ncbi.nlm.nih.gov/pmc/utils/ctxp',
+            ids => "PMC$id", report => 'ris', format => 'ris';
+        return digest_ris($global_cache->{pmc}{$id} ||=
+            decode 'UTF-8', lwp_get $url);}
 
-    my $title = apply {s/\.\z//} $record{'-title'};
-
-    my $authors = σ
-        map {digest_author $_}
-        $record{'-by'} && $record{Abstract} !~ /\bPsycINFO\b/ &&
-              $record{'-by'} !~ /addressed to/ &&
-              $record{'Source'} !~ /\AJournal of Sex Research/i
-          ? $record{'-by'} =~ /[[:upper:]]{6}/
-            ? split qr[(?:,|;| and| &) ],
-                  apply {s/,\s+\S*[[:lower:]]{3}.+//}
-                  $record{'-by'}
-            : $record{'-by'} =~ / and .+?,.+?,/
-              ? map {/(.+?),/; $1} split / and /, $record{'-by'}
-              : split qr[(?:,|;| and| &) ], $record{'-by'}
-          : map {apply {s/;.+//g}} split qr!<br />!, $record{Authors};
-
-    my $rdoi;
-    defined $record{'Digital Object Identifier'}
-        and $record{'Digital Object Identifier'} =~ m!\b(10\.\d+[^<"]+)!
-        and $rdoi = decode_entities $1;
-
-    if (!$record{'Document Type'} and
-        $record{'Publication Type'} =~ /\ABook;/)
-       {$record{Source} =~ /\A \s*
-                (?<place> [^:]+) : \s
-                (?<publisher> [^0-9]+) ; \s
-                (?<year> \d\d\d\d) \.
-                /x
-            or die "Book source: $record{Source}";
-        my ($year, $place, $publisher) = @+{qw(year place publisher)};
-        my $editors;
-        if ($record{'Publication Type'} =~ /\bEdited Book\b/)
-           {$editors = $authors;
-            undef $authors;}
-        my $isbn;
-        exists $record{ISBN} and ($isbn) =
-            $record{ISBN} =~ /([-0-9Xx]+)/;
-        whole_book
-            $authors, $year, $title, $editors, undef,
-            undef, $place, $publisher,
-            $terms{doi} || $rdoi,
-              # We don't try hard to obtain a DOI, since most
-              # books don't have DOIs, anyway.
-            $isbn;}
-
-    elsif (!$record{'Document Type'} or
-        $record{'Document Type'} eq 'Article' or
-        $record{'Document Type'} eq 'Journal Article' or
-        $record{'Document Type'} eq 'Comment/Reply' or
-        $record{'Document Type'} eq 'Editorial')
-
-       {if ($record{Source} =~ /\A[^0-9,;]+,(?: \w\w\w)? \d+, \d\d\d\d\.(?: pp?\. (\d+)-?(\d*)\.)?\z/
-            || $record{Authors} =~ /\bet al\./i
-               and $rdoi)
-           # This record is impoverished. Let's try CrossRef.
-           {my %d = (first_page => $1, last_page => $2, from_doi $rdoi);
-            return journal_article
-                +($record{Authors} =~ /\bet al\./i
-                  ? digest_crossref_contributors($d{contributors})
-                  : $authors),
-                $d{year}, $title, $d{journal_title},
-                $d{volume}, $d{issue}, $d{first_page}, $d{last_page},
-                $rdoi, undef;}
-        my $year;
-        if ($record{Source} =~ s{,?\s+\d{1,2}/\d{1,2}/(\d{4})}{})
-           {$year = $1;}
-        elsif ($record{Source} =~ s/,?\s+$ms_re(?:-$ms_re)?(\d\d(\d\d)?)//)
-           {$year = $2 ? $1 : "19$1";}
-        $record{Source} =~ s{
-                \s+
-                (?: Vol \.? \s (?<volume> \d+) [A-Z]* |
-                  (?<volume> \d+) [A-Z]* (?= \( ) )
-                \s*
-                (?: \(?
-                       (?<issue_type> Issue | Suppl | Pt | Whole \s No\.)
-                        \s
-                        (?<issue> \d+ (?: / \d+)?)
-                        \)? |
-                    \( (?<issue> [-,. 0-9A-Za-z]+ ) \) )?
-                [.,] \s+
-                } {✠}x
-            or die "Source: $record{Source}";
-
-        my $volume = $+{volume};
-        my $issue = $+{issue};
-        if (defined $issue)
-           {defined $+{issue_type} and $+{issue_type} eq 'Suppl'
-                and $issue = "Suppl. $issue";
-            $issue =~ /No\.\s*(.+)/ and $issue = $1;
-            $issue =~ s/\.(\S)/. $1/;
-            $issue =~ s! (\d+) [-/] (\d+) !$1, $2!x;}
-              # Dunno if *that's* right, but it seems the most
-              # reasonable alternative.
-        my ($journal, $fpage, $lpage);
-        if ($record{Source} =~ s! \[? (PL[oO]S \s \w+) !!x)
-           {$journal = digest_journal_title $1;
-            $volume = undef;
-            $issue = undef;}
-        else
-           {$record{Source} =~ s! \A (.+?) \s* (?: \[ | \( | ; | / | \.?,✠ ) !!x or die 's2';
-            $journal = digest_journal_title $1;
-            ($fpage, $lpage) =
-                $record{Source} =~ s!p(?:p\. )?([A-Za-z]?\d+)-([A-Za-z]?\d+)!!
-              ? ($1, $2)
-              : $record{Source} =~ s!p(?:p\. )?([A-Za-z]?)(\d+).+?(\d+)p\b!!
-              ? ("$1$2", $1 . ($2 + $3 - 1))
-              : $record{Source} =~ s!p(?:p\. )?([A-Za-z]?\d+)!!
-              ? ($1, undef)
-              : die 'p';
-            $lpage = expand_last_page_number $fpage, $lpage;}
-        $year ||=
-            $record{Source} =~ /(?<!: )((?:1[6789]|20)\d\d)/
+    elsif ($domain eq 'www.jstor.org')
+       {progress 'Using JSTOR';
+        my $path =
+            $url =~ m!\Ahttps?://www.jstor.org/stable/(\d+)(?:\?|\z)!
+          ? "10.2307/$1"
+          : $url =~ m!\Ahttps?://www.jstor.org/stable/(10\.\d+/\d+)(?:\?|\z)!
           ? $1
-          : die 'y';
-        my $doi;
-        $doi ||= $rdoi || $terms{doi} || get_doi
-            $year, $journal, $title,
-            $authors->[0]{family}, $volume,
-            $fpage ||
-                ($record{Source} =~ /\bpp\. (e\d+)\./ ? $1 : undef);
-              # In this last case, we aren't providing a real
-              # page number, but CrossRef benefits from it,
-              # anyway.
-        my $url;
-        lc($journal) eq 'judgment and decision making'
-          # This is an open-access journal, but it doesn't have
-          # DOIs, so get a URL.
-            and $url = sjdm_url_from_title($title);
+          : die "Bad JSTOR URL: $url";
+        $url = "http://www.jstor.org/citation/ris/$path";
+        return digest_ris($global_cache->{jstor}{$path} ||=
+           lwp_get($url));}
 
-        return journal_article $authors, $year, $title,
-            $journal, $volume, $issue, $fpage, $lpage, $doi, $url;}
+    elsif ($domain eq 'onlinelibrary.wiley.com')
+       {progress 'Using Wiley';
+        $url =~ m!/doi/(.+?)/(?:full|abstract)\b! or die "Bad Wiley URL: $url";
+        $doi = $1;
+        my $url = "http://onlinelibrary.wiley.com/enhanced/getCitation/doi/$doi";
+        return digest_ris($global_cache->{wiley}{$doi} ||=
+           $LWP::Simple::ua->post($url,
+               {'citation-type' => 'text'})->decoded_content);}
 
-    elsif ($record{'Document Type'} eq 'Chapter')
+    elsif ($domain eq 'link.springer.com')
+       {progress 'Using SpringerLink';
+        $url =~ m!https?://link.springer.com/article/(10\.\d+/.+)! or die "Bad Springer URL: $url";
+        my $doi = $1;
+        $url = query_url
+            'http://citation-needed.services.springer.com/v2/references/' .
+              $doi,
+            format => 'refman',
+            flavour => 'citation';
+        return digest_ris($global_cache->{springer}{$doi} ||= decode 'UTF-8', lwp_get($url));}
 
-       {$record{Source} =~ m{ \A
-            (?<book> [^.(]+?)
-            (?: \s \( (?<edition> [^)]+) \) )?
-            (?: \. | , \s vol\. ) \s
-            (?: (?<volume> \d+)
-                (?: \. | : \s [^.]+ \.)
-            \s)?
-            (?<editors> .+?) \s \(Ed\) ; \s\s
-            pp \. \s (?<fpage> \d+) - (?<lpage> \d+) ; \s
-            (?<place> [^,:]+, \s [^,:]+), \s [^,:]+ : \s
-            (?<publisher> [^;]+) ; \s
-            (?: \s Vol \s \d+ ; \s  )?
-            (?<year> \d\d\d\d) \. \s
-            [a-z]+ , \s \d+ \s pp \.
-            \z }x or die 'chapter';
-        my %src = %+;
+# ** PubMed
 
-        if (exists $record{'Parent Book Series'}
-                and $record{'Parent Book Series'} =~ /\A(Annals of The New York Academy of Sciences); Vol (\d+)/i)
-          # Annals of the NYAS is actually a journal.
-           {my ($journal, $volume) = ($1, $2);
-            my $doi = $rdoi || $terms{doi} || get_doi
-                $src{year}, $journal, $title,
-                $authors->[0]{family}, $volume, $src{fpage};
-            return journal_article $authors, $src{year}, $title,
-                'Annals of the New York Academy of Sciences',
-                $volume, undef, $src{fpage}, $src{lpage}, $doi, undef;}
+    elsif ($url =~ m!\Ahttps?://www.ncbi.nlm.nih.gov/pubmed/(\d+)\z!
+            or $url =~ m!https?://europepmc.org/abstract/med/(\d+)\z!)
+       {my $pmid = $1;
+        progress 'Using PubMed';
 
-        (my $book = $src{book}) =~ s/:  /: /;
-        $src{volume} and $book =~ s/, Vol\z//;
-        my $editors = σ
-           map {digest_author $_}
-           split qr/ \(Ed\);  /, $src{editors};
+        $url = query_url 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi',
+            db => 'pubmed', id => $pmid, retmode => 'xml';
+        my %h = %{$global_cache->{pubmed}{$pmid} ||= XMLin(
+            lwp_get($url),
+            KeyAttr => [],
+            ForceArray => ['Author', 'ELocationID'])->{PubmedArticle}{MedlineCitation}{Article}};
 
-        my $isbn;
-        exists $record{ISBN} and ($isbn) =
-            $record{ISBN} =~ /([-0-9Xx]+)/;
+        my $year = $h{Journal}{JournalIssue}{PubDate}{Year} || do
+           {$h{Journal}{JournalIssue}{PubDate}{MedlineDate}
+                =~ /(\d\d\d\d)/ or die;
+            $1};
+        my $authors = σ
+            map {χ
+                family => ($_->{LastName} =~ /[[:lower:]]/
+                  ? $_->{LastName}
+                  : fix_allcaps_name $_->{LastName}),
+                given => $_->{ForeName},
+                ($_->{Suffix} ? (suffix => format_suffix $_->{Suffix}) : ())}
+            α $h{AuthorList}{Author};
+        my $journal_title = digest_journal_title $h{Journal}{Title};
 
-        return book_chapter $authors, $src{year}, $title,
-            $editors, $book, $src{volume}, $src{edition},
-            $src{fpage}, $src{lpage},
-            $src{place}, $src{publisher}, $isbn;}
+        my ($first_page, $last_page);
+        if ($h{Pagination}{MedlinePgn})
+           {my $pages = $h{Pagination}{MedlinePgn};
+            $pages =~ s/;.+//;
+            ($first_page, $last_page) = $pages =~ /-/
+              ? split(/-/, $pages)
+              : ($pages, undef);}
+
+        if ($h{ELocationID}) {foreach (α $h{ELocationID})
+          {if ($_->{EIdType} eq 'doi')
+              {$doi = $_->{content};
+               last;}}}
+
+        $doi ||= get_doi_for_journal_article
+            $year, $journal_title, $h{ArticleTitle},
+            $authors->[0]{family},
+            $h{Journal}{JournalIssue}{Volume}, $first_page;
+
+        return journal_article
+            $authors, $year, $h{ArticleTitle},
+            $journal_title,
+            $h{Journal}{JournalIssue}{Volume}, $h{Journal}{JournalIssue}{Issue},
+            $first_page, $last_page, $doi, undef;}
+
+    elsif ($domain eq 'www.ncbi.nlm.nih.gov' or $domain eq 'europepmc.org')
+      # We should've caught these earlier.
+       {die "Unrecognized NCBI / Europe PMC: $url";}
+
+# ** IDEAS
+
+    elsif ($domain eq 'ideas.repec.org' and $url !~ m!/wpaper/!)
+       {progress 'Using IDEAS';
+
+        my %record = η($global_cache->{ideas}{$url} ||= do
+           {my $page = lwp_get($url);
+            my %meta =
+                map {decode_entities $_}
+                $page =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g;
+            # Sometimes we can get middle initials in the
+            # registered-authors list that aren't in the meta tags.
+            if ($page =~ m{Registered</A> author\(s\): <UL[^>]+>(.+?)</UL>}s)
+               {my $alist = $1;
+                foreach my $a ($alist =~ m{<LI><A HREF=[^>]+>(.+?) </A>}g)
+                  {$a =~ /\s\s/ and next;
+                     # No middle initials to get for this author.
+                   (my $without_initials = $a) =~ s/ .+ (\S+)\z/ $1/;
+                   $meta{authors} =~ s/\Q$without_initials\E/$a/;}}
+                     # $meta{authors} may not be in the form "John Smith",
+                     # but I think that's the only case in which middle
+                     # initials would be omitted.
+            \%meta;});
+
+        my $authors = σ
+            map {digest_author $_}
+            split /;\s+/, $record{authors};
+
+        my $journal = digest_journal_title $record{journal_title};
+
+        my ($fpage, $lpage) = ($record{firstpage}, $record{lastpage});
+        $lpage = expand_last_page_number $fpage, $lpage;
+
+        my $doi = get_doi_for_journal_article
+            $record{year}, $record{journal_title}, $record{title},
+            $authors->[0]{family},
+            $record{volume}, $fpage;
+
+        return journal_article
+            $authors, $record{year}, $record{title},
+            $journal, $record{volume}, $record{issue},
+            $fpage, $lpage, $doi, undef;}
 
     else
-       {die qq(Can't handle document type "$record{'Document Type'}");}}
+       {return undef;}}
 
 # ------------------------------------------------------------
 # * Library of Congress
@@ -867,183 +948,75 @@ sub congress
 #     [Actually matches editors, too, which is useful for edited
 #     collections of papers.]
 #   year (scalar)
-#   year_min (scalar)
-#   year_max (scalar)
 #   title (array ref)
 #   isbn (scalar)
    {my %terms = @_;
-    $terms{year} and
-       $terms{year_min} = $terms{year_max} = $terms{year};
-
     progress 'Trying the Library of Congress';
 
-    my $url = query_url 'http://catalog.loc.gov/vwebv/search',
-        do
-           {my ($i, @a) = 0;
-            my $add = sub
-               {my ($field, $s) = @_;
-                ++$i;
-                $s = lc $s;
-                $s =~ tr/"?%//;
-                push @a,
-                    "searchArg$i" => $s,
-                    "searchCode$i" => $field,
-                    "argType$i" => 'phrase',
-                    "combine$i" => 'and';};
-            if ($terms{author})
-               {$add->('KPNC', $_) foreach sort @{$terms{author}};}
-            if ($terms{title})
-               {$add->('KTIL', $_) foreach sort @{$terms{title}};}
-            if ($terms{isbn})
-               {$add->('KNUM', Business::ISBN->new($terms{isbn})
-                    ->as_isbn13->as_string([]));}
-            @a},
-        $terms{year_min} || $terms{year_max}
-          ? (yearOption => 'range',
-                fromYear => $terms{year_min} || '',
-                toYear => $terms{year_max} || '')
-          : (),
-        type => 'a?', # Textual items only (to exclude, e.g., movies)
-        searchType => 2;
+    my $query = lc join ' and ',
+        $terms{author} ? map {sprintf 'dc.author="%s"', s/"/\\"/rg} α $terms{author} : (),
+        $terms{title} ? map {sprintf 'dc.title="%s"', s/"/\\"/rg} α $terms{title} : (),
+        $terms{year} ? ("dc.date=$terms{year}") : (),
+        $terms{isbn}
+          ? ('bath.isbn='. Business::ISBN->new($terms{isbn})
+                ->as_isbn13->as_string([]))
+          : ();
+    my $url = query_url 'http://lx2.loc.gov:210/lcdb',
+        version => '1.1',
+        operation => 'searchRetrieve',
+        maximumRecords => '1',
+        recordSchema => 'mods',
+        query => $query;
 
-    my %record = η($global_cache->{congress}{$url} ||= runsub
-       {my $agent = new WWW::Mechanize;
-        $agent->get($url);
-
-        $agent->content =~ m!<strong>Your search found no results.</strong>!
-            and return {};
-
-        if ($agent->title eq 'LC Online Catalog - Titles List')
-           {progress 'Fetching record';
-            $agent->follow_link(url_regex => qr/\AholdingsInfo\?/);}
-
-        my $page = $agent->content;
-        $page =~ s!<table \s class="briefRecord"> (.+?) </table>!!xs or die;
-        my $table = $1;
-        my %f = map {decode_entities $_}
-           ($table =~ m!<th[^>]*>([^<]+)</th>.+?="subfieldData">\s*([^<]+[^< ])!sg,
-            $page =~ m!<h2>([^<]+)</h2>.+?="subfieldData">\s*([^<]+[^< ])!sg);
-        $f{'Related names'} = $page =~ m!<h2>Related names</h2>\s*<ul>(.+?)</ul>!s
-          ? [map {decode_entities $_} $1 =~ /="subfieldData">\s*([^<]+)/g]
-          : [];
-
-        \%f;});
+    my %record = η($global_cache->{congress}{$query} ||= runsub
+       {my %got;
+        BLOCK:
+           {%got = η XMLin(lwp_get($url),
+                KeyAttr => {},
+                ForceArray => [qw(name namePart dateIssued place publisher identifier note)]);
+            if ($got{'zs:numberOfRecords'} == 0
+                and $url =~ s/dc.date%3D(\d{4})/dc.date%3Dc$1/)
+              # The year might need to be preceded by "c", for "circa",
+              # so try again with the new URL.
+               {redo BLOCK;}}
+       # TODO?: Get multiple records and skip those without typeOfResource: text
+       $got{'zs:numberOfRecords'}
+         ? $got{'zs:records'}{'zs:record'}{'zs:recordData'}{mods}
+         : {}});
 
     %record or return err 'No results.';
 
+    my $byline = $record{note}[0]{content};
+    my $is_edited =
+        $byline =~ s/\Aedited // || $byline =~ s/, editors\.\z//;
+    $byline =~ s/\Aby //;
+    $byline =~ s/\.\z//;
     my ($authors, $editors);
-    ($record{'Main title'} =~ / editors?\.\z/ ||
-              $record{'Main title'} =~ m!/ edited by !
-          ? $editors : $authors) = σ
-        map {digest_author $_}
-        grep {! /\. Convention/}
-        grep {defined}
-        $record{'Personal name'}, α $record{'Related names'};
-    $record{'Published/Created'} =~ /\A([^:]+) : ([^,]+), (?:\d\d\d\d, )?c?(\d\d\d\d)(?:\.|-\S+)\z/
-        or $record{'Published/Created'} =~ /\A([^,]+), ([^\[]+) \[(\d\d\d\d)\]\z/
-        or die 'pc';
-    my ($place, $publisher, $year) = ($1, $2, $3);
-    $record{'Main title'} =~ m!\A([^/]+) /! or
-        $record{'Main title'} =~ m!\A(.+?), by! or
-        die 'mt';
-    my $book = $1;
-    my $volume; # TODO: I need some examples of multi-volume works.
-    my $edition = $record{Edition};
-    $edition and $edition =~ s/\s*\bed\.?//i;
-    my $isbn;
-    if (exists $record{ISBN})
-       {$record{ISBN} =~ /\A([-0-9X]+)/ or die 'isbn';
-        $isbn = $1;}
+    my @names1 = map {digest_author $_->{namePart}[0]} α $record{name};
+    my @names2 = map {digest_author $_} split qr/,\s+(?:and\s+)?|\s+and\s+/, $byline;
+    my $names =
+        length(to_json(\@names2)) > length(to_json(\@names1))
+      ? \@names2
+      : \@names1;
+    ($is_edited ? $editors : $authors) = $names;
+    my ($year) = min $record{originInfo}{dateIssued}[0] =~ /(\d{4})/g;
+    my $book = $record{titleInfo}{title};
+    $record{titleInfo}{nonSort}
+        and $book = $record{titleInfo}{nonSort} . lcfirst $book;
+    $record{titleInfo}{subTitle}
+        and $book .= ': ' . ucfirst $record{titleInfo}{subTitle};
+    my $volume;
+    my $edition = $record{originInfo}{edition};
+    $edition and $edition =~ s/ ed\.?\z//;
+    my $place = (first {$_->{placeTerm}{type} eq 'text'} α $record{originInfo}{place})->{placeTerm}{content};
+    my $publisher = $record{originInfo}{publisher}[0];
+    my $isbn = first {$_->{type} eq 'isbn'} α $record{identifier};
+    $isbn and $isbn = $isbn->{content};
+    my $doi = get_doi_for_book $year, $book, $names->[0]{family};
 
     return whole_book
         $authors, $year, $book, $editors, $volume,
-        $edition, $place, $publisher, undef, $isbn;}
-
-# ------------------------------------------------------------
-# * IDEAS
-# ------------------------------------------------------------
-
-my %ideas_categories =
-   (articles => 'a',
-    chapters => 'h',
-    books => 'b');
-
-sub ideas
-# Allowed %terms:
-#   keywords (array ref)
-#   year (scalar)
-#   year_min (scalar)
-#   year_max (scalar)
-#   doi (scalar) [not used for searching, but included in citation]
-   {my %terms = @_;
-    $terms{year} and
-       $terms{year_min} = $terms{year_max} = $terms{year};
-
-    progress 'Trying IDEAS';
-
-    # Query.
-
-    my $url = query_url 'https://ideas.repec.org/cgi-bin/htsearch',
-        'q' => join(' ', sort @{$terms{keywords}}),
-        ul => "%/$ideas_categories{articles}/%",
-        ul => "%/$ideas_categories{chapters}/%",
-        ul => "%/$ideas_categories{books}/%",
-        !($terms{year_min} || $terms{year_max}) ? () :
-           (dt => 'range',
-            db => $terms{year_min} ? "01/01/$terms{year_min}" : '',
-            de => $terms{year_max} ? "31/12/$terms{year_max}" : '');
-
-    my %record = η($global_cache->{ideas}{$url} ||= do
-     {my $results = LWP::Simple::get($url);
-        if ($results =~ /Sorry, your search for/)
-          # No results.
-           {χ;}
-        else
-          # Use the first result.
-           {$results =~ /<DT>1\.\s+<a href="(.+?)"/ or die;
-            my $record_url = $1;
-            progress 'Fetching record';
-            my $page = LWP::Simple::get($record_url);
-            my %meta = ('-record' => $record_url,
-                map {decode_entities $_}
-                $page =~ /<META NAME="citation_([^"]+)" content="([^"]+)">/g);
-            # Sometimes we can get middle initials in the
-            # registered-authors list that aren't in the meta tags.
-            if ($page =~ m{Registered</A> author\(s\): <UL[^>]+>(.+?)</UL>}s)
-               {my $alist = $1;
-                foreach my $a ($alist =~ m{<LI><A HREF=[^>]+>(.+?) </A>}g)
-                  {$a =~ /\s\s/ and next;
-                     # No middle initials to get for this author.
-                   (my $without_initials = $a) =~ s/ .+ (\S+)\z/ $1/;
-                   $meta{authors} =~ s/\Q$without_initials\E/$a/;}}
-                     # $meta{authors} may not be in the form "John Smith",
-                     # but I think that's the only case in which a middle
-                     # initials would be omitted.
-            \%meta;}});
-
-    keys %record or return err 'No results.';
-    debug 'IDEAS record: ', $record{'-record'};
-
-    # Parse the record.
-
-    my $authors = σ
-        map {digest_author $_}
-        split /;\s+/, $record{authors};
-
-    my $journal = digest_journal_title $record{journal_title};
-
-    my ($fpage, $lpage) = ($record{firstpage}, $record{lastpage});
-    $lpage = expand_last_page_number $fpage, $lpage;
-
-    my $doi = $terms{doi} || get_doi
-        $record{year}, $record{journal_title}, $record{title},
-        $authors->[0]{family},
-        $record{volume}, $fpage;
-
-    return journal_article
-        $authors, $record{year}, $record{title},
-        $journal, $record{volume}, $record{issue},
-        $fpage, $lpage, $doi, undef;}
+        $edition, $place, $publisher, $doi, $isbn;}
 
 # ------------------------------------------------------------
 # * arXiv
@@ -1051,22 +1024,12 @@ sub ideas
 
 sub arxiv_from_id
    {my $id = shift;
+    progress 'Trying the arXiv';
 
     my $url = "http://arxiv.org/abs/$id";
 
-    progress 'Trying the arXiv';
-    my %record = η($global_cache->{arxiv}{$id} ||= runsub
-       {my $page = LWP::Simple::get($url) || return {};
-        write_file '/tmp/out.html', $page;
-        my %meta =
-            map {decode_entities $_}
-            $page =~ /<meta name="citation_([^"]+)" content="([^"]+)"/g;
-        $meta{author} = σ
-            map {decode_entities $_}
-            $page =~ /<meta name="citation_author" content="([^"]+)"/g;
-        \%meta});
-
-    keys %record or return err 'No results.';
+    my %record = η($global_cache->{arxiv}{$id} ||=
+        get_html_meta_tags $url);
 
     my $authors = σ map {digest_author $_} α $record{author};
     $record{date} =~ m!(\d\d\d\d)/\d\d/\d\d! or die 'y';
@@ -1082,7 +1045,7 @@ sub sjdm_url_from_title
    {my $title = shift;
     progress 'Trying SJDM';
     my $v = $global_cache->{sjdm}{lc($title)} ||= do
-       {my $page = LWP::Simple::get(query_url
+       {my $page = lwp_get(query_url
             'http://www.sjdm.org/cgi-bin/namazu.cgi',
             max => 10, result => 'normal', sort => 'score',
             idxname => 'journal',
@@ -1100,14 +1063,15 @@ sub sjdm_url_from_title
 
 sub get
 # Allowed %terms:
+#   book (boolean)
 #   author (array ref)
 #   year (scalar)
 #   year_min (scalar)
 #   year_max (scalar)
 #   title (array ref)
+#   url (scalar)
 #   isbn (scalar)
 #   doi (scalar)
-#   ebsco_record (hash ref with keys "db" and "AN")
 #   arxiv_id (scalar)
 # Returns a hashref of CSL input data or undef.
    {my %terms = @_;
@@ -1119,67 +1083,26 @@ sub get
     $terms{arxiv_id}
         and return arxiv_from_id($terms{arxiv_id});
 
+    if ($terms{url})
+      {return (get_from_url($terms{url}, $terms{doi})
+          or die "URL not recognized: $terms{url}");}
+
     if ($terms{doi})
       # When we're starting with a DOI, we use CrossRef only to
       # get information to plug into other databases (and not to
       # generate citations directly) because CrossRef tends to be
-      # less complete than, e.g., PsycINFO.
+      # less complete than other databases.
        {my %d = from_doi $terms{doi};
         $terms{author} = σ map {$_->{surname}} α $d{contributors};
+        splice @{$terms{author}}, 5;
+          # Google Scholar may get confused by lots of authors.
         $terms{year} = $d{year};
         my $title = $d{article_title} || $d{volume_title};
-        $title and $terms{title} = σ $title;
+        $title and $terms{title} = σ format_nonjournal_title($title);
         $terms{doi} = $d{doi};}
-    ebsco %terms or congress %terms or ideas
-        keywords => [@{$terms{author}}, @{$terms{title}}],
-        year => $terms{year}, year_min => $terms{year_min}, year_max => $terms{year_max},
-        doi => $terms{doi};}
 
-sub digest_ris
-   {my $ris = Citematic::RIS->new(shift);
-
-    $ris->ris_type eq 'JOUR'
-        or die sprintf q(Can't handle RIS type "%s"), $ris->ris_type;
-
-    my $authors = σ map {digest_author $_}
-        (ref $ris->authors ? α $ris->authors : $ris->authors);
-    my ($year) = ($ris->PY || $ris->Y1) =~ /\A(\d+)/;
-    my $title = $ris->TI || $ris->T1;
-    my $journal = digest_journal_title(
-        $ris->JO || $ris->JF || $ris->T2 || $ris->J2);
-    my ($fpage, $lpage) =
-        $ris->starting_page =~ /[-–]/
-      ? split /[-–]/, $ris->starting_page
-      : ($ris->starting_page, $ris->ending_page);
-    my $volume = $ris->volume || $ris->VN;
-    my $issue = $ris->issue || $ris->M1;
-    $issue =~ s/\A0+([1-9][0-9]*)\z/$1/;
-    foreach ($volume, $issue, $fpage, $lpage)
-       {defined or next;
-        s/\s+\z//;
-        s/\A0+([1-9][0-9]*)\z/$1/;}
-
-    my $doi = $ris->doi;
-    if (!$doi and $ris->M3
-            and $ris->M3 =~ /\A10\./ || $ris->M3 =~ /\bdoi\b/)
-       {$doi = $ris->M3;}
-    $doi
-        and ($doi) = $doi =~ /\b(10\.\S+)/;
-    my $url;
-    if ($doi and $doi =~ m!\A10\.2307!)
-      # This is a JSTOR record, which may have a fake DOI.
-      # https://forums.zotero.org/discussion/6812/jstor-and-false-doi-numbers/
-       {undef $doi;
-        $url = $ris->UR;}
-    elsif ($ris->UR and $ris->UR =~ m!\Ahttp://projecteuclid.org/!)
-      # Keep Project Euclid URLs. Most of its journals are
-      # open-access, so the URLs are convenient.
-       {$url = $ris->UR;}
-
-    journal_article
-        $authors, $year, $title, $journal,
-        $volume, $issue,
-        $fpage, $lpage,
-        $doi, $url;}
+    $terms{book}
+      ? congress(%terms)
+      : gscholar(%terms)}
 
 1;

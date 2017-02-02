@@ -142,28 +142,25 @@ is apa(
 is apa(
        "Provider: JSTOR http://www.jstor.org
         Database: JSTOR
-        Content: text/plain
-
+        Content: text/plain; charset=\"us-ascii\"
 
 
         TY  - JOUR
-        JO  - Ethnology
         TI  - Is Rape a Cultural Universal? A Re-examination of the Ethnographic Data
-        VL  - 28
+        AU  - Palmer, Craig
+        C1  - Full publication date: Jan., 1989
+        DO  - 10.2307/3773639
+        EP  - 16
         IS  - 1
         PB  - University of Pittsburgh- Of the Commonwealth System of Higher Education
+        PY  - 1989
         SN  - 00141828
-        UR  - http://www.jstor.org/stable/3773639
-        AU  - Palmer, Craig
-        DO  - 10.2307/3773639
-        T3  - \x10
-        Y1  - 1989/01/01
         SP  - 1
-        EP  - 16
-        CR  - Copyright &#169; 1989 University of Pittsburgh- Of the Commonwealth System of Higher Education
-        M1  - ArticleType: research-article / Full publication date: Jan., 1989 / Copyright © 1989 University of Pittsburgh- Of the Commonwealth System of Higher Education
-        ER  - \n\n\n"),
-    'Palmer, C. (1989). Is rape a cultural universal? A re-examination of the ethnographic data. <i>Ethnology, 28</i>(1), 1–16. Retrieved from http://www.jstor.org/stable/3773639',
+        T2  - Ethnology
+        UR  - http://www.jstor.org/stable/3773639
+        VL  - 28
+        ER  - "),
+    'Palmer, C. (1989). Is rape a cultural universal? A re-examination of the ethnographic data. <i>Ethnology, 28</i>(1), 1–16. doi:10.2307/3773639',
     'JSTOR: Ethnography';
 
 # Cambridge

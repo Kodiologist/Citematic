@@ -1,19 +1,12 @@
-[storage_dir]
-/home/rodney/.citematic.d
+{
 
-[crossref_email]
-somebody@example.com
+"storage_dir":
+"/home/rodney/.citematic.d",
 
-[ebsco_login]
-$_->post(
-    'https://ezproxy1.some-institution.org:2048/login', {
-    user => 'rodney',
-    pass => 'hunter2',
-    url => 'http://search.ebscohost.com.ezproxy1.some-institution.org:2048/login.aspx?authtype=ip,uid&profile=ehost&defaultdb=' .
-        join ',',
-        # EBSCO databases to search
-        'psyh',    # PsycINFO
-        'pdh',     # PsycARTICLES
-        'mnh',     # MEDLINE
-        'f5h',     # MasterFILE Premier
-        'sih'});   # SocINDEX
+"crossref_email":
+"somebody@example.com",
+
+"mozilla_cookies_path":
+"/home/rodney/.mozilla/firefox/yqgrqigo.default/cookies.sqlite"
+
+}
