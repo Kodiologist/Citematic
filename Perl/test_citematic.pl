@@ -358,6 +358,9 @@ is book(title => ['The dialogical alternative', 'Towards a theory']),
 is book(year => 1997, author => ['duncan', 'brooks-gunn'], title => ['growing up poor']),
     'Duncan, G. J., & Brooks-Gunn, J. (Eds.). (1997). <i>Consequences of growing up poor</i>. New York, NY: Russell Sage Foundation. ISBN 978-0-87154-143-7.',
     'Consequences of growing up poor (two editors)';
+is book(author => ['Gilovich', 'Griffin', 'Kahneman']),
+    'Gilovich, T., Griffin, D. W., & Kahneman, D. (Eds.). (2002). <i>Heuristics and biases: The psychology of intuitive judgment</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-79260-8. doi:10.1017/CBO9780511808098',
+    'Heuristics and biases (three editors)';
 is book(year => 1953, title => ['Essays in positive economics']),
     'Friedman, M. (1953). <i>Essays in positive economics</i>. Chicago: University of Chicago Press.',
     'Essays in positive economics';
