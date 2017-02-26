@@ -574,6 +574,9 @@ sub digest_ris
       # Keep Project Euclid URLs. Most of its journals are
       # open-access, so the URLs are convenient.
        {$url = $ris->UR;}
+    elsif ($ris->UR and $ris->UR =~ m!\Ahttps?://www.ncbi.nlm.nih.gov/pmc/!)
+      # PMC articles are always open-access.
+       {$url = $ris->UR;}
 
     journal_article
         $authors, $year, $title, $journal,
