@@ -377,10 +377,11 @@ sub journal_article
         $first_page, $last_page, $doi, $url) = @_;
 
     $article_title = format_nonjournal_title $article_title;
-    $issue =~ s/Suppl\.?/Suppl./;
-    $issue =~ /\A(\d+)-(\d+)\z/ and $2 == $1 + 1
-        and $issue = "$1, $2";
-    $issue =~ s/p\d.*//;
+    if (defined $issue)
+      {$issue =~ s/Suppl\.?/Suppl./;
+       $issue =~ /\A(\d+)-(\d+)\z/ and $2 == $1 + 1
+           and $issue = "$1, $2";
+       $issue =~ s/p\d.*//;}
     $journal =~ /\AThe Journals of Gerontology/
         and $volume =~ s/[A-Z]\z//;
     $journal eq 'PLOS ONE'
