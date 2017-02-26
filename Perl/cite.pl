@@ -99,7 +99,8 @@ if ($a)
     $opt->more and %apa_opts = (%apa_opts,
         abbreviate_given_names => 0,
         always_include_issue => 1,
-        include_isbn => 1);
+        include_isbn => 1,
+        url_after_doi => 1);
     print Citematic::QuickBib->new->bib1($a, %apa_opts), "\n";
     $opt->json and write_file $opt->json, to_json $a,
         {utf8 => 1, pretty => 1, canonical => 1};}
