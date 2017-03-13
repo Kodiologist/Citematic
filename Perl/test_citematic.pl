@@ -43,6 +43,9 @@ is apa(year => 2005, author => [qw(Bechara Damasio Tranel)], title => ['answers'
 is apa(year => 2004, author => ['maia', 'McClelland']),
     'Maia, T. V., & McClelland, J. L. (2004). A reexamination of the evidence for the somatic marker hypothesis: What participants really know in the Iowa gambling task. <i>Proceedings of the National Academy of Sciences, 101</i>(45), 16075–16080. doi:10.1073/pnas.0406666101',
     'PNAS';
+is get(year => 2004, author => ['maia', 'McClelland'])->{author}[0]{given},
+    'Tiago V.',
+    '…initials have periods (1)';
 is apa(year => 1983, author => ['Tversky', 'Kahneman']),
     'Tversky, A., & Kahneman, D. (1983). Extensional versus intuitive reasoning: The conjunction fallacy in probability judgment. <i>Psychological Review, 90</i>(4), 293–315. doi:10.1037/0033-295X.90.4.293',
     'Psychological Review';
@@ -67,6 +70,9 @@ is apa(title => ['telling more than we can know'], year_max => 1980),
 is apa(title => ['pac-man'], year_min => 1990, year_max => 1999),
     'Emes, C. E. (1997). Is Mr Pac Man eating our children? A review of the effect of video games on children. <i>Canadian Journal of Psychiatry, 42</i>(4), 409–414. doi:10.1177/070674379704200408',
     'Canadian Journal of Psychiatry (double year bounds)';
+is get(title => ['pac-man'], year_min => 1990, year_max => 1999)->{author}[0]{given},
+    'C. E.',
+    '…initials have periods (2)';
 is apa(title => ['alleged sex research']),
     'Benjamin, L. T., Jr., Whitaker, J. L., Ramsey, R. M., & Zeve, D. R. (2007). John B. Watson\'s alleged sex research: An appraisal of the evidence. <i>American Psychologist, 62</i>(2), 131–139. doi:10.1037/0003-066X.62.2.131',
     'American Psychologist (author with "Jr.", miscapitalized title with middle initial)';

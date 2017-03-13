@@ -199,8 +199,7 @@ sub digest_author
         do {(my $surn_no_mc = $surn) =~ s/\Ama?c//i; $surn_no_mc =~ /[[:lower:]]/}
             or $surn = fix_allcaps_name $surn;
         # Add periods after initials, if necessary.
-        $rest =~ /\A[[:upper:]](?: [[:upper:]])*\z/
-            and $rest =~ s/\w\K/./g;
+        $rest =~ s/\b([[:upper:]])( |\z)/$1.$2/g;
         χ family => $surn, given => $rest, @suffix;}
     elsif ($str =~ /[[:lower:]]\s+[[:upper:]]{1,4}(?:\s+$suffix_re)?\z/)
       # We have something of the form "Smith AR".
@@ -863,7 +862,7 @@ sub get_from_url
                 family => ($_->{LastName} =~ /[[:lower:]]/
                   ? $_->{LastName}
                   : fix_allcaps_name $_->{LastName}),
-                given => $_->{ForeName},
+                given => (apply {s/\b([[:upper:]])( |\z)/$1.$2/g} $_->{ForeName}),
                 ($_->{Suffix} ? (suffix => format_suffix $_->{Suffix}) : ())}
             α $h{AuthorList}{Author};
         my $journal_title = digest_journal_title $h{Journal}{Title};
