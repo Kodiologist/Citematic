@@ -798,8 +798,8 @@ sub get_from_url
 
 # ** Cases that can use RIS
 
-    elsif ($url =~ m!\Ahttps?://www.ncbi.nlm.nih.gov/pmc/articles/PMC(\d+)/?\z!i
-            or $url =~ m!https?://europepmc.org/articles/PMC(\d+)\z!i)
+    elsif ($url =~ m!\Ahttps?://www\.ncbi\.nlm\.nih\.gov/pmc/articles/PMC(\d+)/?\z!i
+            or $url =~ m!https?://europepmc\.org/articles/PMC(\d+)\z!i)
        {my $id = $1;
         progress 'Using PMC';
         $url = query_url 'http://www.ncbi.nlm.nih.gov/pmc/utils/ctxp',
@@ -810,9 +810,9 @@ sub get_from_url
     elsif ($domain eq 'www.jstor.org')
        {progress 'Using JSTOR';
         my $path =
-            $url =~ m!\Ahttps?://www.jstor.org/stable/(\d+)(?:\?|\z)!
+            $url =~ m!\Ahttps?://www\.jstor\.org/stable/(\d+)(?:\?|\z)!
           ? "10.2307/$1"
-          : $url =~ m!\Ahttps?://www.jstor.org/stable/(10\.\d+/\d+)(?:\?|\z)!
+          : $url =~ m!\Ahttps?://www\.jstor\.org/stable/(10\.\d+/\d+)(?:\?|\z)!
           ? $1
           : die "Bad JSTOR URL: $url";
         $url = "http://www.jstor.org/citation/ris/$path";
@@ -830,11 +830,11 @@ sub get_from_url
 
     elsif ($domain eq 'link.springer.com')
        {progress 'Using SpringerLink';
-        $url =~ m!https?://link.springer.com/article/(10\.\d+/.+)! or die "Bad Springer URL: $url";
+        $url =~ m!https?://link\.springer\.com/article/(10\.\d+/.+)! or die "Bad Springer URL: $url";
         my $doi = $1;
         $url = query_url
             'http://citation-needed.services.springer.com/v2/references/' .
-              $doi,
+               $doi,
             format => 'refman',
             flavour => 'citation';
         return digest_ris($global_cache->{springer}{$doi} ||= decode 'UTF-8', lwp_get($url));}
@@ -852,8 +852,8 @@ sub get_from_url
 
 # ** PubMed
 
-    elsif ($url =~ m!\Ahttps?://www.ncbi.nlm.nih.gov/pubmed/(\d+)\z!
-            or $url =~ m!https?://europepmc.org/abstract/med/(\d+)\z!)
+    elsif ($url =~ m!\Ahttps?://www\.ncbi\.nlm\.nih\.gov/pubmed/(\d+)\z!
+            or $url =~ m!https?://europepmc\.org/abstract/med/(\d+)\z!)
        {my $pmid = $1;
         progress 'Using PubMed';
 
