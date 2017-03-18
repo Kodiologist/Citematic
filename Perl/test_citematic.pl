@@ -191,9 +191,6 @@ is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['mirror']),
 is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
     'Gazzola, V., & Keysers, C. (2009). The observation and execution of actions share motor and somatosensory voxels in all tested subjects: Single-subject analyses of unsmoothed fMRI data. <i>Cerebral Cortex, 19</i>(6), 1239–1255. doi:10.1093/cercor/bhn181',
     'Cerebral Cortex (disambiguating with a title search)';
-is apa(author => ['redelmeier', 'kahneman'], title => ['colonoscopy']),
-    'Redelmeier, D. A., Katz, J., & Kahneman, D. (2003). Memories of colonoscopy: A randomized trial. <i>Pain, 104</i>(1, 2), 187–194. doi:10.1016/S0304-3959(03)00003-4',
-    'Pain (article attributed to multiple issues)';
 is apa(doi => '10.1023/A:1022456626538'),
     q{Krahé, B., Scheinberger-Olwig, R., & Bieneck, S. (2003). Men's reports of nonconsensual sexual interactions with women: Prevalence and impact. <i>Archives of Sexual Behavior, 32</i>(2), 165–175. doi:10.1023/A:1022456626538},
     'Archives of Sexual Behavior (DOI search, no title in CrossRef record)';
@@ -242,9 +239,9 @@ is apa(title => ['clinician', 'old dogs']),
 is apa(doi => '10.1037/a0028362'),
     'Carpenter, K. M., Cheng, W. Y., Smith, J. L., Brooks, A. C., Amrhein, P. C., Wain, R. M., & Nunes, E. V. (2012). "Old dogs" and new skills: How clinician characteristics relate to motivational interviewing skills before, during, and after training. <i>Journal of Consulting and Clinical Psychology, 80</i>(4), 560–573. doi:10.1037/a0028362',
     'Journal of Consulting and Clinical Psychology (curly quotes in CrossRef title)';
-is apa(year => 1999, author => ['bone', 'ellen']),
-    'Bone, P. F., & Ellen, P. S. (1999). Scents in the marketplace: Explaining a fraction of olfaction. <i>Journal of Retailing, 75</i>(2), 243–262. doi:10.1016/S0022-4359(99)00007-X',
-    'Journal of Retailing (difficult-to-interpret byline in text)';
+is apa(title => ['trust for personalized online']),
+    'Bleier, A., & Eisenbeiss, M. (2015). The importance of trust for personalized online advertising. <i>Journal of Retailing, 91</i>(3), 390–409. doi:10.1016/j.jretai.2015.04.001',
+    'Journal of Retailing';
 is apa(doi => '10.1111/j.1360-0443.1997.tb02916.x'),
     'McCall, M. (1997). The effects of physical attractiveness on gaining access to alcohol: When social policy meets social decision making. <i>Addiction, 92</i>(5), 597–600. doi:10.1111/j.1360-0443.1997.tb02916.x',
     'Addiction (weird byline) (1)';
@@ -303,6 +300,9 @@ note '~~~ Journal articles - using URLs ~~~';
 is apa(url => 'http://psycnet.apa.org/psycinfo/1964-07399-001'),
     'Spence, D. P. (1964). Conscious and preconscious influences on recall: Another example of the restricting effects of awareness. <i>Journal of Abnormal and Social Psychology, 68</i>(1), 92–99. doi:10.1037/h0049342',
     'URL: PsycNET';
+is apa(url => 'http://psycnet.apa.org/psycinfo/2003-99569-011'),
+    'Redelmeier, D. A., Katz, J., & Kahneman, D. (2003). Memories of colonoscopy: A randomized trial. <i>Pain, 104</i>(1, 2), 187–194. doi:10.1016/S0304-3959(03)00003-4',
+    'URL: PsycNET (article attributed to multiple issues)';
 is apa(url => 'https://eric.ed.gov/?id=EJ108085'),
     'Skinner, B. F. (1974). Designing higher education. <i>Daedalus, 103</i>(4), 196–202.',
     'URL: ERIC';
@@ -318,6 +318,9 @@ is apa(url => 'http://onlinelibrary.wiley.com/doi/10.1111/acer.13216/full'),
 is apa(url => 'http://link.springer.com/article/10.1007/BF00227282'),
     'Horak, F. B., Shupert, C. L., Dietz, V., & Horstmann, G. (1994). Vestibular and somatosensory contributions to responses to head and body displacements in stance. <i>Experimental Brain Research, 100</i>(1), 93–106. doi:10.1007/BF00227282',
     'URL: SpringerLink';
+is apa(url => 'http://www.sciencedirect.com/science/article/pii/S0309174016305587'),
+    'Pieszka, M., Szczurek, P., Bederska-Łojewska, D., Migdał, W., Pieszka, M., Gogol, P., & Jagusiak, W. (2017). The effect of dietary supplementation with dried fruit and vegetable pomaces on production parameters and meat quality in fattening pigs. <i>Meat Science, 126</i>, 1–10. doi:10.1016/j.meatsci.2016.11.016',
+    'URL: ScienceDirect';
 is apa(url => 'https://www.ncbi.nlm.nih.gov/pubmed/18726137'),
     'Ströhle, A. (2009). Physical activity, exercise, depression and anxiety disorders. <i>Journal of Neural Transmission, 116</i>(6), 777–784. doi:10.1007/s00702-008-0092-x',
     'URL: PubMed';

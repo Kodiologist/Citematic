@@ -839,6 +839,17 @@ sub get_from_url
             flavour => 'citation';
         return digest_ris($global_cache->{springer}{$doi} ||= decode 'UTF-8', lwp_get($url));}
 
+    elsif ($domain eq 'www.sciencedirect.com')
+       {progress 'Using ScienceDirect';
+        $url =~ m!https?://www\.sciencedirect\.com/science/article/pii/([^/]+)! or die "Bad ScienceDirect URL: $url";
+        my $id = $1;
+        $url = query_url 'http://www.sciencedirect.com/sdfe/arp/cite',
+            pii => $id,
+            format => 'application/x-research-info-systems',
+            withabstract => 'false';
+        return digest_ris($global_cache->{sciencedirect}{$id} ||=
+            decode 'UTF-8', lwp_get($url));}
+
 # ** PubMed
 
     elsif ($url =~ m!\Ahttps?://www.ncbi.nlm.nih.gov/pubmed/(\d+)\z!
