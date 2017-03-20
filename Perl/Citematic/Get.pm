@@ -383,7 +383,7 @@ sub journal_article
        $issue =~ s/p\d.*//;}
     $journal =~ /\AThe Journals of Gerontology/
         and $volume =~ s/[A-Z]\z//;
-    $journal eq 'PLOS ONE'
+    $journal eq 'PLOS ONE' || $journal =~ /\ACochrane Database/
       # We don't need all this stuff for a purely electronic journal.
         and do {undef $volume; undef $issue; undef $first_page; undef $last_page;};
     !$url and $journal eq 'Judgment and Decision Making'
@@ -547,7 +547,7 @@ sub digest_ris
     my $journal = digest_journal_title(
         $ris->JO || $ris->JF || $ris->T2 || $ris->J2);
     my ($fpage, $lpage) =
-        $ris->starting_page =~ /[-–]/
+        $ris->starting_page && $ris->starting_page =~ /[-–]/
       ? split /[-–]/, $ris->starting_page
       : ($ris->starting_page, $ris->ending_page);
     my $volume = $ris->volume || $ris->VN;
@@ -821,12 +821,13 @@ sub get_from_url
 
     elsif ($domain eq 'onlinelibrary.wiley.com')
        {progress 'Using Wiley';
-        $url =~ m!/doi/(.+?)/(?:full|abstract)\b! or die "Bad Wiley URL: $url";
+        $url =~ m!/doi/(.+?)/(?:full|abstract|pdf)\b! or die "Bad Wiley URL: $url";
         $doi = $1;
-        my $url = "http://onlinelibrary.wiley.com/enhanced/getCitation/doi/$doi";
+        my $url = query_url
+            "http://onlinelibrary.wiley.com/enhanced/getCitation/doi/$doi",
+            'citation-type' => 'reference';
         return digest_ris($global_cache->{wiley}{$doi} ||=
-           $LWP::Simple::ua->post($url,
-               {'citation-type' => 'text'})->decoded_content);}
+            decode 'UTF-8', lwp_get $url);}
 
     elsif ($domain eq 'link.springer.com')
        {progress 'Using SpringerLink';

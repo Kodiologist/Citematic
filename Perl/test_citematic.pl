@@ -203,6 +203,9 @@ is apa(year => 2007, author => ['whitaker', 'saltzman']),
 is get(year => 2007, author => ['whitaker', 'saltzman'])->{author}[1]{given},
     'Tadesse',
     '…first name is preserved (3)';
+is apa(year => 2014, title => ['Powered versus manual toothbrushing']),
+    'Yaacob, M., Worthington, H. V., Deacon, S. A., Deery, C., Walmsley, A. D., Robinson, P. G., & Glenny, A.-M. (2014). Powered versus manual toothbrushing for oral health. <i>Cochrane Database of Systematic Reviews</i>. doi:10.1002/14651858.CD002281.pub3',
+    'Cochrane Database';
 is apa(doi => 'doi:10.1037/0033-295X.84.3.231'),
     'Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. <i>Psychological Review, 84</i>(3), 231–259. doi:10.1037/0033-295X.84.3.231',
     'Psychological Review (DOI search, with "doi:", DOI in PsycINFO)';
