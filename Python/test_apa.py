@@ -257,6 +257,20 @@ def test_newspaper_article():
   # Yes, the "The" in "The New York Times" is included: see
   # http://www.apastyle.org/learn/faqs/cite-newspaper.aspx
 
+def test_encyclopedia_entry():
+    assert (f(dict(type = 'entry-encyclopedia',
+            author = [name('Elizabeth O.', 'Lichtenberger'),
+                name('Alan S.', 'Kaufman')],
+            editor = [name('Caroline S.', 'Clauss-Ehlers')],
+            issued = {'date-parts': [[2010]]},
+            container_title = 'Encyclopedia of cross-cultural school psychology',
+            title = 'Kaufman Assessment Battery for Children—Second Edition (KABC-II)',
+            page = '557–564',
+            publisher = 'Springer',
+            publisher_place = 'New York, NY',
+            ISBN = '978-0-387-71798-2')) ==
+        'Lichtenberger, E. O., & Kaufman, A. S. (2010). Kaufman Assessment Battery for Children—Second Edition (KABC-II). In C. S. Clauss-Ehlers (Ed.), <i>Encyclopedia of cross-cultural school psychology</i> (pp. 557–564). New York, NY: Springer.')
+
 def test_conference_paper():
   # If I understand
   #   http://forums.zotero.org/discussion/4782/csl-getting-conference-name-to-show-up-properly-in-bibliography#Comment_20601 ,

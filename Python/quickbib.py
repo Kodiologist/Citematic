@@ -91,6 +91,9 @@ def bib(style_path,
             if d['type'] == 'speech' and d['genre'] == 'video':
                 d['medium'] = 'Video file'
                 del d['genre']
+            # Format encyclopedia entries like book chapters.
+            if d['type'] == 'entry-encyclopedia':
+                d['type'] = 'chapter'
             # When abbreviating given names, remove hyphens
             # preceding lowercase letters. Otherwise, weird
             # stuff happens.
