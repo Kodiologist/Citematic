@@ -130,7 +130,6 @@ sub query_url
         while @_;
     $prefix . '?' . join '&', @a;}
 
-
 my %last_got;
 sub lwp_get
    {my $url = shift;
