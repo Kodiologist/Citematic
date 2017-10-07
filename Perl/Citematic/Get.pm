@@ -725,7 +725,7 @@ sub gscholar
         btnG => '';
     my $got = ($global_cache->{gscholar_first}{$cache_key} ||= runsub
        {my $page = lwp_get($url);
-        unless ($page =~ m!<div class="gs_ri">(.+?)Fewer</a></div>!si)
+        unless ($page =~ m!<div class="gs_ri">(.+?)title="Fewer"!si)
            {if ($page =~ /id="gs_captcha_f"><h1>Please show/)
                {die "Hit Google Scholar CAPTCHA. Visit the page with Mozilla, solve the CAPTCHA, quit Mozilla, and try again.\n";}
             elsif ($page =~ /\bdid not match any articles\b/)
@@ -760,7 +760,7 @@ sub gscholar
                {push @versions, grep {$_ ne '#'} map
                     {/<a\s+href="([^"]+)/ or die;
                         decode_entities($1)}
-                    $cluster_page =~ m!<div class="gs_ri">(.+?)Fewer</a></div>!sig;
+                    $cluster_page =~ m!<div class="gs_ri">(.+?)title="Fewer"!sig;
                 $cluster_page =~ m!<a href="(/scholar?[^"]+)"><span class="gs_ico gs_ico_nav_next"!
                     or last;
                 $cluster_page = lwp_get('https://scholar.google.com' . decode_entities($1));}
