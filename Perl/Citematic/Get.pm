@@ -409,7 +409,7 @@ sub journal_article
 
     $article_title = format_nonjournal_title $article_title;
     if (defined $issue)
-      {$issue =~ s/Suppl\.?/Suppl./;
+      {$issue =~ s/Suppl\.?(?:ement)?/Suppl./;
        $issue =~ /\A(\d+)-(\d+)\z/ and $2 == $1 + 1
            and $issue = "$1, $2";
        $issue =~ s/p\d.*//;}

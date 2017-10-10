@@ -67,10 +67,10 @@ is apa(year => 2010, author => ['trope', 'liberman'], title => ['construal-level
 is apa(title => ['telling more than we can know'], year_max => 1980),
     'Nisbett, R. E., & Wilson, T. D. (1977). Telling more than we can know: Verbal reports on mental processes. <i>Psychological Review, 84</i>(3), 231–259. doi:10.1037/0033-295X.84.3.231',
     'Psychological Review (upper year bound)';
-is apa(title => ['pac-man'], year_min => 1990, year_max => 1999),
+is apa(title => ['pac-man'], year_min => 1993, year_max => 1999),
     'Emes, C. E. (1997). Is Mr Pac Man eating our children? A review of the effect of video games on children. <i>Canadian Journal of Psychiatry, 42</i>(4), 409–414. doi:10.1177/070674379704200408',
     'Canadian Journal of Psychiatry (double year bounds)';
-is get(title => ['pac-man'], year_min => 1990, year_max => 1999)->{author}[0]{given},
+is get(title => ['pac-man'], year_min => 1993, year_max => 1999)->{author}[0]{given},
     'C. E.',
     '…initials have periods (2)';
 is apa(title => ['alleged sex research']),
@@ -116,7 +116,7 @@ is apa(year => 2006, author => ['ditto', 'pizarro']),
     'Ditto, P. H., Pizarro, D. A., Epstein, E. B., Jacobson, J. A., & MacDonald, T. K. (2006). Visceral influences on risk-taking behavior. <i>Journal of Behavioral Decision Making, 19</i>(2), 99–113. doi:10.1002/bdm.520',
     'Journal of Behavioral Decision Making (miscapitalized title)';
 is apa(year => 2007, author => ['levin', 'pederson']),
-    'Levin, I. P., Weller, J. A., Pederson, A. A., & Harshman, L. A. (2007). Age-related differences in adaptive decision making: Sensitivity to expected value in risky choice. <i>Judgment and Decision Making, 2</i>(4), 225–233. Retrieved from http://journal.sjdm.org/7404/jdm7404.htm',
+    'Levin, I. P., Weller, J. A., Pederson, A. A., & Harshman, L. A. (2007). Age-related differences in adaptive decision making: Sensitivity to expected value in risky choice. <i>Judgment and Decision Making, 2</i>, 225–233. Retrieved from http://journal.sjdm.org/7404/jdm7404.htm',
     'Judgment and Decision Making';
 is apa(doi => '10.1111/j.1539-6924.2008.01065.x'),
     'Wilson, R. S., Arvai, J. L., & Arkes, H. R. (2008). My loss is your loss… sometimes: Loss aversion and the effect of motivational biases. <i>Risk Analysis, 28</i>(4), 929–938. doi:10.1111/j.1539-6924.2008.01065.x',
@@ -188,7 +188,7 @@ is apa(year => 1987, author => ['Grassia', 'Pearson']),
 is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['mirror']),
     'Keysers, C., & Gazzola, V. (2009). Expanding the mirror: Vicarious activity for actions, emotions, and sensations. <i>Current Opinion in Neurobiology, 19</i>(6), 666–671. doi:10.1016/j.conb.2009.10.006',
     'Current Opinion in Neurobiology (disambiguating with a title search)';
-is apa(year => 2009, author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
+is apa(author => ['Keysers', 'Gazzola'], title => ['unsmoothed']),
     'Gazzola, V., & Keysers, C. (2009). The observation and execution of actions share motor and somatosensory voxels in all tested subjects: Single-subject analyses of unsmoothed fMRI data. <i>Cerebral Cortex, 19</i>(6), 1239–1255. doi:10.1093/cercor/bhn181',
     'Cerebral Cortex (disambiguating with a title search)';
 is apa(doi => '10.1023/A:1022456626538'),
@@ -322,7 +322,7 @@ is apa(url => 'http://link.springer.com/article/10.1007/BF00227282'),
     'Horak, F. B., Shupert, C. L., Dietz, V., & Horstmann, G. (1994). Vestibular and somatosensory contributions to responses to head and body displacements in stance. <i>Experimental Brain Research, 100</i>(1), 93–106. doi:10.1007/BF00227282',
     'URL: SpringerLink';
 is apa(url => 'http://www.sciencedirect.com/science/article/pii/S0309174016305587'),
-    'Pieszka, M., Szczurek, P., Bederska-Łojewska, D., Migdał, W., Pieszka, M., Gogol, P., & Jagusiak, W. (2017). The effect of dietary supplementation with dried fruit and vegetable pomaces on production parameters and meat quality in fattening pigs. <i>Meat Science, 126</i>, 1–10. doi:10.1016/j.meatsci.2016.11.016',
+    'Pieszka, M., Szczurek, P., Bederska-Łojewska, D., Migdał, W., Pieszka, M., Gogol, P., & Jagusiak, W. (2017). The effect of dietary supplementation with dried fruit and vegetable pomaces on production parameters and meat quality in fattening pigs. <i>Meat Science, 126</i>(Suppl. C), 1–10. doi:10.1016/j.meatsci.2016.11.016',
     'URL: ScienceDirect';
 is apa(url => 'https://www.ncbi.nlm.nih.gov/pubmed/18726137'),
     'Ströhle, A. (2009). Physical activity, exercise, depression and anxiety disorders. <i>Journal of Neural Transmission, 116</i>(6), 777–784. doi:10.1007/s00702-008-0092-x',
