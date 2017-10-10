@@ -1096,7 +1096,7 @@ sub congress
     my ($year) = min $record{originInfo}{dateIssued}[0] =~ /(\d{4})/g;
     my $book = $record{titleInfo}{title};
     $record{titleInfo}{nonSort}
-        and $book = $record{titleInfo}{nonSort} . lcfirst $book;
+        and $book = $record{titleInfo}{nonSort}{content} . lcfirst $book;
     $record{titleInfo}{subTitle}
         and $book .= ': ' . ucfirst $record{titleInfo}{subTitle};
     my $volume;
@@ -1125,11 +1125,11 @@ sub arxiv_from_id
     my %record = η($global_cache->{arxiv}{$id} ||=
         get_html_meta_tags $url);
 
-    my $authors = σ map {digest_author $_} α $record{author};
-    $record{date} =~ m!(\d\d\d\d)/\d\d/\d\d! or die 'y';
+    my $authors = σ map {digest_author $_} α $record{citation_author};
+    $record{citation_date} =~ m!(\d\d\d\d)/\d\d/\d\d! or die 'y';
     my $year = $1;
 
-    manuscript $authors, $year, $record{title}, $url;}
+    manuscript $authors, $year, $record{citation_title}, $url;}
 
 # ------------------------------------------------------------
 # * Society for Judgment and Decision-Making

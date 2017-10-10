@@ -407,10 +407,10 @@ is book(year => 2000, title => ['programming perl']),
     q(Wall, L., Christiansen, T., & Orwant, J. (2000). <i>Programming Perl</i> (3rd ed.). Beijing, PRC: O'Reilly. ISBN 978-0-596-00027-1.),
     'Programming Perl';
 is book(year => 2000, author => ['carothers'], title => ['analysis']),
-    'Carothers, N. L. (2000). <i>Real analysis</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-49749-7.',
+    'Carothers, N. L. (2000). <i>Real analysis</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-49749-7. doi:10.1017/CBO9780511814228',
     'Real analysis';
 is book(isbn => '978-0-521-49749-7'),
-    'Carothers, N. L. (2000). <i>Real analysis</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-49749-7.',
+    'Carothers, N. L. (2000). <i>Real analysis</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-49749-7. doi:10.1017/CBO9780511814228',
     'Real analysis (ISBN search)';
 is book(year => 2005, title => [q(student's introduction to english)]),
     q(Huddleston, R. D., & Pullum, G. K. (2005). <i>A student's introduction to English grammar</i>. Cambridge, UK: Cambridge University Press. ISBN 978-0-521-84837-4. doi:10.1017/CBO9780511815515),
