@@ -65,6 +65,7 @@ $LWP::Simple::ua->agent('Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:49.0)');
 $LWP::Simple::ua->cookie_jar(HTTP::Cookies::Mozilla->new(
     file => $config{mozilla_cookies_path},
     autosave => 1));
+push @{$LWP::Simple::ua->requests_redirectable}, 'POST';
 
 our $verbose;
 our $debug;
@@ -131,7 +132,7 @@ sub query_url
     $prefix . '?' . join '&', @a;}
 
 my %last_got;
-sub lwp_get
+sub sleep_if_necessary
    {my $url = shift;
     my $domain = URI->new($url)->host;
     my $to_wait = 3 + rand();
@@ -139,8 +140,13 @@ sub lwp_get
       # Don't hit the same domain too rapidly.
        {progress 'Sleeping';
         sleep(time() - $last_got{$domain} + $to_wait);}
+    $last_got{$domain} = time;}
+
+sub lwp_get
+   {my $url = shift;
+    sleep_if_necessary($url);
     progress "Getting $url ";
-    my $result = $domain =~ /scholar\.google\.com/
+    my $result = $url =~ m!scholar\.google\.com(?:/|\z)!
       ? do
             # LWP doesn't seem to choose the right cookies to send.
             # So we have to do it manually. (You can imagine how much
@@ -150,10 +156,35 @@ sub lwp_get
             $request->header('Cookie', get_gscholar_cookie());
             $LWP::Simple::ua->send_request($request)->decoded_content}
       : LWP::Simple::get($url);
-    $last_got{$domain} = time;
     defined $result
       ? $result
       : die "lwp_get failed: $url"}
+
+sub lwp_post
+   {my ($url, %args) = @_;
+    sleep_if_necessary($url);
+    progress "Posting to $url ";
+    my $request = HTTP::Request::Common::POST($url, %args);
+    $LWP::Simple::ua->prepare_request($request);
+    # Override cookies.
+    foreach ('Cookie', 'Cookie2')
+       {exists $args{$_}
+            and $request->header($_, $args{$_});}
+    my $resp = $LWP::Simple::ua->send_request($request);
+    $resp->is_success
+        or die "lwp_post failed: $url";
+    $resp->decoded_content;}
+
+sub get_redir_target
+   {my $url = shift;
+    sleep_if_necessary($url);
+    my $req = HTTP::Request::Common::HEAD($url,
+        Accept => 'text/html');
+    progress "Getting target of $url ";
+    my $resp = $LWP::Simple::ua->request($req);
+    $resp->is_success
+        or die "get_redir_target failed: $url   " . $resp->status_line() . "\n\n\n" . $resp->decoded_content;
+    '' . $resp->request->uri;}
 
 sub fix_allcaps_word
    {my $all_low = lc shift;
@@ -286,6 +317,8 @@ sub format_nonjournal_title
    {my $s = shift;
     # Change nonbreaking spaces to regular spaces.
     $s =~ s/\x{A0}/ /g;
+    # Remove leading space.
+    $s =~ s/\A\s+//;
     if ($s =~ / / and
         matches(qr/\b[[:upper:]]/, $s) /
         matches(qr/\b[[:alpha:]]/, $s) > 1/2)
@@ -597,9 +630,6 @@ sub get_html_meta_tags
        {$h{s/^og:/og_/r} = delete $h{$_};}
     $h{citation_author} = σ map {decode_entities $_}
         $page =~ /<meta\s+(?:name|property)="citation_authors?"\s*content="([^"]+)/g;
-    if ($page =~ /<title>PsycNET/)
-       {$page =~ /<div id="rdcSource">\s+(.+?)\s+</s or die;
-        $h{psycnet_source} = decode_entities $1;}
     \%h;}
 
 sub digest_html_meta_tags
@@ -616,9 +646,7 @@ sub digest_html_meta_tags
        {my ($volume, $issue, $first_page, $last_page) =
             @h{qw(citation_volume citation_issue citation_firstpage citation_lastpage)};
         if (!$volume or !$issue or !$first_page or !$last_page)
-           {my @a = $h{psycnet_source}
-              ? $h{psycnet_source} =~ /Vol (\d+)\((\d+(?:-\d+)?)[^)]*\), [^,]+, (\d+)-(\d+)/
-              : $h{'journal citation'} =~ /\A(\d+), (\d+), (\d+)(?:-(\d+))?,/;
+           {my @a = $h{'journal citation'} =~ /\A(\d+), (\d+), (\d+)(?:-(\d+))?,/;
             @a or die;
             $volume ||= $a[0];
             $issue ||= $a[1];
@@ -627,8 +655,7 @@ sub digest_html_meta_tags
         $last_page =~ s/;.+//;
         $last_page = expand_last_page_number $first_page, $last_page;
         my $journal_title = digest_journal_title(
-            $h{citation_journal_title} ||
-            do {$h{psycnet_source} =~ /(.+),\s+Vol/ or die; $1});
+            $h{citation_journal_title});
         my $doi = $h{citation_doi} || get_doi_for_journal_article
             $year, $journal_title, $h{citation_title},
             $authors->[0]{family},
@@ -637,31 +664,6 @@ sub digest_html_meta_tags
             $authors, $year, $h{citation_title},
             $journal_title, $volume, $issue,
             $first_page, $last_page, $doi, undef;}
-
-    elsif ($h{og_type} eq 'Chapter')
-       {my ($isbn) = ($h{citation_isbn} =~ /(\S+)/);
-        $h{psycnet_source} =~ m{ \A
-            (?<editors> .+?) \s+
-            \( \d{4} \) \. \s+
-            (?<book_title> .+?)
-            (?: , \s (?<edition> \d+ [a-z]{2}) \s ed\. ,)?
-            (?:
-                , \s+ Vol\. \s+ (?<volume> \d+)
-                (?: : \s [^.]+ )?
-                \.)?
-            \s* , \s+
-            \( pp\. \s+
-                (?<first_page> \d+) - (?<last_page> \d+) \) \. \s+
-            (?<place> .+?) : \s+
-            (?<publisher> [^,]+) }x or die 'chapter source';
-        my %src = %+;
-        my $editors = σ map {digest_author $_}
-            $src{editors} =~ /([[:alpha:]].+?)\s+\(Ed\)/g;
-        return book_chapter
-            $authors, $year, $h{citation_title},
-            $editors, $src{book_title}, $src{volume},
-            $src{edition}, $src{first_page}, $src{last_page},
-            $src{place}, $src{publisher}, $isbn;}
 
     else
        {die "Bad og:type $h{og_type}"}}
@@ -734,11 +736,10 @@ sub gscholar
         my $chunk = $1;
         $chunk =~ /<a\s+href="([^"]+)/ or die 2;
         my $result_url = decode_entities($1);
-        $result_url =~ m!\A/scholar?!
+        $result_url =~ m!\A/citations?!
           # This just a citation Google Scholar scraped from
           # elsewhere, not a link to any bibliographic data.
-          # So basically, we've got nothing.
-            and return [];
+            and $result_url = undef;
         my $cluster_id;
         $chunk =~ m!/scholar\?cluster=(\d+)!
             and $cluster_id = $1;
@@ -747,7 +748,7 @@ sub gscholar
     @$got
         or return err 'No results.';
     my ($cluster_id, $result_url) = @$got;
-    my $r = get_from_url($result_url, $terms{doi});
+    my $r = $result_url && get_from_url($result_url, $terms{doi});
 
     unless (defined $r)
        {my $urls = [];
@@ -756,9 +757,12 @@ sub gscholar
                 "https://scholar.google.com/scholar?cluster=$cluster_id");
             my @versions;
             for (;;)
-               {push @versions, grep {$_ ne '#'} map
-                    {/<a\s+href="([^"]+)/ or die;
-                        decode_entities($1)}
+               {push @versions,
+                    grep {$_ ne '#'
+                        and $_ !~ /\Ajavascript:/ and $_ !~ m!\A/citations?!}
+                    map
+                        {/<a\s+href="([^"]+)/ or die;
+                            decode_entities($1)}
                     $cluster_page =~ m!<div class="gs_ri">(.+?)title="Fewer"!sig;
                 $cluster_page =~ m!<a href="(/scholar?[^"]+)"><span class="gs_ico gs_ico_nav_next"!
                     or last;
@@ -784,13 +788,7 @@ sub get_from_url
 
 # ** Cases that can use HTML meta tags
 
-    if ($domain eq 'psycnet.apa.org' || $domain eq 'doi.apa.org')
-       {progress 'Trying PsycNET';
-        $url =~ s/\.pdf\z//;
-        digest_html_meta_tags $global_cache->{psycnet}{$url} ||=
-            get_html_meta_tags $url;}
-
-    elsif ($domain eq 'eric.ed.gov')
+    if ($domain eq 'eric.ed.gov')
        {progress 'Using ERIC';
         return digest_html_meta_tags $global_cache->{eric}{$url} ||=
             get_html_meta_tags $url;}
@@ -849,6 +847,88 @@ sub get_from_url
             withabstract => 'false';
         return digest_ris($global_cache->{sciencedirect}{$id} ||=
             decode 'UTF-8', lwp_get($url));}
+
+# ** PsycNET
+
+    if ($domain eq 'psycnet.apa.org' || $domain eq 'doi.apa.org')
+       {progress 'Trying PsycNET';
+
+        $url =~ s/\.pdf\z//;
+        $url =~ m!/(?:record|psycinfo|books)/([^/]+)!
+            or $url =~ m!uid=([^/&=]+)!
+            or ($global_cache->{psycnet}{uids}{$url} ||=
+                    get_redir_target($url))
+                =~ m!/record/([^/]+)\z!
+            or die "Bad PsycNET URL: $url";
+        my $uid = $1;
+
+        my %h = %{$global_cache->{psycnet}{records}{$uid} ||=
+            from_json(
+                lwp_post('http://psycnet.apa.org/api/request/search.record',
+                    # We blank out cookies because they may cause
+                    # an error, possibly because we're not
+                    # executing some sort of session-management
+                    # JavaScript.
+                    Cookie => '',
+                    Cookie2 => '',
+                    'Content-Type' => 'application/json',
+                    Referer => "http://psycnet.apa.org/record/$uid",
+                    Content => qq({"api": "search.record",
+                       "params": {"metadata":{"uid": "$uid"},
+                       "responseParameters": {"results": true}}})),
+                {utf8 => 1})->{results}{result}{doc}[0]};
+
+        my $authors = σ map {digest_author $_} α $h{AuthorName};
+        my $title = $h{GivenDocumentTitle};
+        my $year = $h{PublicationYear};
+        my $journal = $h{PublicationName};
+        my $volume = $h{PAVolume};
+        my $issue = $h{PAIssueCode};
+        my $first_page = $h{PAFirstPage};
+        my $last_page;
+        my $doi = $h{DOI};
+
+        if ($h{SourceAPA} =~ m!
+                <em> [^<]+? , \s* (?<volume> \d+) </em>
+                \(
+                    (?<issue> \d+ (?: [,-] \s* \d+)?)
+                    [^)]* \), \s*
+                (?<first_page> \d+) - (?<last_page> \d+)!x)
+           {$volume //= $+{volume};
+            $issue //= $+{issue};
+            $first_page //= $+{first_page};
+            $last_page = $+{last_page};
+            return journal_article
+                $authors, $year, $title,
+                digest_journal_title($journal), $volume, $issue,
+                $first_page, $last_page, $doi, undef;}
+        elsif ($h{SourcePI} =~ m!
+                \A (?<editors> .+?) \s+ \( \d{4} \) \.
+                .+?
+                \( pp\. \s+
+                    (?<first_page> \d+) - (?<last_page> \d+) \) \. \s+
+                (?<place> .+?) : \s+
+                (?<publisher> [^,.]+) !x)
+           {my %s = %+;
+            $first_page //= $s{first_page};
+            $last_page = $s{last_page};
+            my $editors = σ map {digest_author $_}
+                $s{editors} =~ /([[:alpha:]].+?)\s+\(Ed\)/g;
+            my $place = $s{place};
+            my $publisher = $s{publisher};
+            my $edition;
+            my $book = $journal;
+            $book =~ s/, (\d+[a-z]{2}) ed\.//
+                and $edition = $1;
+            $book =~ s/, vol\. (\d+).+//i
+                and $volume //= $1;
+            my ($isbn) = $h{ISBN}[0] =~ /(\S+)/;
+            return book_chapter
+                $authors, $year, $title, $editors, $book, $volume,
+                $edition, $first_page, $last_page, $place, $publisher,
+                $isbn;}
+        else
+           {die "SourceAPA: $h{SourceAPA} // SourcePI: $h{SourcePI}";}}
 
 # ** PubMed
 
