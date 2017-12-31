@@ -129,11 +129,11 @@ def test_duplicate_tracking():
        jf(author = [name('Aaa', 'Alfa'), name('Bbb', 'Bravo'), name('Ccc', 'Charlie')]),
        jf(author = [name('Aaa', 'Alfa'), name('Bbb', 'Bravo'), name('Ccc', 'Charlie'), name('Ddd', 'Delta')])]
     assert f(l, multi = True) == [
-        'Alfa, A. (1983a). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Alfa, A. (1983). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
         'Alfa, A., & Bravo, B. (1983a). Another title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
         'Alfa, A., & Bravo, B. (1983b). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
-        'Alfa, A., Bravo, B., & Charlie, C. (1983b). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
-        'Alfa, A., Bravo, B., Charlie, C., & Delta, D. (1983c). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz']
+        'Alfa, A., Bravo, B., & Charlie, C. (1983a). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz',
+        'Alfa, A., Bravo, B., Charlie, C., & Delta, D. (1983b). The main title. <i>Sciency Times, 30</i>, 293–315. doi:10.zzz/zzzzzz']
       # The two-author papers have their own series of letter
       # suffixes because they would be cited inline with both
       # authors, instead of just Alfa as the others would be.

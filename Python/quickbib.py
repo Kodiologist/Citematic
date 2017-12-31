@@ -53,14 +53,17 @@ def bib(style_path,
         # (Actually, we use only an initial subset of authors,
         # the same number that would be included in an inline citation
         # after the first inline citation. This is 2 for 2 authors
-        # and 1 otherwise.)
+        # and 1 otherwise. For 3 or more authors, we also add a cookie
+        # for "et al.".)
         ay = defaultdict(list)
         for d in ds:
             names = d.get('author') or d.get('editor')
-            if len(names) != 2:
-                names = [names[0]]
-            k = repr(names)  + '/' + str(d['issued']['date-parts'][0][0])
-            if not any(d is v for v in ay[k]):
+            names = [names[0]] + (
+                []         if len(names) == 1 else
+                [names[1]] if len(names) == 2 else
+                ['etal'])
+            k = repr(names) + '/' + str(d['issued']['date-parts'][0][0])
+            if d not in ay[k]:
                 ay[k].append(d)
         # If any group has more than one element, add suffixes.
         for v in ay.values():
