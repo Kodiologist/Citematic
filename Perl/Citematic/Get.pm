@@ -953,7 +953,9 @@ sub get_from_url
                 family => ($_->{LastName} =~ /[[:lower:]]/
                   ? $_->{LastName}
                   : fix_allcaps_name $_->{LastName}),
-                given => (apply {s/\b([[:upper:]])( |\z)/$1.$2/g} $_->{ForeName}),
+                ($_->{ForeName}
+                  ? (given => (apply {s/\b([[:upper:]])( |\z)/$1.$2/g} $_->{ForeName}))
+                  : ()),
                 ($_->{Suffix} ? (suffix => format_suffix $_->{Suffix}) : ())}
             α $h{AuthorList}{Author};
         my $journal_title = digest_journal_title $h{Journal}{Title};

@@ -327,6 +327,11 @@ is apa(url => 'http://www.sciencedirect.com/science/article/pii/S030917401630558
 is apa(url => 'https://www.ncbi.nlm.nih.gov/pubmed/18726137'),
     'Ströhle, A. (2009). Physical activity, exercise, depression and anxiety disorders. <i>Journal of Neural Transmission, 116</i>(6), 777–784. doi:10.1007/s00702-008-0092-x',
     'URL: PubMed';
+is get(url => 'https://www.ncbi.nlm.nih.gov/pubmed/30199416')->{author}[6]{family},
+    'Yuval',
+    'URL: PubMed (mononym, last name)';
+ok !exists(get(url => 'https://www.ncbi.nlm.nih.gov/pubmed/30199416')->{author}[6]{given}),
+    'URL: PubMed (mononym, first name)';
 is apa(url => 'https://ideas.repec.org/a/eee/jfpoli/v37y2012i5p520-529.html'),
     'Øvrum, A., Alfnes, F., Almli, V. L., & Rickertsen, K. (2012). Health information and diet choices: Results from a cheese experiment. <i>Food Policy, 37</i>(5), 520–529. doi:10.1016/j.foodpol.2012.05.005',
     'URL: IDEAS';
