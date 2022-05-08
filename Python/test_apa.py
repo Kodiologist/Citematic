@@ -8,8 +8,9 @@ if 'APA_CSL_PATH' not in environ:
 
 def f(ds, multi = False, **kw):
     if not multi: ds = [ds]
-    for d in ds:
-        for k in d: d[k.replace('_', '-')] = d.pop(k)
+    ds = [
+        {k.replace('_', '-'): v for k, v in d.items()}
+        for d in ds]
     bibl = bib(environ['APA_CSL_PATH'], ds, apa_tweaks = True, **kw)
     return bibl if multi else bibl[0]
 
