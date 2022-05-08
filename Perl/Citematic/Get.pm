@@ -818,7 +818,7 @@ sub get_from_url
 
     elsif ($domain eq 'onlinelibrary.wiley.com')
        {progress 'Using Wiley';
-        $url =~ m!/doi/(.+?)/(?:full|abstract|pdf)\b! or die "Bad Wiley URL: $url";
+        $url =~ m!/doi/(?:abs/)?(.+?)(?:\z|/full\b|/abstract\b|/pdf\b)! or die "Bad Wiley URL: $url";
         $doi = $1;
         my $url = query_url
             "http://onlinelibrary.wiley.com/enhanced/getCitation/doi/$doi",
