@@ -1,7 +1,7 @@
 # http://ocoins.info/
 
 from collections import defaultdict
-import urllib.parse, cgi
+import urllib.parse, html
 
 # ----------------------------------------------------------
 # * Public
@@ -9,7 +9,7 @@ import urllib.parse, cgi
 
 def coins(csl):
     return '<span class="Z3988" title="{}"></span>'.format(
-        cgi.escape(coins_data(csl)))
+        html.escape(coins_data(csl)))
 
 def coins_data(csl):
     csl = defaultdict(lambda: None, csl)
