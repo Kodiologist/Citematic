@@ -1,3 +1,5 @@
+(I've mostly lapsed in maintenance of this project. The Python parts work, at least for the purposes of Daylight_, but aren't updated to work with citeproc-py past 3.0.0. On the Perl side, ``test_ris_input.pl`` passes, but ``test_citematic.pl``, which tries to actually get stuff from the Internet, fails.)
+
 Citematic::Get uses Google Scholar, the Library of Congress's online catalog, CrossRef_, and a variety of other websites (including PubMed, APA PsycNET, JSTOR, and ERIC) to get bibliographic data for search terms, completely avoiding paywalls. It returns at most one result per invocation, so if you aren't looking for a specific item, you're probably better off with web interfaces. It does elaborate work to get exactly correct APA style (by both cleaning the input bibliographic data and tweaking the output references-section entries), and has test cases for over 100 items, including journal articles, book chapters, and entire books.
 
 The actual output of the ``get`` function provided by Citematic::Get is a nested data structure of `Citation Style Language`_ 1.0 variables (as specified in `the input data schema`__, except that no ``id`` is provided). The included Python module "quickbib" uses citeproc-py_ to generate bibliographies from CSL data using `any CSL style you like`__ (but with special support for APA style, because neither CSL nor citeproc-py can get it 100% right with only their built-in features). Citematic::QuickBib provides a Perl interface to quickbib, and the Perl script ``cite`` provides a handy command-line interface to the whole mess. Finally, Citematic::Get also has a function ``digest_ris`` for parsing `RIS`_, and the Python module "citematic_coins" has a function ``coins`` to generate `ContextObjects in Spans`_ (COinS) from CSL input data.
@@ -126,6 +128,7 @@ Citematic is free software: you can redistribute it and/or modify it under the t
 
 Citematic is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the `GNU General Public License`_ for more details.
 
+.. _Daylight: https://arfer.net/daylight
 .. _`Citation Style Language`: http://citationstyles.org/downloads/specification.html
 .. _RIS: https://en.wikipedia.org/wiki/RIS_%28file_format%29
 .. _`ContextObjects in Spans`: http://ocoins.info/
