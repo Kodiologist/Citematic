@@ -45,6 +45,13 @@ def bib(style_path,
         include_isbn, url_after_doi, abbreviate_given_names)
 
     ds = deepcopy(ds)
+    ds_by_id = defaultdict(list)
+
+    for d in ds:
+        if 'id' not in d:
+            d['id'] = str(random())
+        ds_by_id[d['id']].append(d)
+
     if apa_tweaks:
     # Distinguish entries that would have identical authors and years
     # by adding suffixes to the years.
@@ -63,16 +70,17 @@ def bib(style_path,
                 [names[1]] if len(names) == 2 else
                 ['etal'])
             k = repr(names) + '/' + str(d['issued']['date-parts'][0][0])
-            if d not in ay[k]:
-                ay[k].append(d)
+            if d['id'] not in ay[k]:
+                ay[k].append(d['id'])
         # If any group has more than one element, add suffixes.
         for v in ay.values():
             if len(v) > 1:
-                for i, d in enumerate(sorted(v, key = title_sort_key)):
-                   d['year_suffix'] = ascii_lowercase[i]
+                for i, d_id in enumerate(sorted(v, key = lambda d_id:
+                       title_sort_key(ds_by_id[d_id][0]))):
+                   for d in ds_by_id[d_id]:
+                       d['year_suffix'] = ascii_lowercase[i]
+
     for d in ds:
-        if 'id' not in d:
-            d['id'] = str(random())
         for k in list(d.keys()):
             if d[k] is None: del d[k]
         if apa_tweaks:
