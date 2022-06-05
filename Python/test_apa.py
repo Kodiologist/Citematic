@@ -108,7 +108,7 @@ def test_journal_article():
       # Advance online publication
 
 def test_sorting():
-    d = jf()
+    d = jf(id = '1')
     l = [d, d,
        jf(title = 'Quails'),
        jf(author = [name('Bell', 'azerty')]),
