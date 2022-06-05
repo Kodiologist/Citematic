@@ -44,13 +44,7 @@ def bib(style_path,
     style = get_style(style_path, apa_tweaks,
         include_isbn, url_after_doi, abbreviate_given_names)
 
-    # Copy and deduplicate `ds`.
-    orig = deepcopy(ds)
-    ds = []
-    for d in orig:
-        if d not in ds:
-            ds.append(d)
-
+    ds = deepcopy(ds)
     if apa_tweaks:
     # Distinguish entries that would have identical authors and years
     # by adding suffixes to the years.
